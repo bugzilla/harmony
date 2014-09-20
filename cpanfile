@@ -24,7 +24,7 @@ requires 'Digest::SHA', '5.47';
 requires 'EV', '4.0';
 requires 'Email::Address::XS', '1.05';
 requires 'Email::MIME', '1.904';
-requires 'Email::Send', '1.911';
+requires 'Email::Sender', '2.600';
 requires 'FFI::Platypus';
 requires 'File::Copy::Recursive';
 requires 'File::MimeInfo::Magic';
