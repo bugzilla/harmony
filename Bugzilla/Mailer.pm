@@ -31,7 +31,7 @@ use Try::Tiny;
 
 use Email::Sender::Simple qw(sendmail);
 use Email::Sender::Transport::SMTP;
-use Email::Sender::Transport::Sendmail;
+use Bugzilla::Sender::Transport::Sendmail;
 use Sys::Hostname;
 use Bugzilla::Version qw(vers_cmp);
 
@@ -119,10 +119,10 @@ sub MessageToMTA {
   my $transport;
   if ($method eq "Sendmail") {
     if (ON_WINDOWS) {
-      $transport = Email::Sender::Transport::Sendmail->new({ sendmail => SENDMAIL_EXE });
+      $transport = Bugzilla::Sender::Transport::Sendmail->new({ sendmail => SENDMAIL_EXE });
     }
     else {
-      $transport = Email::Sender::Transport::Sendmail->new();
+      $transport = Bugzilla::Sender::Transport::Sendmail->new();
     }
   }
   else {
