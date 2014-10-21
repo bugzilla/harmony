@@ -148,8 +148,10 @@ sub MessageToMTA {
   }
 
   if ($method eq "SMTP") {
+    my ($host, $port) = split(/:/, Bugzilla->params->{'smtpserver'}, 2);
     $transport = Email::Sender::Transport::SMTP->new({
-      host          => Bugzilla->params->{'smtpserver'},
+      host => $host,
+      defined($port) ? (port => $port) : (),
       sasl_username => Bugzilla->params->{'smtp_username'},
       sasl_password => Bugzilla->params->{'smtp_password'},
       helo          => $hostname,
