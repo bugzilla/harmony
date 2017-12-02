@@ -270,12 +270,20 @@ sub write_params {
     my ($param_data) = @_;
     $param_data ||= Bugzilla->params;
 
-    my $dbh = Bugzilla->dbh_main;
-    $dbh->do(
-        "INSERT INTO params (content, user_id) values (?, ?)",
-        undef, encode_json($param_data),
-        Bugzilla->user->id
-    );
+    use Carp;
+    confess "write_params()";
+    my $dbh = eval { Bugzilla->dbh_main };
+    my $error = $@;
+    if ($dbh) {
+        $dbh->do(
+            "INSERT INTO params (content, user_id) values (?, ?)",
+            undef, encode_json($param_data),
+            Bugzilla->user->id
+        );
+    }
+    else {
+        die "Cannot write params without db: $error\n";
+    }
 
     # And now we have to reset the params cache so that Bugzilla will re-read
     # them.
@@ -284,6 +292,9 @@ sub write_params {
 
 sub read_param_file {
     my %params;
+
+    return \%params unless $INC{'Bugzilla.pm'};
+
     # TODO: move shadowdb to localconfig only.
     eval {
         my $dbh = Bugzilla->dbh_main;

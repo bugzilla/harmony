@@ -31,6 +31,8 @@ use Pod::Usage;
 use Tie::Hash::NamedCapture;
 use Safe;
 
+BEGIN { $main::CHECKSETUP_PHASE = 1 }
+
 use Bugzilla::Constants;
 use Bugzilla::Install::Requirements;
 use Bugzilla::Install::Util qw(install_string get_version_and_os
@@ -121,6 +123,7 @@ exit 0 if $switch{'check-modules'};
 # then instead of our nice normal checksetup message, the user would
 # get a cryptic perl error about the missing module.
 
+$main::CHECKSETUP_PHASE = 2;
 require Bugzilla;
 require Bugzilla::User;
 

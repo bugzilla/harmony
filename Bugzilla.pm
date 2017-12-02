@@ -18,6 +18,10 @@ BEGIN {
         require CGI::Carp;
         CGI::Carp->import('fatalsToBrowser');
     }
+    if ($main::CHECKSETUP_PHASE && $main::CHECKSETUP_PHASE < 2) {
+        require Carp;
+        Carp::confess("Bugzilla.pm was loaded before it was supposed to be loaded");
+    }
 }
 
 our $VERSION = '20171121.1';
@@ -891,10 +895,10 @@ sub _cleanup {
 
 sub END {
     # Bugzilla.pm cannot compile in mod_perl.pl if this runs.
-    _cleanup() unless $ENV{MOD_PERL};
+    _cleanup() unless $ENV{MOD_PERL} || $main::CHECKSETUP_PHASE;
 }
 
-init_page() if !$ENV{MOD_PERL};
+init_page() unless $ENV{MOD_PERL} || $main::CHECKSETUP_PHASE;
 
 1;
 

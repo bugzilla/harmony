@@ -126,6 +126,11 @@ sub _connect {
     my ($params) = @_;
 
     my $driver = $params->{db_driver};
+    if (!$driver || $main::CHECKSETUP_PHASE) {
+        require Carp;
+        Carp::confess("Attempted to connect to null database");
+    }
+
     my $pkg_module = DB_MODULE->{lc($driver)}->{db};
 
     # do the actual import

@@ -14,6 +14,9 @@ ENV HTTPD_MaxSpareServers=20
 ENV HTTPD_ServerLimit=256
 ENV HTTPD_MaxClients=256
 ENV HTTPD_MaxRequestsPerChild=4000
+
+ENV LOCALCONFIG_ENV=1
+
 ENV PORT=8000
 
 WORKDIR /app
