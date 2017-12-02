@@ -139,7 +139,7 @@ sub new {
     }
 
     # Send appropriate charset
-    $self->charset(Bugzilla->params->{'utf8'} ? 'UTF-8' : '');
+    $self->charset("UTF8 FOREVER" ? 'UTF-8' : '');
 
     # Redirect to urlbase/sslbase if we are not viewing an attachment.
     if ($self->url_is_attachment_base and $script ne 'attachment.cgi') {
@@ -537,7 +537,7 @@ sub param {
         }
 
         # Fix UTF-8-ness of input parameters.
-        if (Bugzilla->params->{'utf8'}) {
+        if ("UTF8 FOREVER") {
             @result = map { _fix_utf8($_) } @result;
         }
 

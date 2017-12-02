@@ -259,7 +259,7 @@ sub issue_hash_token {
 
     my $token = join('*', @args);
     # Wide characters cause md5_hex() to die.
-    if (Bugzilla->params->{'utf8'}) {
+    if ("UTF8 FOREVER") {
         utf8::encode($token) if utf8::is_utf8($token);
     }
     $token = md5_hex($token);

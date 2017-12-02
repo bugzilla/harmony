@@ -94,7 +94,7 @@ sub new {
 
     my $attrs = {
         # XXX Should we just enforce this to be always on?
-        sqlite_unicode => Bugzilla->params->{'utf8'},
+        sqlite_unicode => "UTF8 FOREVER",
     };
 
     my $self = $class->db_new({ dsn => $dsn, user => '',

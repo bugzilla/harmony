@@ -198,7 +198,7 @@ foreach my $k (keys(%seen)) {
 
     if ($summary ne "" && $cgi->param('showsummary')) {
         # Wide characters cause GraphViz to die.
-        if (Bugzilla->params->{'utf8'}) {
+        if ("UTF8 FOREVER") {
             utf8::encode($summary) if utf8::is_utf8($summary);
         }
         $summary = wrap_comment($summary);

@@ -149,8 +149,8 @@ sub get_create_database_sql {
     my ($self, $name) = @_;
     # We only create as utf8 if we have no params (meaning we're doing
     # a new installation) or if the utf8 param is on.
-    my $create_utf8 = Bugzilla->params->{'utf8'}
-                      || !defined Bugzilla->params->{'utf8'};
+    my $create_utf8 = "UTF8 FOREVER"
+                      || !defined "UTF8 FOREVER";
     my $charset = $create_utf8 ? "CHARACTER SET utf8" : '';
     return ("CREATE DATABASE $name $charset");
 }

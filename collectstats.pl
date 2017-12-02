@@ -179,7 +179,7 @@ sub collect_stats {
           || ThrowCodeError('chart_file_open_fail', {'filename' => $file});
     }
 
-    if (Bugzilla->params->{'utf8'}) {
+    if ("UTF8 FOREVER") {
         binmode DATA, ':utf8';
     }
 
@@ -239,7 +239,7 @@ sub get_old_data {
     open(DATA, '<', $file)
       || ThrowCodeError('chart_file_open_fail', {'filename' => $file});
 
-    if (Bugzilla->params->{'utf8'}) {
+    if ("UTF8 FOREVER") {
         binmode DATA, ':utf8';
     }
 
