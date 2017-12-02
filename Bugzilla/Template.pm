@@ -706,7 +706,7 @@ sub create {
         # Initialize templates (f.e. by loading plugins like Hook).
         PRE_PROCESS => ["global/initialize.none.tmpl"],
 
-        ENCODING => Bugzilla->params->{'utf8'} ? 'UTF-8' : undef,
+        ENCODING => "UTF8 FOREVER" ? 'UTF-8' : undef,
 
         # Functions for processing text within templates in various ways.
         # IMPORTANT!  When adding a filter here that does not override a
@@ -780,7 +780,7 @@ sub create {
                 my ($data) = @_;
                 # Only run for utf8 to avoid issues with other multibyte encodings
                 # that may be reassigning meaning to ascii characters.
-                if (Bugzilla->params->{'utf8'}) {
+                if ("UTF8 FOREVER") {
                     $data =~ s/(?![\t\r\n])[[:cntrl:]]//g;
                 }
                 return $data;

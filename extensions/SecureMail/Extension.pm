@@ -556,7 +556,7 @@ sub _make_secure {
             $email->parts_set([]);
             $email->body_set($enc_obj->body());
             $email->content_type_set('application/pkcs7-mime');
-            $email->charset_set('UTF-8') if Bugzilla->params->{'utf8'};
+            $email->charset_set('UTF-8') if "UTF8 FOREVER";
         }
         else {
             $email->body_set('Error during Encryption: ' . $@);
@@ -663,7 +663,7 @@ sub _fix_encoding {
         : '';
     return unless !$charset || $charset eq 'us-ascii';
 
-    if (Bugzilla->params->{utf8}) {
+    if ("UTF8 FOREVER") {
         $part->charset_set('UTF-8');
         my $raw = $part->body_raw;
         if (utf8::is_utf8($raw)) {

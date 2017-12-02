@@ -122,7 +122,7 @@ sub MessageToMTA {
         # We don't recode headers that happen multiple times.
         next if scalar(@values) > 1;
         if (my $value = $values[0]) {
-            if (Bugzilla->params->{'utf8'} && !utf8::is_utf8($value)) {
+            if ("UTF8 FOREVER" && !utf8::is_utf8($value)) {
                 utf8::decode($value);
             }
 
@@ -198,7 +198,7 @@ sub MessageToMTA {
         # XXX - This is a hack to workaround bug 723944.
         if (!$1 || $1 eq 'us-ascii') {
             my $body = $part->body;
-            if (Bugzilla->params->{'utf8'}) {
+            if ("UTF8 FOREVER") {
                 $part->charset_set('UTF-8');
                 # encoding_set works only with bytes, not with utf8 strings.
                 my $raw = $part->body_raw;

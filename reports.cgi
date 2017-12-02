@@ -94,7 +94,7 @@ else {
     my $project = bz_locations()->{'project'} || '';
     my $image_file =  join(':', ($key, $project, $prod_id, @datasets));
     # Wide characters cause md5_hex() to die.
-    if (Bugzilla->params->{'utf8'}) {
+    if ("UTF8 FOREVER") {
         utf8::encode($image_file) if utf8::is_utf8($image_file);
     }
     $image_file = md5_hex($image_file) . '.png';

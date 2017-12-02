@@ -76,8 +76,6 @@ use constant REVERSE_MAPPING => {
     # as in their db-specific version, so no reverse mapping is needed.
 };
 
-use constant MYISAM_TABLES => qw();
-
 #------------------------------------------------------------------------------
 sub _initialize {
 
@@ -122,10 +120,11 @@ sub _get_create_table_ddl {
 
     my($self, $table) = @_;
 
-    my $charset = Bugzilla->dbh->bz_db_is_utf8 ? "CHARACTER SET utf8" : '';
-    my $type    = grep($_ eq $table, MYISAM_TABLES) ? 'MYISAM' : 'InnoDB';
+    my $charset = 'CHARACTER SET utf8mb4';
+    my $type    = 'InnoDB';
+    my $fmt     = Bugzilla->dbh->ROW_FORMAT;
     return($self->SUPER::_get_create_table_ddl($table)
-           . " ENGINE = $type $charset");
+           . " ENGINE = $type ROW_FORMAT = $fmt $charset");
 
 } #eosub--_get_create_table_ddl
 #------------------------------------------------------------------------------
@@ -150,8 +149,8 @@ sub get_create_database_sql {
     my ($self, $name) = @_;
     # We only create as utf8 if we have no params (meaning we're doing
     # a new installation) or if the utf8 param is on.
-    my $create_utf8 = Bugzilla->params->{'utf8'}
-                      || !defined Bugzilla->params->{'utf8'};
+    my $create_utf8 = "UTF8 FOREVER"
+                      || !defined "UTF8 FOREVER";
     my $charset = $create_utf8 ? "CHARACTER SET utf8" : '';
     return ("CREATE DATABASE $name $charset");
 }

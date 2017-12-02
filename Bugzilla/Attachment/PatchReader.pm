@@ -75,7 +75,7 @@ sub process_diff {
         setup_template_patch_reader($last_reader, $format, $context, $vars);
         # The patch is going to be displayed in a HTML page and if the utf8
         # param is enabled, we have to encode attachment data as utf8.
-        if (Bugzilla->params->{'utf8'}) {
+        if ("UTF8 FOREVER") {
             $attachment->data; # Populate ->{data}
             utf8::decode($attachment->{data});
         }
@@ -97,7 +97,7 @@ sub process_interdiff {
 
     # Encode attachment data as utf8 if it's going to be displayed in a HTML
     # page using the UTF-8 encoding.
-    if ($format ne 'raw' && Bugzilla->params->{'utf8'}) {
+    if ($format ne 'raw' && "UTF8 FOREVER") {
         $old_attachment->data; # Populate ->{data}
         utf8::decode($old_attachment->{data});
         $new_attachment->data; # Populate ->{data}
@@ -152,7 +152,7 @@ sub process_interdiff {
     }
     else {
         # In case the HTML page is displayed with the UTF-8 encoding.
-        binmode $interdiff_stdout, ':utf8' if Bugzilla->params->{'utf8'};
+        binmode $interdiff_stdout, ':utf8' if "UTF8 FOREVER";
 
         $vars->{'warning'} = $warning if $warning;
         $vars->{'bugid'} = $new_attachment->bug_id;
@@ -209,7 +209,7 @@ sub get_unified_diff {
 
     # Prints out to temporary file.
     my ($fh, $filename) = File::Temp::tempfile();
-    if ($format ne 'raw' && Bugzilla->params->{'utf8'}) {
+    if ($format ne 'raw' && "UTF8 FOREVER") {
         # The HTML page will be displayed with the UTF-8 encoding.
         binmode $fh, ':utf8';
     }

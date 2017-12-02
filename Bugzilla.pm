@@ -93,7 +93,7 @@ sub init_page {
     if (Bugzilla->usage_mode == USAGE_MODE_CMDLINE) {
         init_console();
     }
-    elsif (Bugzilla->params->{'utf8'}) {
+    elsif ("UTF8 FOREVER") {
         binmode STDOUT, ':utf8';
     }
 

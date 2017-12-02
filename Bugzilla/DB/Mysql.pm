@@ -43,6 +43,8 @@ use constant MAX_COMMENTS => 50;
 
 use constant FULLTEXT_OR => '|';
 
+use constant ROW_FORMAT => 'dynamic'; # or compressed
+
 sub new {
     my ($class, $params) = @_;
     my ($user, $pass, $host, $dbname, $port, $sock) =
@@ -54,7 +56,7 @@ sub new {
     $dsn .= ";mysql_socket=$sock" if $sock;
 
     my %attrs = (
-        mysql_enable_utf8 => Bugzilla->params->{'utf8'},
+        mysql_enable_utf8 => 1,
         # Needs to be explicitly specified for command-line processes.
         mysql_auto_reconnect => 1,
     );
@@ -64,7 +66,7 @@ sub new {
 
     # This makes sure that if the tables are encoded as UTF-8, we
     # return their data correctly.
-    $self->do("SET NAMES utf8") if Bugzilla->params->{'utf8'};
+    $self->do("SET NAMES utf8mb4");
 
     # all class local variables stored in DBI derived class needs to have
     # a prefix 'private_'. See DBI documentation.
@@ -321,6 +323,22 @@ sub bz_setup_database {
         die install_string('mysql_innodb_disabled');
     }
 
+    my %global = map { @$_ } @{ $self->selectall_arrayref(q(SHOW GLOBAL VARIABLES LIKE 'innodb_%')) };
+    my $utf8mb4_supported
+      = $global{innodb_file_format} eq 'Barracuda'
+      && $global{innodb_file_per_table} eq 'ON'
+      && $global{innodb_large_prefix} eq 'ON';
+
+    die install_string('mysql_innodb_settings') unless $utf8mb4_supported;
+
+    my $tables = $self->selectall_arrayref('SHOW TABLE STATUS');
+
+    foreach my $table (@$tables) {
+        my ($table, undef, undef, $row_format) = @$table;
+        if (lc($row_format) ne lc(ROW_FORMAT)) {
+            $self->do(sprintf 'ALTER TABLE %s ROW_FORMAT=%s', $table, ROW_FORMAT);
+        }
+    }
 
     my ($sd_index_deleted, $longdescs_index_deleted);
     my @tables = $self->bz_table_list_real();
@@ -356,9 +374,6 @@ sub bz_setup_database {
         'SELECT TABLE_NAME FROM information_schema.TABLES
           WHERE TABLE_SCHEMA = ? AND ENGINE = ?',
         undef, $db_name, 'MyISAM');
-    foreach my $should_be_myisam (Bugzilla::DB::Schema::Mysql::MYISAM_TABLES) {
-        @$myisam_tables = grep { $_ ne $should_be_myisam } @$myisam_tables;
-    }
 
     if (scalar @$myisam_tables) {
         print "Bugzilla now uses the InnoDB storage engine in MySQL for",
@@ -525,17 +540,15 @@ sub bz_setup_database {
         } # foreach table
     } # if old-name indexes
 
-    # If there are no tables, but the DB isn't utf8 and it should be,
-    # then we should alter the database to be utf8. We know it should be
-    # if the utf8 parameter is true or there are no params at all.
+    # If there are no tables, but the DB isn't utf8mb4 and it should be,
+    # then we should alter the database to be utf8mb4 We know it should be
     # This kind of situation happens when people create the database
     # themselves, and if we don't do this they will get the big
     # scary WARNING statement about conversion to UTF8.
-    if ( !$self->bz_db_is_utf8 && !@tables
-         && (Bugzilla->params->{'utf8'} || !scalar keys %{Bugzilla->params}) )
-    {
-        $self->_alter_db_charset_to_utf8();
+    if ( !$self->bz_db_is_utf8mb4 && !@tables ) {
+        $self->_alter_db_charset_to_utf8mb4();
     }
+
 
     # And now we create the tables and the Schema object.
     $self->SUPER::bz_setup_database();
@@ -563,21 +576,21 @@ sub bz_setup_database {
                    MAX_ROWS=100000");
     }
 
-    # Convert the database to UTF-8 if the utf8 parameter is on.
-    # We check if any table isn't utf8, because lots of crazy
+    # Convert the database to UTF-8
+    # We check if any table isn't utf8mb4, because lots of crazy
     # partial-conversion situations can happen, and this handles anything
     # that could come up (including having the DB charset be utf8 but not
     # the table charsets.
     #
     # TABLE_COLLATION IS NOT NULL prevents us from trying to convert views.
-    my $non_utf8_tables = $self->selectrow_array(
+    my $non_utf8mb4_tables = $self->selectrow_array(
         "SELECT 1 FROM information_schema.TABLES
           WHERE TABLE_SCHEMA = ? AND TABLE_COLLATION IS NOT NULL
-                AND TABLE_COLLATION NOT LIKE 'utf8%'
+                AND TABLE_COLLATION NOT LIKE 'utf8mb4%'
           LIMIT 1", undef, $db_name);
 
-    if (Bugzilla->params->{'utf8'} && $non_utf8_tables) {
-        print "\n", install_string('mysql_utf8_conversion');
+    if ($non_utf8mb4_tables) {
+        print "\n", install_string('mysql_utf8mb4_conversion');
 
         if (!Bugzilla->installation_answers->{NO_PAUSE}) {
             if (Bugzilla->installation_mode ==
@@ -596,7 +609,7 @@ sub bz_setup_database {
         foreach my $table ($self->bz_table_list_real) {
             my $info_sth = $self->prepare("SHOW FULL COLUMNS FROM $table");
             $info_sth->execute();
-            my (@binary_sql, @utf8_sql);
+            my (@binary_sql, @utf8mb4_sql);
             while (my $column = $info_sth->fetchrow_hashref) {
                 # Our conversion code doesn't work on enum fields, but they
                 # all go away later in checksetup anyway.
@@ -605,7 +618,7 @@ sub bz_setup_database {
                 # If this particular column isn't stored in utf-8
                 if ($column->{Collation}
                     && $column->{Collation} ne 'NULL'
-                    && $column->{Collation} !~ /utf8/)
+                    && $column->{Collation} !~ /utf8mb4/)
                 {
                     my $name = $column->{Field};
 
@@ -626,12 +639,12 @@ sub bz_setup_database {
 
                     # The CHARACTER SET part of the definition has to come
                     # right after the type, which will always come first.
-                    my ($binary, $utf8) = ($sql_def, $sql_def);
+                    my ($binary, $utf8mb4) = ($sql_def, $sql_def);
                     my $type = $self->_bz_schema->convert_type($col_info->{TYPE});
-                    $binary =~ s/(\Q$type\E)/$1 CHARACTER SET binary/;
-                    $utf8   =~ s/(\Q$type\E)/$1 CHARACTER SET utf8/;
+                    $binary  =~ s/(\Q$type\E)/$1 CHARACTER SET binary/;
+                    $utf8mb4 =~ s/(\Q$type\E)/$1 CHARACTER SET utf8mb4/;
                     push(@binary_sql, "MODIFY COLUMN $name $binary");
-                    push(@utf8_sql, "MODIFY COLUMN $name $utf8");
+                    push(@utf8mb4_sql, "MODIFY COLUMN $name $utf8mb4");
                 }
             } # foreach column
 
@@ -649,8 +662,8 @@ sub bz_setup_database {
 
                 print "Converting the $table table to UTF-8...\n";
                 my $bin = "ALTER TABLE $table " . join(', ', @binary_sql);
-                my $utf = "ALTER TABLE $table " . join(', ', @utf8_sql,
-                          'DEFAULT CHARACTER SET utf8');
+                my $utf = "ALTER TABLE $table " . join(', ', @utf8mb4_sql,
+                          'DEFAULT CHARACTER SET utf8mb4');
                 $self->do($bin);
                 $self->do($utf);
 
@@ -660,19 +673,19 @@ sub bz_setup_database {
                 }
             }
             else {
-                $self->do("ALTER TABLE $table DEFAULT CHARACTER SET utf8");
+                $self->do("ALTER TABLE $table DEFAULT CHARACTER SET utf8mb4");
             }
 
         } # foreach my $table (@tables)
     }
 
-    # Sometimes you can have a situation where all the tables are utf8,
+    # Sometimes you can have a situation where all the tables are utf8mb4
     # but the database isn't. (This tends to happen when you've done
     # a mysqldump.) So we have this change outside of the above block,
     # so that it just happens silently if no actual *table* conversion
     # needs to happen.
-    if (Bugzilla->params->{'utf8'} && !$self->bz_db_is_utf8) {
-        $self->_alter_db_charset_to_utf8();
+    if (!$self->bz_db_is_utf8mb4) {
+        $self->_alter_db_charset_to_utf8mb4();
     }
 
      $self->_fix_defaults();
@@ -750,18 +763,18 @@ sub _fix_defaults {
     }
 }
 
-sub _alter_db_charset_to_utf8 {
+sub _alter_db_charset_to_utf8mb4 {
     my $self = shift;
     my $db_name = Bugzilla->localconfig->{db_name};
-    $self->do("ALTER DATABASE $db_name CHARACTER SET utf8");
+    $self->do("ALTER DATABASE $db_name CHARACTER SET utf8mb4");
 }
 
-sub bz_db_is_utf8 {
+sub bz_db_is_utf8mb4 {
     my $self = shift;
     my $db_collation = $self->selectrow_arrayref(
         "SHOW VARIABLES LIKE 'character_set_database'");
     # First column holds the variable name, second column holds the value.
-    return $db_collation->[1] =~ /utf8/ ? 1 : 0;
+    return $db_collation->[1] =~ /utf8mb4/ ? 1 : 0;
 }
 
 

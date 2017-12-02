@@ -317,7 +317,7 @@ sub get_text_alternative {
         debug_print("Part Character Encoding: $charset", 2);
         if (!$ct || $ct =~ /^text\/plain/i) {
             $body = $part->body;
-            if (Bugzilla->params->{'utf8'} && !utf8::is_utf8($body)) {
+            if ("UTF8 FOREVER" && !utf8::is_utf8($body)) {
                 $body = Encode::decode($charset, $body);
             }
             last;
