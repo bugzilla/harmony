@@ -16,6 +16,7 @@ use Bugzilla::Constants;
 use Bugzilla::Hook;
 use Data::Dumper;
 use File::Temp;
+use JSON::XS;
 
 # Don't export localvars by default - people should have to explicitly
 # ask for it, as a (probably futile) attempt to stop code using it
@@ -269,26 +270,12 @@ sub write_params {
     my ($param_data) = @_;
     $param_data ||= Bugzilla->params;
 
-    my $datadir    = bz_locations()->{'datadir'};
-    my $param_file = "$datadir/params";
-
-    local $Data::Dumper::Sortkeys = 1;
-
-    my ($fh, $tmpname) = File::Temp::tempfile('params.XXXXX',
-                                              DIR => $datadir );
-
-    print $fh (Data::Dumper->Dump([$param_data], ['*param']))
-      || die "Can't write param file: $!";
-
-    close $fh;
-
-    rename $tmpname, $param_file
-      or die "Can't rename $tmpname to $param_file: $!";
-
-    # It's not common to edit parameters and loading
-    # Bugzilla::Install::Filesystem is slow.
-    require Bugzilla::Install::Filesystem;
-    Bugzilla::Install::Filesystem::fix_file_permissions($param_file);
+    my $dbh = Bugzilla->dbh_main;
+    $dbh->do(
+        "INSERT INTO params (content, user_id) values (?, ?)",
+        undef, encode_json($param_data),
+        Bugzilla->user->id
+    );
 
     # And now we have to reset the params cache so that Bugzilla will re-read
     # them.
@@ -297,6 +284,18 @@ sub write_params {
 
 sub read_param_file {
     my %params;
+    # TODO: move shadowdb to localconfig only.
+    eval {
+        my $dbh = Bugzilla->dbh_main;
+        my ($content) = $dbh->selectrow_array("SELECT content FROM params ORDER BY id DESC LIMIT 1");
+        %params = defined $content ? %{ decode_json($content) } : ();
+        1;
+    } or do {
+        die $@ unless $@ =~ /params. doesn't exist/;
+    };
+
+    return \%params if keys %params;
+
     my $datadir = bz_locations()->{'datadir'};
     if (-e "$datadir/params") {
         # Note that checksetup.pl sets file permissions on '$datadir/params'

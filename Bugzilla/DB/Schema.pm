@@ -1817,6 +1817,15 @@ use constant ABSTRACT_SCHEMA => {
             user_user_request_log_user_id_idx => ['user_id'],
         ],
     },
+
+    params => {
+        FIELDS => [
+            id      => {TYPE => 'INTSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+            content => {TYPE => 'LONGBLOB', NOTNULL => 1 },
+            timestamp   => {TYPE => 'DATETIME', NOTNULL => 1},
+            user_id     => {TYPE => 'INT3', NOTNULL => 1 },
+        ],
+    },
 };
 
 # Foreign Keys are added in Bugzilla::DB::bz_add_field_tables

@@ -14,8 +14,6 @@ use warnings;
 use base qw(Bugzilla::Extension);
 our $VERSION = '1';
 
-use Bugzilla;
-
 sub webservice {
     my ($self,  $args) = @_;
     $args->{dispatch}->{Bitly} = "Bugzilla::Extension::Bitly::WebService";
