@@ -126,7 +126,7 @@ sub _connect {
     my ($params) = @_;
 
     my $driver = $params->{db_driver};
-    if (!$driver || $main::CHECKSETUP_PHASE) {
+    if (!$driver) {
         require Carp;
         Carp::confess("Attempted to connect to null database");
     }

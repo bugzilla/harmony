@@ -270,8 +270,6 @@ sub write_params {
     my ($param_data) = @_;
     $param_data ||= Bugzilla->params;
 
-    use Carp;
-    confess "write_params()";
     my $dbh = eval { Bugzilla->dbh_main };
     my $error = $@;
     if ($dbh) {
