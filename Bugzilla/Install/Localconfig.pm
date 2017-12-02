@@ -154,6 +154,10 @@ use constant LOCALCONFIG_VARS => (
         name    => 'memcached_namespace',
         default => _migrate_param("memcached_namespace", "bugzilla:"),
     },
+    {
+        name    => 'maxattachmentsize',
+        default => _migrate_param("maxattachmentsize", 10240),
+    },
 );
 
 use constant ENV_KEYS => (

@@ -186,6 +186,9 @@ END
     localconfig_memcached_namespace => <<'END',
 Specify a string to prefix each key on Memcached.
 END
+    localconfig_maxattachmentsize => <<'END',
+    The maximum size (in kilobytes) of attachments.
+END
     localconfig_site_wide_secret => <<'END',
 This secret key is used by your installation for the creation and
 validation of encrypted tokens. These tokens are used to implement

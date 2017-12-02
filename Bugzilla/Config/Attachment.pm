@@ -35,12 +35,6 @@ sub get_param_list {
             default => 0
         },
         {
-            name    => 'maxattachmentsize',
-            type    => 't',
-            default => '1000',
-            checker => \&check_maxattachmentsize
-        },
-        {
             name    => 'attachment_storage',
             type    => 's',
             choices => [ 'database', 'filesystem', 's3' ],

@@ -458,7 +458,7 @@ sub _check_data {
 
     $params->{attach_size} || ThrowUserError('zero_length_file');
     # Make sure the attachment does not exceed the maximum permitted size.
-    if ($params->{attach_size} > Bugzilla->params->{'maxattachmentsize'} * 1024) {
+    if ($params->{attach_size} > Bugzilla->localconfig->{'maxattachmentsize'} * 1024) {
         ThrowUserError('file_too_large', { filesize => sprintf("%.0f", $params->{attach_size}/1024) });
     }
 

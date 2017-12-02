@@ -472,7 +472,6 @@ my %set_params = (
     mail_delivery_method      => 'Test',
     mailfrom                  => '"Bugzilla@Mozilla" <bugzilla-daemon@mozilla.org>',
     maintainer                => 'bugzilla-admin@mozilla.org',
-    maxattachmentsize         => '10240',
     maxusermatches            => '100',
     mostfreqthreshold         => '5',
     mybugstemplate            => 'buglist.cgi?bug_status=UNCONFIRMED&amp;bug_status=NEW' .

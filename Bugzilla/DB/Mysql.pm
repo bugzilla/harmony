@@ -305,7 +305,7 @@ sub bz_setup_database {
     # This parameter is not yet defined when the DB is being built for
     # the very first time. The code below still works properly, however,
     # because the default maxattachmentsize is smaller than $min_max_allowed.
-    my $max_attachment = (Bugzilla->params->{'maxattachmentsize'} || 0) * 1024;
+    my $max_attachment = (Bugzilla->localconfig->{'maxattachmentsize'} || 0) * 1024;
     my $needed_max_allowed = max($min_max_allowed, $max_attachment);
     if ($current_max_allowed < $needed_max_allowed) {
         warn install_string('max_allowed_packet',

@@ -724,7 +724,7 @@
     [% title = "File Too Large" %]
     The file you are trying to attach is [% filesize FILTER html %]
     kilobytes (KB) in size. Attachments cannot be more than
-    [%+ Param('maxattachmentsize') FILTER html %] KB. <br>
+    [%+ Bugzilla.localconfig.maxattachmentsize FILTER html %] KB. <br>
     We recommend that you store your attachment elsewhere
     and then paste the URL to this file on the attachment
     creation page in the appropriate text field.

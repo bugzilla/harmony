@@ -103,7 +103,6 @@ my %set_params = (
     usebugaliases => 1,
     useqacontact  => 1,
     mail_delivery_method => 'Test',
-    maxattachmentsize => 256,
     defaultpriority => 'Highest',     # BMO CHANGE
     timetrackinggroup => 'editbugs',  # BMO CHANGE
     letsubmitterchoosepriority => 1,  # BMO CHANGE

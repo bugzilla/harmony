@@ -105,7 +105,7 @@ OLDATTACH2NEW = {
   "version": "[% constants.BUGZILLA_VERSION FILTER json %]",
   "maintainer": "[% Param('maintainer') FILTER json %]",
   "announcement": "[% Param('announcehtml') FILTER json %]",
-  "max_attachment_size": [% (Param('maxattachmentsize') * 1000) FILTER json %],
+  "max_attachment_size": [% (Bugzilla.localconfig.maxattachmentsize * 1000) FILTER json %],
 
 [% IF Param('useclassification') %]
   [% cl_name_for = {} %]
