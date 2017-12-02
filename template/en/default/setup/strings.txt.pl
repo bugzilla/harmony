@@ -315,8 +315,8 @@ renaming is ##minutes## minutes. You cannot interrupt this action once
 it has begun. If you would like to cancel, press Ctrl-C now...
 (Waiting 45 seconds...)
 END
-    mysql_utf8_conversion => <<'END',
-WARNING: We are about to convert your table storage format to UTF-8. This
+    mysql_utf8mb4_conversion => <<'END',
+WARNING: We are about to convert your table storage format to UTF-8MB4. This
          allows Bugzilla to correctly store and sort international characters.
          However, if you have any non-UTF-8 data in your database,
          it ***WILL BE DELETED*** by this process. So, before
