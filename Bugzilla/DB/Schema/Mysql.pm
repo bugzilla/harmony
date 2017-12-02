@@ -76,8 +76,6 @@ use constant REVERSE_MAPPING => {
     # as in their db-specific version, so no reverse mapping is needed.
 };
 
-use constant MYISAM_TABLES => qw();
-
 #------------------------------------------------------------------------------
 sub _initialize {
 
@@ -122,10 +120,11 @@ sub _get_create_table_ddl {
 
     my($self, $table) = @_;
 
-    my $charset = Bugzilla->dbh->bz_db_is_utf8 ? "CHARACTER SET utf8" : '';
-    my $type    = grep($_ eq $table, MYISAM_TABLES) ? 'MYISAM' : 'InnoDB';
+    my $charset = 'CHARACTER SET utf8mb4';
+    my $type    = 'InnoDB';
+    my $fmt     = Bugzilla->dbh->ROW_FORMAT;
     return($self->SUPER::_get_create_table_ddl($table)
-           . " ENGINE = $type $charset");
+           . " ENGINE = $type ROW_FORMAT = $fmt $charset");
 
 } #eosub--_get_create_table_ddl
 #------------------------------------------------------------------------------
