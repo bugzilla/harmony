@@ -146,6 +146,7 @@ use constant LOCALCONFIG_VARS => (
     {
         name    => 'maxattachmentsize',
         default => 10240,
+    },
     {
         name    => 'urlbase',
         default => '',
