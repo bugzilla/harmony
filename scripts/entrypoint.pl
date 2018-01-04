@@ -5,7 +5,7 @@ use warnings;
 use lib qw(/app /app/local/lib/perl5);
 use autodie qw(:all);
 
-use Bugzilla::Install::Localconfig ();
+use Bugzilla::Install::Localconfig qw(ENV_PREFIX);
 use Bugzilla::Install::Util qw(install_string);
 use Bugzilla::Test::Util qw(create_user);
 
