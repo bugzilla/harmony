@@ -42,7 +42,7 @@ our @EXPORT_OK = qw(
 );
 
 # might want to change this for upstream
-use constant ENV_PREFIX     => 'BMO_';
+use constant ENV_PREFIX     => ( $ENV{LOCALCONFIG_ENV} // 1 ) == 1 ? 'BMO_' : "$ENV{LOCALCONFIG_ENV}_";
 use constant PARAM_OVERRIDE => qw( inbound_proxies shadowdb shadowdbhost shadowdbport shadowdbsock );
 
 sub _sensible_group {

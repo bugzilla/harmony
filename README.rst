@@ -176,12 +176,15 @@ PORT
 BUGZILLA_UNSAFE_AUTH_DELEGATION
   This should never be set in production. It allows auth delegation over http.
 
-BMO_urlbase
+LOCALCONFIG_ENV
+    This should be set to BUGZILLA. If not set, bugzilla will ignore the following environmental variables.
+
+BUGZILLA_urlbase
   The public url for this instance. Note that if this begins with https://
-  abd BMO_inbound_proxies is set to '*' Bugzilla will believe the connection to it
+  abd BUGZILLA_inbound_proxies is set to '*' Bugzilla will believe the connection to it
   is using SSL.
 
-BMO_attachment_base
+BUGZILLA_attachment_base
   This is the url for attachments.
   When the allow_attachment_display parameter is on, it is possible for a
   malicious attachment to steal your cookies or perform an attack on Bugzilla
@@ -199,51 +202,51 @@ BMO_attachment_base
   names (such as 1234.your.domain.com) must point to this same Bugzilla
   instance.
 
-BMO_db_driver
+BUGZILLA_db_driver
   What SQL database to use. Default is mysql. List of supported databases can be
   obtained by listing Bugzilla/DB directory - every module corresponds to one
   supported database and the name of the module (before ".pm") corresponds to a
   valid value for this variable.
 
-BMO_db_host
+BUGZILLA_db_host
   The DNS name or IP address of the host that the database server runs on.
 
-BMO_db_name
+BUGZILLA_db_name
   The name of the database.
 
-BMO_db_user
+BUGZILLA_db_user
   The database user to connect as.
 
-BMO_db_pass
+BUGZILLA_db_pass
   The password for the user above.
 
-BMO_site_wide_secret
+BUGZILLA_site_wide_secret
   This secret key is used by your installation for the creation and
   validation of encrypted tokens. These tokens are used to implement
   security features in Bugzilla, to protect against certain types of attacks.
   It's very important that this key is kept secret.
 
-BMO_inbound_proxies
+BUGZILLA_inbound_proxies
   This is a list of IP addresses that we expect proxies to come from.
   This can be '*' if only the load balancer can connect to this container.
   Setting this to '*' means that BMO will trust the X-Forwarded-For header.
 
-BMO_memcached_namespace
+BUGZILLA_memcached_namespace
   The global namespace for the memcached servers.
 
-BMO_memcached_servers
+BUGZILLA_memcached_servers
   A list of memcached servers (ip addresses or host names). Can be empty.
 
-BMO_shadowdb
+BUGZILLA_shadowdb
   The database name of the read-only database.
 
-BMO_shadowdbhost
+BUGZILLA_shadowdbhost
   The hotname or ip address of the read-only database.
 
-BMO_shadowdbport
+BUGZILLA_shadowdbport
    The port of the read-only database.
 
-BMO_apache_size_limit
+BUGZILLA_apache_size_limit
   This is the max amount of unshared memory (in kb) that the apache process is
   allowed to use before Apache::SizeLimit kills it.
 

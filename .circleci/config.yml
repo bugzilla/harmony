@@ -24,14 +24,14 @@ defaults:
 
   bmo_env: &bmo_env
     PORT: 8000
-    LOCALCONFIG_ENV: 1
-    BMO_db_user: bugs
-    BMO_db_host: 127.0.0.1
-    BMO_db_pass: bugs
-    BMO_db_name: bugs
-    BMO_memcached_servers: localhost:11211
-    BMO_memcached_namespace: "bugzilla:"
-    BMO_urlbase: AUTOMATIC
+    LOCALCONFIG_ENV: BUGZILLA
+    BUGZILLA_db_user: bugs
+    BUGZILLA_db_host: 127.0.0.1
+    BUGZILLA_db_pass: bugs
+    BUGZILLA_db_name: bugs
+    BUGZILLA_memcached_servers: localhost:11211
+    BUGZILLA_memcached_namespace: "bugzilla:"
+    BUGZILLA_urlbase: AUTOMATIC
     HTTPD_StartServers: 1
     HTTPD_MinSpareServers: 1
     HTTPD_MaxSpareServers: 1
