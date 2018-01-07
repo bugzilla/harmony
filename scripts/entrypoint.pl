@@ -5,7 +5,7 @@ use warnings;
 use lib qw(/app /app/local/lib/perl5);
 use autodie qw(:all);
 
-use Bugzilla::Install::Localconfig ();
+use Bugzilla::Install::Localconfig qw(ENV_PREFIX);
 use Bugzilla::Install::Util qw(install_string);
 use Bugzilla::Test::Util qw(create_user);
 
@@ -40,19 +40,22 @@ my $func = __PACKAGE__->can("cmd_$cmd") // sub {
 
 fix_path();
 check_user();
-check_env(qw(
-    LOCALCONFIG_ENV
-    BMO_db_host
-    BMO_db_name
-    BMO_db_user
-    BMO_db_pass
-    BMO_memcached_namespace
-    BMO_memcached_servers
-    BMO_urlbase
-));
+check_env(
+    'LOCALCONFIG_ENV',
+    map { ENV_PREFIX . $_ }
+        qw(
+            db_host
+            db_name
+            db_user
+            db_pass
+            memcached_namespace
+            memcached_servers
+            urlbase
+        )
+);
 
-if ( $ENV{BMO_urlbase} eq 'AUTOMATIC' ) {
-    $ENV{BMO_urlbase} = sprintf 'http://%s:%d/%s', hostname(), $ENV{PORT}, $ENV{BZ_QA_LEGACY_MODE} ? 'bmo/' : '';
+if ( $ENV{ENV_PREFIX . "urlbase"} eq 'AUTOMATIC' ) {
+    $ENV{ENV_PREFIX . "urlbase"} = sprintf 'http://%s:%d/%s', hostname(), $ENV{PORT}, $ENV{BZ_QA_LEGACY_MODE} ? 'bmo/' : '';
     $ENV{BZ_BASE_URL} = sprintf 'http://%s:%d', hostname(), $ENV{PORT};
 }
 
@@ -85,7 +88,7 @@ sub cmd_httpd  {
 
     # If we're behind a proxy and the urlbase says https, we must be using https.
     # * basically means "I trust the load balancer" anyway.
-    if ($ENV{BMO_inbound_proxies} eq '*' && $ENV{BMO_urlbase} =~ /^https/) {
+    if ($ENV{ENV_PREFIX . "inbound_proxies"} eq '*' && $ENV{ENV_PREFIX . "urlbase"} =~ /^https/) {
         unshift @httpd_args, '-DHTTPS';
     }
     run( '/usr/sbin/httpd', @httpd_args );
