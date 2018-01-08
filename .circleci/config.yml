@@ -150,7 +150,7 @@ jobs:
           path: /app/artifacts
       - *store_log
 
-  test_mysql_4_2:
+  migrate_4.2_mysql:
     parallelism: 1
     working_directory: /app
     docker:
@@ -211,9 +211,20 @@ workflows:
             - test_selenium
       - test_sanity:
           filters: *main_filters
+      - migrate_4.2_mysql:
+          filters: *main_filters
       - test_bmo:
           filters: *main_filters
       - test_webservices:
           filters: *main_filters
       - test_selenium:
           filters: *main_filters
+          requires:
+            - test_sanity
+            - migrate_4.2_mysql
+      - build:
+          filters: *main_filters
+          requires:
+            - test_sanity
+            - test_bmo
+            - test_webservices
