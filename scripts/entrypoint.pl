@@ -246,6 +246,10 @@ sub copy_qa_extension {
     dircopy('/app/qa/extensions/QA', '/app/extensions/QA');
 }
 
+sub cmd_wait_for_db {
+    wait_for_db();
+}
+
 sub wait_for_db {
     assert_database()->get;
 }
