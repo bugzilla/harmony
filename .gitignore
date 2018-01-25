@@ -29,6 +29,7 @@
 /local
 .DS_Store
 .vscode/perl-lang
+.vagrant/
 version.json
 __lbheartbeat__
 .perl-version
