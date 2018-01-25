@@ -2847,11 +2847,12 @@ Sets the C<REFERENCES> item on the specified column.
 
 sub set_fk {
     my ($self, $table, $column, $fk_def) = @_;
-    # Don't want to modify the source def before we explicitly set it below.
-    # This is just us being extra-cautious.
-    my $column_def = dclone($self->get_column_abstract($table, $column));
+    my $column_def = $self->get_column_abstract($table, $column);
     die "Tried to set an fk on $table.$column, but that column doesn't exist"
         if !$column_def;
+    # Don't want to modify the source def before we explicitly set it below.
+    # This is just us being extra-cautious.
+    $column_def = dclone($column_def);
     if ($fk_def) {
         $column_def->{REFERENCES} = $fk_def;
     }

@@ -836,18 +836,48 @@ sub _bz_raw_column_info {
     # DBD::mysql does not support selecting a specific column,
     # so we have to get all the columns on the table and find
     # the one we want.
-    my $info_sth = $self->column_info(undef, undef, $table, '%');
+    my $info_cache = Bugzilla->request_cache->{'column_info_cache'} ||
+        (Bugzilla->request_cache->{'column_info_cache'} = {});
 
-    # Don't use fetchall_hashref as there's a Win32 DBI bug (292821)
-    my $col_data;
-    while ($col_data = $info_sth->fetchrow_hashref) {
-        last if $col_data->{'COLUMN_NAME'} eq $column;
+    if (!defined $info_cache->{$table}) {
+        # Don't use fetchall_hashref as there's a Win32 DBI bug (292821)
+        my $info_sth = $self->column_info(undef, undef, $table, '%');
+        while (my $col_data = $info_sth->fetchrow_hashref) {
+            if (!defined $info_cache->{$col_data->{'TABLE_NAME'}}) {
+                $info_cache->{$col_data->{'TABLE_NAME'}} = { };
+            }
+            $info_cache->{$col_data->{'TABLE_NAME'}}->{$col_data->{'COLUMN_NAME'}} = $col_data;
+        }
     }
 
-    if (!defined $col_data) {
-        return undef;
+    if (!defined Bugzilla->request_cache->{'column_fk_cache'}) {
+        my $fk_cache = Bugzilla->request_cache->{'column_fk_cache'} = {};
+        my $fk_sth = $self->foreign_key_info(undef, undef, undef, undef, undef, undef);
+        while (my $fk = $fk_sth->fetchrow_hashref) {
+            if (defined $fk->{'PKCOLUMN_NAME'}) {
+                if (!defined $fk_cache->{$fk->{'FKTABLE_NAME'}}) {
+                    $fk_cache->{$fk->{'FKTABLE_NAME'}} = { };
+                }
+                $fk_cache->{$fk->{'FKTABLE_NAME'}}->{$fk->{'FKCOLUMN_NAME'}} = $fk;
+            }
+        }
     }
-    return $col_data;
+    my $fk_cache = Bugzilla->request_cache->{'column_fk_cache'};
+
+    if (defined $info_cache->{$table}->{$column}) {
+        my $col_data = $info_cache->{$table}->{$column};
+        if (defined $fk_cache->{$table}->{$column}) {
+            my $fk = $fk_cache->{$table}->{$column};
+            $col_data->{'REFERENCES'} = {
+                TABLE  => $fk->{'PKTABLE_NAME'},
+                COLUMN => $fk->{'PKCOLUMN_NAME'},
+                DELETE => '',
+                created => 1,
+            }
+        }
+        return $col_data;
+    }
+    return undef;
 }
 
 =item C<bz_index_info_real($table, $index)>
