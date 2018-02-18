@@ -38,7 +38,7 @@ BEGIN {
 # PREREQ_PM
 my %requires = (
     'Algorithm::BloomFilter'   => 0,
-    'CGI'                      => '<= 3.63',
+    'CGI'                      => '4.38',
     'CPAN::Meta::Prereqs'      => '2.132830',
     'CPAN::Meta::Requirements' => '2.121',
     'DBI'                      => '1.614',
@@ -74,6 +74,9 @@ my %requires = (
     'Log::Dispatch'            => '2.67',
     'Log::Log4perl'            => '1.49',
     'JSON::MaybeXS'            => '1.003008',
+    'Plack'                    => '1.0031',
+    'CGI::Compile'             => 0,
+    'CGI::Emulate::PSGI'       => 0,
 );
 my %build_requires = (
     'ExtUtils::MakeMaker' => '7.22',
