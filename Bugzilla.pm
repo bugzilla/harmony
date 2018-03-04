@@ -22,7 +22,7 @@ BEGIN {
     }
 }
 
-our $VERSION = '20180223.1';
+our $VERSION = '20180125.1';
 
 use Bugzilla::Auth;
 use Bugzilla::Auth::Persist::Cookie;
@@ -116,20 +116,6 @@ sub init_page {
     # during a perl syntax check (perl -c, like we do during the
     # 001compile.t test).
     return if $^C;
-
-    # IIS prints out warnings to the webpage, so ignore them, or log them
-    # to a file if the file exists.
-    if ($ENV{SERVER_SOFTWARE} && $ENV{SERVER_SOFTWARE} =~ /microsoft-iis/i) {
-        $SIG{__WARN__} = sub {
-            my ($msg) = @_;
-            my $datadir = bz_locations()->{'datadir'};
-            if (-w "$datadir/errorlog") {
-                my $warning_log = new IO::File(">>$datadir/errorlog");
-                print $warning_log $msg;
-                $warning_log->close();
-            }
-        };
-    }
 
     my $script = basename($0);
 
@@ -369,7 +355,7 @@ sub login {
     return $class->user if $class->user->id;
 
     # Load all extensions here if not running under mod_perl
-    $class->extensions unless $ENV{MOD_PERL};
+    $class->extensions unless BZ_PERSISTENT;
 
     my $authorizer = new Bugzilla::Auth();
     $type = LOGIN_REQUIRED if $class->cgi->param('GoAheadAndLogIn');
@@ -902,10 +888,10 @@ sub _cleanup {
 
 sub END {
     # Bugzilla.pm cannot compile in mod_perl.pl if this runs.
-    _cleanup() unless $ENV{MOD_PERL};
+    _cleanup() unless BZ_PERSISTENT;
 }
 
-init_page() if !$ENV{MOD_PERL};
+init_page() unless BZ_PERSISTENT;
 
 1;
 

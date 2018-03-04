@@ -38,7 +38,7 @@ BEGIN {
 # PREREQ_PM
 my %requires = (
     'Algorithm::BloomFilter'   => 0,
-    'CGI'                      => '<= 3.63',
+    'CGI'                      => '4.38',
     'CPAN::Meta::Prereqs'      => '2.132830',
     'CPAN::Meta::Requirements' => '2.121',
     'DBI'                      => '1.614',
@@ -319,6 +319,18 @@ my %optional_features = (
             }
         }
     },
+    psgi => {
+        description => "PSGI Support",
+        prereqs => {
+            runtime => {
+                requires => {
+                    'Plack'                    => '1.0031',
+                    'CGI::Compile'             => 0,
+                    'CGI::Emulate::PSGI'       => 0,
+                },
+            },
+        },
+    },
     csp => {
         description => 'Content-Security-Policy support',
         prereqs     => {
@@ -381,6 +393,7 @@ my @bmo_features = grep {
         (?: pg
           | oracle
           | mod_perl
+          | psgi
           | sqlite
           | auth_ldap
           | auth_radius
