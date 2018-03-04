@@ -74,9 +74,6 @@ my %requires = (
     'Log::Dispatch'            => '2.67',
     'Log::Log4perl'            => '1.49',
     'JSON::MaybeXS'            => '1.003008',
-    'Plack'                    => '1.0031',
-    'CGI::Compile'             => 0,
-    'CGI::Emulate::PSGI'       => 0,
 );
 my %build_requires = (
     'ExtUtils::MakeMaker' => '7.22',
@@ -322,6 +319,18 @@ my %optional_features = (
             }
         }
     },
+    psgi => {
+        description => "PSGI Support",
+        prereqs => {
+            runtime => {
+                requires => {
+                    'Plack'                    => '1.0031',
+                    'CGI::Compile'             => 0,
+                    'CGI::Emulate::PSGI'       => 0,
+                },
+            },
+        },
+    },
     csp => {
         description => 'Content-Security-Policy support',
         prereqs     => {
@@ -384,6 +393,7 @@ my @bmo_features = grep {
         (?: pg
           | oracle
           | mod_perl
+          | psgi
           | sqlite
           | auth_ldap
           | auth_radius
