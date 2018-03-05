@@ -3895,8 +3895,6 @@ sub _migrate_group_owners {
     my $dbh = Bugzilla->dbh;
     return if $dbh->bz_column_info('groups', 'owner_user_id');
     $dbh->bz_add_column('groups', 'owner_user_id', {TYPE => 'INT3'});
-    my $nobody = Bugzilla::User->check('nobody@mozilla.org');
-    $dbh->do('UPDATE groups SET owner_user_id = ?', undef, $nobody->id);
 }
 
 sub _migrate_preference_categories {
