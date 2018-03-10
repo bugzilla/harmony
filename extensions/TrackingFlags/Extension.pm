@@ -46,6 +46,28 @@ sub _tracking_flag_names {
     return Bugzilla::Extension::TrackingFlags::Flag->get_all_names();
 }
 
+sub search_data_before_sql {
+    my ($self, $args) = @_;
+    my ($orig_fields, $search) = @$args{qw( orig_fields search_object )};
+
+    # BMO - to avoid massive amounts of joins, if we're selecting a lot of
+    # tracking flags, replace them with placeholders. the values will be
+    # retrieved later and injected into the result.
+    my %tf_map = map { $_ => 1 } Bugzilla::Extension::TrackingFlags::Flag->get_all_names();
+    my @tf_selected = grep { exists $tf_map{$_} } @$orig_fields;
+    # mysql has a limit of 61 joins, and we want to avoid massive amounts of joins
+    # 30 ensures we won't hit the limit, nor generate too many joins
+    if (scalar @tf_selected > 30) {
+        foreach my $column (@tf_selected) {
+            $search->COLUMNS->{$column}->{name} = "'---'";
+        }
+        $search->{tracking_flags} = \@tf_selected;
+    }
+    else {
+        $search->{tracking_flags} = [];
+    }
+}
+
 sub page_before_template {
     my ($self, $args) = @_;
     my $page = $args->{'page_id'};
