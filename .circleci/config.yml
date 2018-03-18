@@ -65,7 +65,7 @@ defaults:
       command: |
         mv /opt/bmo/local /app/local
         perl -MSys::Hostname -i -pE 's/bmo.test/hostname() . ":$ENV{PORT}"/ges' $BZ_QA_CONF_FILE
-        perl /app/scripts/entrypoint.pl perl checksetup.pl --no-database --default-localconfig
+        perl /app/scripts/entrypoint.pl checksetup_gen_files
         mkdir artifacts
 
 jobs:

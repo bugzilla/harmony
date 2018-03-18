@@ -103,6 +103,10 @@ sub cmd_dev_httpd {
     exit $httpd_exit_f->get;
 }
 
+sub cmd_checksetup_gen_files {
+    run( 'perl', 'checksetup.pl', '--no-database', '--default-localconfig' );
+}
+
 sub cmd_checksetup {
     check_data_dir();
     wait_for_db();
