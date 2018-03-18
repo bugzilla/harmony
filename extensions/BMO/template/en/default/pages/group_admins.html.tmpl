@@ -39,7 +39,7 @@
             [% group.name FILTER html %]</span>
         </td>
         <td nowrap>
-          [% IF group.owner.login == Bugzilla.params.nobody_user %]
+          [% IF group.owner.login == Param('nobody_user') %]
             &ndash;
           [% ELSE %]
             [% INCLUDE global/user.html.tmpl who = group.owner %]
