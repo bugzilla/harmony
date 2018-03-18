@@ -104,7 +104,8 @@ sub cmd_dev_httpd {
 }
 
 sub cmd_checksetup_gen_files {
-    run( 'perl', 'checksetup.pl', '--no-database', @_);
+    my (@args) = @_;
+    run( 'perl', 'checksetup.pl', '--no-database', @args);
 }
 
 sub cmd_checksetup {
