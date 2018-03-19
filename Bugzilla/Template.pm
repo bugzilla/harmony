@@ -570,7 +570,7 @@ sub create {
         # if a packager has modified bz_locations() to contain absolute
         # paths.
         ABSOLUTE => 1,
-        RELATIVE => 0,
+        RELATIVE => 1,
 
         COMPILE_DIR => bz_locations()->{'template_cache'},
 
