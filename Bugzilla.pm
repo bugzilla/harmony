@@ -248,6 +248,19 @@ sub extensions {
     return $cache->{extensions};
 }
 
+sub have_extension {
+    my ($class, $name) = @_;
+    my $cache = $class->request_cache;
+    if (!$cache->{extensions_hash}) {
+        my %extensions;
+        foreach (@{ $class->extensions}) {
+            @extensions{$_->NAME} = ();
+        }
+        $cache->{extensions_hash} = \%extensions;
+    }
+    return exists $cache->{extensions_hash}{$name};
+}
+
 sub cgi {
     return $_[0]->request_cache->{cgi} ||= new Bugzilla::CGI();
 }
