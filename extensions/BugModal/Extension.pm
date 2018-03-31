@@ -188,8 +188,7 @@ sub template_before_process {
     return if exists $bug->{error};
 
     # trigger loading of tracking flags
-    state $have_tracking_flags = any { $_->NAME eq 'TrackingFlags' } @{ Bugzilla->extensions };
-    if ($have_tracking_flags) {
+    if (Bugzilla->have_extension('TrackingFlags')) {
         Bugzilla::Extension::TrackingFlags->template_before_process({
             file => 'bug/edit.html.tmpl',
             vars => $vars,
