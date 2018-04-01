@@ -22,7 +22,7 @@ BEGIN {
     }
 }
 
-our $VERSION = '20180306.4';
+our $VERSION = '20180330.1';
 
 use Bugzilla::Auth;
 use Bugzilla::Auth::Persist::Cookie;
@@ -625,7 +625,7 @@ sub switch_to_shadow_db {
     my $class = shift;
 
     if (!$class->request_cache->{dbh_shadow}) {
-        if ($class->params->{'shadowdb'}) {
+        if ($class->get_param_with_override('shadowdb')) {
             $class->request_cache->{dbh_shadow} = Bugzilla::DB::connect_shadow();
         } else {
             $class->request_cache->{dbh_shadow} = $class->dbh_main;

@@ -11,9 +11,14 @@ use 5.10.1;
 use strict;
 use warnings;
 
+use Bugzilla::Logging;
 use Bugzilla::Constants;
 use Bugzilla::Error;
 use Bugzilla::Install::Util qw(install_string);
+use Bugzilla::DaemonControl qw(catch_signal);
+use IO::Async::Timer::Periodic;
+use IO::Async::Loop;
+use Future;
 use base qw(TheSchwartz);
 
 # This maps job names for Bugzilla::JobQueue to the appropriate modules.
@@ -89,6 +94,32 @@ sub insert {
         if !$retval;
 
     return $retval;
+}
+
+sub debug {
+    my ($self, @args) = @_;
+    my $caller_pkg = caller;
+    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1;
+    my $logger = Log::Log4perl->get_logger($caller_pkg);
+    $logger->info(@args);
+}
+
+sub work {
+    my ($self, $delay) = @_;
+    $delay ||= 1;
+    my $loop  = IO::Async::Loop->new;
+    my $timer = IO::Async::Timer::Periodic->new(
+        first_interval => 0,
+        interval       => $delay,
+        reschedule     => 'drift',
+        on_tick        => sub { $self->work_once }
+    );
+    DEBUG("working every $delay seconds");
+    $loop->add($timer);
+    $timer->start;
+    Future->wait_any(map { catch_signal($_) } qw( INT TERM HUP ))->get;
+    $timer->stop;
+    $loop->remove($timer);
 }
 
 # Clear the request cache at the start of each run.
