@@ -50,6 +50,7 @@ my %requires = (
     'File::Slurp'              => '9999.13',
     'Future'                   => '0.34',
     'HTML::Escape'             => '1.10',
+    'IPC::System::Simple'      => 0,
     'IO::Async'                => '0.71',
     'JSON::MaybeXS'            => '1.003008',
     'JSON::XS'                 => '2.01',
@@ -271,6 +272,7 @@ my %optional_features = (
                 requires => {
                     'mod_perl2'          => '1.999022',
                     'Apache2::SizeLimit' => '0.96',
+                    'Plack::Handler::Apache2' => 0,
                 }
             }
         }
