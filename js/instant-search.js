@@ -138,7 +138,7 @@ YAHOO.bugzilla.instantSearch = {
 
       YAHOO.bugzilla.instantSearch.dataTable.showTableMessage(
         'Searching...&nbsp;&nbsp;&nbsp;' +
-        '<img src="extensions/GuidedBugEntry/web/images/throbber.gif"' + 
+        '<img src="images/throbber.gif"' +
         ' width="16" height="11">',
         YAHOO.widget.DataTable.CLASS_LOADING
       );
