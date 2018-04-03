@@ -258,10 +258,7 @@ sub have_extension {
     my ($class, $name) = @_;
     my $cache = $class->request_cache;
     if (!$cache->{extensions_hash}) {
-        my %extensions;
-        foreach (@{ $class->extensions}) {
-            @extensions{$_->NAME} = ();
-        }
+        my %extensions = map { $_->NAME => 1 } @{ Bugzilla->extensions };
         $cache->{extensions_hash} = \%extensions;
     }
     return exists $cache->{extensions_hash}{$name};
