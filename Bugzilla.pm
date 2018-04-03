@@ -233,6 +233,11 @@ sub template_inner {
 
 sub extensions {
     my ($class) = @_;
+
+    state $recursive = 0;
+    die "Recursive attempt to load/query extensions" if $recursive;
+    $recursive = 1;
+
     my $cache = $class->request_cache;
     if (!$cache->{extensions}) {
         my $extension_packages = Bugzilla::Extension->load_all();
@@ -245,6 +250,7 @@ sub extensions {
         }
         $cache->{extensions} = \@extensions;
     }
+    $recursive = 0;
     return $cache->{extensions};
 }
 
