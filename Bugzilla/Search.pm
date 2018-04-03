@@ -802,7 +802,7 @@ sub data {
     # BMO - to avoid massive amounts of joins, if we're selecting a lot of
     # tracking flags, replace them with placeholders. the values will be
     # retrieved later and injected into the result.
-    if (Bugzilla->have_extension('TrackingFlags')) {
+    if (Bugzilla->has_extension('TrackingFlags')) {
         my %tf_map = map { $_ => 1 } Bugzilla::Extension::TrackingFlags::Flag->get_all_names();
         my @tf_selected = grep { exists $tf_map{$_} } @orig_fields;
         # mysql has a limit of 61 joins, and we want to avoid massive amounts of joins
@@ -865,7 +865,7 @@ sub data {
     $self->{data} = [map { $data{$_} } @$bug_ids];
 
     # BMO - get tracking flags values, and insert into result
-    if (Bugzilla->have_extension('TrackingFlags') && @{ $self->{tracking_flags} }) {
+    if (Bugzilla->has_extension('TrackingFlags') && @{ $self->{tracking_flags} }) {
         # read values
         my $values;
         $sql = "

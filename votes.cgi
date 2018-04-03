@@ -30,7 +30,7 @@ use lib qw(. lib local/lib/perl5);
 use Bugzilla;
 use Bugzilla::Error;
 
-Bugzilla->have_extension('Voting') || ThrowCodeError('extension_disabled', { name => 'Voting' });
+Bugzilla->has_extension('Voting') || ThrowCodeError('extension_disabled', { name => 'Voting' });
 
 my $cgi = Bugzilla->cgi;
 my $action = $cgi->param('action') || 'show_user';

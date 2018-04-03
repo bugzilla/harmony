@@ -254,7 +254,7 @@ sub extensions {
     return $cache->{extensions};
 }
 
-sub have_extension {
+sub has_extension {
     my ($class, $name) = @_;
     my $cache = $class->request_cache;
     if (!$cache->{extensions_hash}) {
