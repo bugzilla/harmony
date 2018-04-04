@@ -109,6 +109,13 @@ ErrorDocument 500 /errors/500.html
     require valid-user
 </Location>
 
+<Location /new>
+    SetHandler perl-script
+    PerlResponseHandler Plack::Handler::Apache2
+    PerlSetEnv MOJO_HOME [% cgi_path %]
+    PerlSetVar psgi_app [% cgi_path %]/new.psgi
+</Location>
+
 # directory rules for all the other places we have .htaccess files
 [% FOREACH htaccess IN htaccess_files %]
 # from [% htaccess.file %]

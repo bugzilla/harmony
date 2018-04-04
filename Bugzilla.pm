@@ -234,7 +234,14 @@ sub extensions {
 }
 
 sub cgi {
-    return request_cache->{cgi} ||= new Bugzilla::CGI();
+    my ( undef, $cgi ) = @_;
+
+    if ( defined $cgi ) {
+        return request_cache->{cgi} = $cgi;
+    }
+    else {
+        return request_cache->{cgi} ||= Bugzilla::CGI->new;
+    }
 }
 
 sub input_params {
@@ -567,6 +574,9 @@ sub usage_mode {
         }
         elsif ($newval == USAGE_MODE_REST) {
             $class->error_mode(ERROR_MODE_REST);
+        }
+        elsif ($newval == USAGE_MODE_MOJO) {
+            $class->error_mode(ERROR_MODE_DIE);
         }
         else {
             ThrowCodeError('usage_mode_invalid',

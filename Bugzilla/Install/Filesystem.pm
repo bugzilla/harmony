@@ -214,6 +214,7 @@ sub FILESYSTEM {
         # users to be able to cron them or otherwise run
         # them as a secure user, like the webserver owner.
         '*.cgi'           => { perms => WS_EXECUTE },
+        '*.psgi'          => { perms => CGI_READ },
         'whineatnews.pl'  => { perms => WS_EXECUTE },
         'collectstats.pl' => { perms => WS_EXECUTE },
         'importxml.pl'    => { perms => WS_EXECUTE },
