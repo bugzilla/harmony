@@ -20,6 +20,17 @@ sub script_name {
     return $self->controller->req->env->{SCRIPT_NAME};
 }
 
+sub http {
+    my ($self, $header) = @_;
+    return $self->controller->req->headers->header($header);
+}
+
+sub redirect {
+    my ($self, $location) = @_;
+
+    $self->controller->redirect_to($location);
+}
+
 sub Vars {
     my ($self) = @_;
 

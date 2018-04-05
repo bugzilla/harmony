@@ -321,21 +321,26 @@ sub do_ssl_redirect_if_required {
 
 # Returns the real remote address of the client,
 sub remote_ip {
-    my $remote_ip       = $ENV{'REMOTE_ADDR'} || '127.0.0.1';
-    my @proxies         = split(/[\s,]+/, Bugzilla->localconfig->{inbound_proxies});
-    my @x_forwarded_for = split(/[\s,]+/, $ENV{HTTP_X_FORWARDED_FOR} // '');
-
-    return $remote_ip unless @x_forwarded_for;
-    return $x_forwarded_for[0] if @proxies && $proxies[0] eq '*';
-    return $remote_ip if none { $_ eq $remote_ip } @proxies;
-
-    foreach my $ip (reverse @x_forwarded_for) {
-        if (none { $_ eq $ip } @proxies) {
-            # Keep the original IP address if the remote IP is invalid.
-            return validate_ip($ip) || $remote_ip;
-        }
+    if (Bugzilla->usage_mode == USAGE_MODE_MOJO) {
+        return Bugzilla->cgi->controller->tx->remote_address;
     }
-    return $remote_ip;
+    else {
+        my $remote_ip       = $ENV{'REMOTE_ADDR'} || '127.0.0.1';
+        my @proxies         = split(/[\s,]+/, Bugzilla->localconfig->{inbound_proxies});
+        my @x_forwarded_for = split(/[\s,]+/, $ENV{HTTP_X_FORWARDED_FOR} // '');
+
+        return $remote_ip unless @x_forwarded_for;
+        return $x_forwarded_for[0] if @proxies && $proxies[0] eq '*';
+        return $remote_ip if none { $_ eq $remote_ip } @proxies;
+
+        foreach my $ip (reverse @x_forwarded_for) {
+            if (none { $_ eq $ip } @proxies) {
+                # Keep the original IP address if the remote IP is invalid.
+                return validate_ip($ip) || $remote_ip;
+            }
+        }
+        return $remote_ip;
+    }
 }
 
 sub validate_ip {
