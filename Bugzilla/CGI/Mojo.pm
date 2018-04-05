@@ -14,6 +14,23 @@ has 'controller' => (
     handles => [qw(param cookie)],
 );
 
+has 'content_security_policy' => (
+    is => 'lazy',
+);
+
+sub _build_content_security_policy {
+    my ($self) = @_;
+    my $csp = $self->controller->stash->{content_security_policy} // { Bugzilla::CGI::DEFAULT_CSP() };
+    return Bugzilla::CGI::ContentSecurityPolicy->new( $csp );
+}
+
+sub csp_nonce {
+    my ($self) = @_;
+
+    my $csp = $self->content_security_policy;
+    return $csp->has_nonce ? $csp->nonce : '';
+}
+
 sub script_name {
     my ($self) = @_;
 

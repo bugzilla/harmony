@@ -97,6 +97,10 @@
     [% IF Param('utf8') %]
       <meta charset="UTF-8">
     [% END %]
+    [% USE Bugzilla %]
+    [% IF Bugzilla.usage_mode == constants.USAGE_MODE_MOJO %]
+      <base href="[% urlbase FILTER html %]">
+    [% END %]
 
     [% IF Bugzilla.cgi.should_block_referrer %]
       <meta name="referrer" content="origin">

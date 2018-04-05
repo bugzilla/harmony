@@ -19,6 +19,25 @@ use Try::Tiny;
 
 plugin 'PODRenderer';
 
+app->renderer->add_handler(
+    'bugzilla' => sub {
+        my ( $renderer, $c, $output, $options ) = @_;
+        my %params;
+
+        # Helpers
+        foreach my $method ( grep {m/^\w+\z/} keys %{ $renderer->helpers } ) {
+            my $sub = $renderer->helpers->{$method};
+            $params{$method} = sub { $c->$sub(@_) };
+        }
+
+        # Stash values
+        $params{$_} = $c->stash->{$_} for grep {m/^\w+\z/} keys %{ $c->stash };
+        $params{self} = $params{c} = $c;
+        Bugzilla->template->process( $options->{template}, \%params, $output )
+            or die Bugzilla->template->error;
+    }
+);
+
 app->hook(
     around_dispatch => sub {
         my ($next, $c) = @_;
@@ -36,7 +55,8 @@ app->hook(
 get '/' => sub {
     my $c = shift;
     my $user = Bugzilla->login(LOGIN_OPTIONAL);
-    $c->render( template => 'index', user => $user );
+    $c->stash->{use_login_page} = 1;
+    $c->render( template => 'index.html.tmpl', handler => 'bugzilla', user => $user );
 };
 
 app->start;
