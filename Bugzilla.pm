@@ -203,7 +203,8 @@ sub init_page {
 #####################################################################
 
 sub template {
-    request_cache->{template} ||= Bugzilla::Template->create();
+    my (undef, $template) = @_;
+    request_cache->{template} //= $template // Bugzilla::Template->create();
     request_cache->{template}->{_is_main} = 1;
 
     return request_cache->{template};
@@ -575,7 +576,7 @@ sub usage_mode {
         elsif ($newval == USAGE_MODE_REST) {
             $class->error_mode(ERROR_MODE_REST);
         }
-        elsif ($newval == USAGE_MODE_MOJO) {
+        elsif ($newval == USAGE_MODE_QUANTUM) {
             $class->error_mode(ERROR_MODE_DIE);
         }
         else {

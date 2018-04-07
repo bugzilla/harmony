@@ -240,6 +240,7 @@ sub FILESYSTEM {
         '.htaccess'      => { perms => WS_SERVE },
         'cvs-update.log' => { perms => WS_SERVE },
         'scripts/sendunsentbugmail.pl' => { perms => WS_EXECUTE },
+        'scripts/bugzilla_quantum' => { perms => CGI_READ },
         'docs/bugzilla.ent'    => { perms => OWNER_WRITE },
         'docs/makedocs.pl'     => { perms => OWNER_EXECUTE },
         'docs/style.css'       => { perms => WS_SERVE },
@@ -346,7 +347,7 @@ sub FILESYSTEM {
          'contrib'             => { files => OWNER_EXECUTE,
                                      dirs => DIR_OWNER_WRITE, },
          'scripts'             => { files => OWNER_EXECUTE,
-                                     dirs => DIR_OWNER_WRITE, },
+                                     dirs => DIR_WS_SERVE, },
     );
 
     # --- FILES TO CREATE --- #

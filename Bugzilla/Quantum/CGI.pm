@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::CGI::Mojo;
+package Bugzilla::Quantum::CGI;
 use 5.10.1;
 use Moo;
 
@@ -14,22 +14,12 @@ has 'controller' => (
     handles => [qw(param cookie)],
 );
 
-has 'content_security_policy' => (
-    is => 'lazy',
+has 'csp_object' => (
+    is     => 'ro',
+    writer => 'set_csp_object',
 );
 
-sub _build_content_security_policy {
-    my ($self) = @_;
-    my $csp = $self->controller->stash->{content_security_policy} // { Bugzilla::CGI::DEFAULT_CSP() };
-    return Bugzilla::CGI::ContentSecurityPolicy->new( $csp );
-}
-
-sub csp_nonce {
-    my ($self) = @_;
-
-    my $csp = $self->content_security_policy;
-    return $csp->has_nonce ? $csp->nonce : '';
-}
+with 'Bugzilla::CGI::ContentSecurityPolicyAttr';
 
 sub script_name {
     my ($self) = @_;
@@ -40,6 +30,18 @@ sub script_name {
 sub http {
     my ($self, $header) = @_;
     return $self->controller->req->headers->header($header);
+}
+
+sub header {
+    my ($self, @args) = @_;
+    my $c = $self->controller;
+    return '' if @args == 0;
+
+    if (@args == 1) {
+        $c->res->headers->content_type($args[0]);
+    }
+
+    return '';
 }
 
 sub redirect {

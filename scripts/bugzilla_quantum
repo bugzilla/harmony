@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+use 5.10.1;
+use strict;
+use warnings;
+
+use File::Basename qw(basename dirname);
+use File::Spec::Functions qw(catdir rel2abs);
+
+BEGIN {
+    require lib;
+    my $dir = rel2abs( catdir(dirname(__FILE__), '..') );
+    lib->import( $dir, catdir( $dir, 'lib' ), catdir( $dir, qw(local lib perl5) ) );
+}
+use Mojolicious::Commands;
+
+# Start command line interface for application
+Mojolicious::Commands->start_app('Bugzilla::Quantum');

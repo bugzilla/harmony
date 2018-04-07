@@ -321,7 +321,7 @@ sub do_ssl_redirect_if_required {
 
 # Returns the real remote address of the client,
 sub remote_ip {
-    if (Bugzilla->usage_mode == USAGE_MODE_MOJO) {
+    if (Bugzilla->usage_mode == USAGE_MODE_QUANTUM) {
         return Bugzilla->cgi->controller->tx->remote_address;
     }
     else {

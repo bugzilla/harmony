@@ -24,6 +24,10 @@ use Bugzilla::Search::Recent;
 use File::Basename;
 use URI;
 
+use Role::Tiny::With;
+
+with 'Bugzilla::CGI::ContentSecurityPolicyAttr';
+
 BEGIN {
     if (ON_WINDOWS) {
         # Help CGI find the correct temp directory as the default list
@@ -31,35 +35,6 @@ BEGIN {
         $ENV{'TMPDIR'} = $ENV{'TEMP'} || $ENV{'TMP'} || "$ENV{'WINDIR'}\\TEMP";
     }
     *AUTOLOAD = \&CGI::AUTOLOAD;
-}
-
-sub DEFAULT_CSP {
-    my %policy = (
-        default_src => [ 'self' ],
-        script_src  => [ 'self', 'nonce', 'unsafe-inline', 'https://www.google-analytics.com' ],
-        frame_src   => [ 'none', ],
-        worker_src  => [ 'none', ],
-        img_src     => [ 'self', 'https://secure.gravatar.com', 'https://www.google-analytics.com' ],
-        style_src   => [ 'self', 'unsafe-inline' ],
-        object_src  => [ 'none' ],
-        connect_src => [
-            'self',
-            # This is from extensions/OrangeFactor/web/js/orange_factor.js
-            'https://treeherder.mozilla.org/api/failurecount/',
-        ],
-        form_action => [
-            'self',
-            # used in template/en/default/search/search-google.html.tmpl
-            'https://www.google.com/search'
-        ],
-        frame_ancestors => [ 'none' ],
-        report_only     => 1,
-    );
-    if (Bugzilla->params->{github_client_id} && !Bugzilla->user->id) {
-        push @{$policy{form_action}}, 'https://github.com/login/oauth/authorize', 'https://github.com/login';
-    }
-
-    return %policy;
 }
 
 # Because show_bug code lives in many different .cgi files,
@@ -193,30 +168,16 @@ sub target_uri {
     }
 }
 
-sub content_security_policy {
-    my ($self, %add_params) = @_;
-    if (%add_params || !$self->{Bugzilla_csp}) {
-        my %params = DEFAULT_CSP;
-        delete $params{report_only} if %add_params && !$add_params{report_only};
-        foreach my $key (keys %add_params) {
-            if (defined $add_params{$key}) {
-                $params{$key} = $add_params{$key};
-            }
-            else {
-                delete $params{$key};
-            }
-        }
-        $self->{Bugzilla_csp} = Bugzilla::CGI::ContentSecurityPolicy->new(%params);
-    }
+sub set_csp_object {
+    my ( $self, $object ) = @_;
 
-    return $self->{Bugzilla_csp};
+    $self->{Bugzilla_csp} = $object;
 }
 
-sub csp_nonce {
+sub csp_object {
     my ($self) = @_;
 
-    my $csp = $self->content_security_policy;
-    return $csp->has_nonce ? $csp->nonce : '';
+    return $self->{Bugzilla_csp};
 }
 
 # We want this sorted plus the ability to exclude certain params
