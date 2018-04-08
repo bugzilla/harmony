@@ -8,9 +8,9 @@
 package Bugzilla::Quantum;
 use Mojo::Base 'Mojolicious';
 
-use Bugzilla::Constants;
 use Bugzilla::Quantum::CGI;
-use Try::Tiny;
+use Bugzilla::Quantum::Template;
+use Bugzilla::Quantum::Legacy;
 
 sub startup {
     my ($self) = @_;
