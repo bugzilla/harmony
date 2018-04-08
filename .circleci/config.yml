@@ -5,22 +5,25 @@
 
 version: 2
 
-main_filters: &main_filters
-  branches:
-    ignore:
-      - /^(?:release|test)-20\d\d\d\d\d\d\.\d+/
-      - /\//
-      - production
-  tags:
-    only: /^(?:release|test)-20\d\d\d\d\d\d\.\d+/
-
 defaults:
   bmo_slim_image: &bmo_slim_image
-    image: mozillabteam/bmo-slim:20180225.1
+    image: bugzilla/harmony-slim:20180318.1
     user: app
 
   mysql_image: &mysql_image
     image: mozillabteam/bmo-mysql:5.6
+
+  store_log: &store_log
+    store_artifacts:
+      path: /app/bugzilla.log
+      destination: bugzilla.log
+
+  main_filters: &main_filters
+    branches:
+      ignore:
+        - /^(?:release|test)-20\d\d\d\d\d\d\.\d+/
+        - /\//
+        - production
 
   bmo_env: &bmo_env
     PORT: 8000
@@ -65,7 +68,7 @@ defaults:
       command: |
         mv /opt/bmo/local /app/local
         perl -MSys::Hostname -i -pE 's/bmo.test/hostname() . ":$ENV{PORT}"/ges' $BZ_QA_CONF_FILE
-        perl checksetup.pl --no-database --default-localconfig
+        /app/scripts/entrypoint.pl checksetup_gen_files --default-localconfig
         mkdir artifacts
 
 jobs:
@@ -85,24 +88,19 @@ jobs:
             --build-arg CIRCLE_SHA1="$CIRCLE_SHA1" \
             --build-arg CIRCLE_BUILD_URL="$CIRCLE_BUILD_URL" \
             -t bmo .
+      - attach_workspace:
+          at: /app/build_info
+      - run: "docker run --name bmo --entrypoint true bmo"
+      - run: "docker cp bmo:/app/version.json build_info/version.json"
+      - store_artifacts:
+          path: /app/build_info
+      - *store_log
       - deploy:
           command: |
-            if [[ -n "$DOCKERHUB_REPO" && -n "$DOCKER_USER" && -n "$DOCKER_PASS" ]]; then
-                TAG=""
-                if [[ -n "$CIRCLE_TAG" ]]; then
-                  TAG="$CIRCLE_TAG"
-                elif [[ "$CIRCLE_BRANCH" == "master" ]]; then
-                  TAG=latest
-                fi
-                if [[ -n "$TAG" ]]; then
-                  docker tag bmo "$DOCKERHUB_REPO:$TAG"
-                  docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-                  docker push "$DOCKERHUB_REPO:$TAG"
-                fi
-            fi
+            exit 0
 
   test_sanity:
-    parallelism: 4
+    parallelism: 1
     working_directory: /app
     docker:
       - <<: *bmo_slim_image
@@ -112,13 +110,15 @@ jobs:
       - run: |
           mv /opt/bmo/local /app/local
           mkdir artifacts
-      - run: perl Makefile.PL
+      - run: |
+          perl Makefile.PL
       - run:
           name: run sanity tests
           command: |
             /app/scripts/entrypoint.pl prove -qf $(circleci tests glob 't/*.t' | circleci tests split) | tee artifacts/$CIRCLE_JOB.txt
       - store_artifacts:
           path: /app/artifacts
+      - *store_log
 
   test_webservices:
     parallelism: 1
@@ -129,11 +129,11 @@ jobs:
       - *default_qa_setup
       - run: |
           /app/scripts/entrypoint.pl load_test_data
-      - run:
-          command: |
-            /app/scripts/entrypoint.pl test_webservices | tee artifacts/$CIRCLE_JOB.txt
+      - run: |
+          /app/scripts/entrypoint.pl test_webservices | tee artifacts/$CIRCLE_JOB.txt
       - store_artifacts:
           path: /app/artifacts
+      - *store_log
 
   test_selenium:
     parallelism: 1
@@ -144,11 +144,11 @@ jobs:
       - *default_qa_setup
       - run: |
           /app/scripts/entrypoint.pl load_test_data --legacy
-      - run:
-          command: |
-            /app/scripts/entrypoint.pl test_selenium | tee artifacts/$CIRCLE_JOB.txt
+      - run: |
+          /app/scripts/entrypoint.pl test_selenium | tee artifacts/$CIRCLE_JOB.txt
       - store_artifacts:
           path: /app/artifacts
+      - *store_log
 
   test_bmo:
     parallelism: 1
@@ -169,32 +169,29 @@ jobs:
       - checkout
       - run: |
           mv /opt/bmo/local /app/local
-          perl checksetup.pl --no-database
+          /app/scripts/entrypoint.pl checksetup_gen_files
           /app/scripts/entrypoint.pl load_test_data
           mkdir artifacts
-      - run: /app/scripts/entrypoint.pl test_bmo -q -f t/bmo/*.t
+      - run: |
+          /app/scripts/entrypoint.pl test_bmo -q -f t/bmo/*.t
+      - *store_log
 
 workflows:
   version: 2
   main:
     jobs:
-      - test_sanity:
-          filters: *main_filters
-      - test_bmo:
-          filters: *main_filters
-          requires:
-            - test_sanity
-      - test_webservices:
-          filters: *main_filters
-          requires:
-            - test_sanity
-      - test_selenium:
-          filters: *main_filters
-          requires:
-            - test_sanity
       - build:
           filters: *main_filters
           requires:
             - test_sanity
             - test_bmo
             - test_webservices
+            - test_selenium
+      - test_sanity:
+          filters: *main_filters
+      - test_bmo:
+          filters: *main_filters
+      - test_webservices:
+          filters: *main_filters
+      - test_selenium:
+          filters: *main_filters

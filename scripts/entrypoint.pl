@@ -10,6 +10,7 @@ use Bugzilla::Install::Util qw(install_string);
 use Bugzilla::Test::Util qw(create_user);
 use Bugzilla::DaemonControl qw(
     run_cereal_and_httpd
+    run_cereal_and_jobqueue
     assert_httpd assert_database assert_selenium
     on_finish on_exception
 );
@@ -56,11 +57,6 @@ check_env(qw(
     BMO_urlbase
 ));
 
-if ( $ENV{BMO_urlbase} eq 'AUTOMATIC' ) {
-    $ENV{BMO_urlbase} = sprintf 'http://%s:%d/%s', hostname(), $ENV{PORT}, $ENV{BZ_QA_LEGACY_MODE} ? 'bmo/' : '';
-    $ENV{BZ_BASE_URL} = sprintf 'http://%s:%d', hostname(), $ENV{PORT};
-}
-
 $func->($opts->());
 
 sub cmd_demo {
@@ -89,6 +85,13 @@ sub cmd_httpd  {
     exit $httpd_exit_f->get();
 }
 
+sub cmd_jobqueue {
+    my (@args) = @_;
+    check_data_dir();
+    wait_for_db();
+    exit run_cereal_and_jobqueue(@args)->get;
+}
+
 sub cmd_dev_httpd {
     my $have_params = -f "/app/data/params";
     assert_database->get();
@@ -101,6 +104,11 @@ sub cmd_dev_httpd {
     my $httpd_exit_f = run_cereal_and_httpd('-DACCESS_LOGS');
     assert_httpd()->get;
     exit $httpd_exit_f->get;
+}
+
+sub cmd_checksetup_gen_files {
+    my (@args) = @_;
+    run( 'perl', 'checksetup.pl', '--no-database', @args);
 }
 
 sub cmd_checksetup {
@@ -133,7 +141,7 @@ sub cmd_test_webservices {
     check_data_dir();
     copy_qa_extension();
     assert_database()->get;
-    my $httpd_exit_f = run_cereal_and_httpd('-DHTTPD_IN_SUBDIR', '-DACCESS_LOGS');
+    my $httpd_exit_f = run_cereal_and_httpd('-DHTTPD_IN_SUBDIR');
     my $prove_exit_f = run_prove(
         httpd_url => $conf->{browser_url},
         prove_cmd => [
@@ -187,7 +195,7 @@ sub cmd_test_bmo {
     $ENV{BZ_TEST_NEWBIE2}      = 'newbie2@mozilla.example';
     $ENV{BZ_TEST_NEWBIE2_PASS} = 'captain.space.pants.time.lord';
 
-    my $httpd_exit_f = run_cereal_and_httpd('-DACCESS_LOGS');
+    my $httpd_exit_f = run_cereal_and_httpd();
     my $prove_exit_f = run_prove(
         httpd_url  => $ENV{BZ_BASE_URL},
         prove_cmd  => [ 'prove', '-I/app', '-I/app/local/lib/perl5', @prove_args ],

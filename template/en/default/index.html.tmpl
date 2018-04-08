@@ -53,7 +53,7 @@
              href="?GoAheadAndLogIn=1"><span>Log In</span></a>
            [% END %]
 
-        <form id="quicksearchForm" name="quicksearchForm" action="buglist.cgi">
+        <form id="quicksearchForm" name="quicksearchForm" action="buglist.cgi" data-no-csrf>
           <div>
             <input id="quicksearch_main" type="text" name="quicksearch" autofocus
               placeholder="Enter [% terms.abug %] number or some search terms"
@@ -75,7 +75,7 @@
                 <a href="page.cgi?id=etiquette.html">[%- terms.Bugzilla %] Etiquette</a>
               </li>
               <li>
-                | <a href="https://developer.mozilla.org/docs/Mozilla/QA/Bug_writing_guidelines">[%- terms.Bug %] Writing Guidelines</a>
+                | <a href="[% terms.BugWritingGuidelinesURL %]">[%- terms.Bug %] Writing Guidelines</a>
               </li>
               [% Hook.process('additional_links') %]
             </ul>

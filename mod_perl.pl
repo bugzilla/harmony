@@ -58,6 +58,7 @@ use Apache2::SizeLimit;
 use ModPerl::RegistryLoader ();
 use File::Basename ();
 use File::Find ();
+use English qw(-no_match_vars $OSNAME);
 
 # This loads most of our modules.
 use Bugzilla ();
@@ -81,8 +82,9 @@ Bugzilla::CGI->compile(qw(:cgi :push));
 # is taking up more than $apache_size_limit of RAM all by itself, not counting RAM it is
 # sharing with the other httpd processes.
 my $limit = Bugzilla->localconfig->{apache_size_limit};
-if ($limit < 400_000) {
-    $limit = 400_000;
+if ($OSNAME eq 'linux' && ! eval { require Linux::Smaps }) {
+    warn "SizeLimit requires Linux::Smaps on linux. size limit set to 800MB";
+    $limit = 800_000;
 }
 Apache2::SizeLimit->set_max_unshared_size($limit);
 
@@ -174,7 +176,7 @@ sub handler : method {
         DB::disable_profile();
         DB::finish_profile();
     }
-    warn "[request_time] ", Bugzilla->cgi->request_uri, " took ", Time::HiRes::time() - $start, " seconds to execute";
+    #warn "[request_time] ", Bugzilla->cgi->request_uri, " took ", Time::HiRes::time() - $start, " seconds to execute";
 
     # When returning data from the REST api we must only return 200 or 304,
     # which tells Apache not to append its error html documents to the

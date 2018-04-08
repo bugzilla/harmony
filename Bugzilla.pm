@@ -22,7 +22,7 @@ BEGIN {
     }
 }
 
-our $VERSION = '20180306.4';
+our $VERSION = '20180330.1';
 
 use Bugzilla::Auth;
 use Bugzilla::Auth::Persist::Cookie;
@@ -57,8 +57,8 @@ use File::Basename;
 use File::Spec::Functions;
 use Safe;
 use Sys::Syslog qw(:DEFAULT);
-use List::Util qw(any);
 use JSON::XS qw(decode_json);
+use URI;
 
 use parent qw(Bugzilla::CPAN);
 
@@ -233,6 +233,15 @@ sub template_inner {
 
 sub extensions {
     my ($class) = @_;
+
+    # Guard against extensions querying the extension list during initialization
+    # (through this method or has_extension).
+    # The extension list is not fully populated at that point,
+    # so the results would not be meaningful.
+    state $recursive = 0;
+    die "Recursive attempt to load/query extensions" if $recursive;
+    $recursive = 1;
+
     my $cache = $class->request_cache;
     if (!$cache->{extensions}) {
         my $extension_packages = Bugzilla::Extension->load_all();
@@ -245,7 +254,18 @@ sub extensions {
         }
         $cache->{extensions} = \@extensions;
     }
+    $recursive = 0;
     return $cache->{extensions};
+}
+
+sub has_extension {
+    my ($class, $name) = @_;
+    my $cache = $class->request_cache;
+    if (!$cache->{extensions_hash}) {
+        my %extensions = map { $_->NAME => 1 } @{ Bugzilla->extensions };
+        $cache->{extensions_hash} = \%extensions;
+    }
+    return exists $cache->{extensions_hash}{$name};
 }
 
 sub cgi {
@@ -270,6 +290,13 @@ sub input_params {
 
 sub localconfig {
     return $_[0]->process_cache->{localconfig} ||= read_localconfig();
+}
+
+sub urlbase {
+    my ($class) = @_;
+
+    # Since this could be modified, we have to return a new one every time.
+    return URI->new($class->localconfig->{urlbase});
 }
 
 sub params {
@@ -618,7 +645,7 @@ sub switch_to_shadow_db {
     my $class = shift;
 
     if (!$class->request_cache->{dbh_shadow}) {
-        if ($class->params->{'shadowdb'}) {
+        if ($class->get_param_with_override('shadowdb')) {
             $class->request_cache->{dbh_shadow} = Bugzilla::DB::connect_shadow();
         } else {
             $class->request_cache->{dbh_shadow} = $class->dbh_main;
@@ -852,20 +879,6 @@ sub check_rate_limit {
             Bugzilla->audit("[rate_limit] action=$action, ip=$ip, limit=$limit, name=$name");
             ThrowUserError("rate_limit") if $action eq 'block';
         }
-    }
-}
-
-# called from the verify version, component, and group page.
-# if we're making a group invalid, stuff the default group into the cgi param
-# to make it checked by default.
-sub check_default_product_security_group {
-    my ($class, $product, $invalid_groups, $optional_group_controls) = @_;
-    return unless my $group = $product->default_security_group_obj;
-    if (@$invalid_groups) {
-        my $cgi = $class->cgi;
-        my @groups = $cgi->param('groups');
-        push @groups, $group->name unless any { $_ eq $group->name } @groups;
-        $cgi->param('groups', @groups);
     }
 }
 
