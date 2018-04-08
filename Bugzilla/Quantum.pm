@@ -20,6 +20,7 @@ sub startup {
 
     $r->any( '/' )->to('legacy#index_cgi');
     $r->any( '/show_bug.cgi' )->to('legacy#show_bug');
+    $r->any('/bug/:id')->to('legacy#show_bug');
 }
 
 1;
