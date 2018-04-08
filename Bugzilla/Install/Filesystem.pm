@@ -117,7 +117,6 @@ sub HTTPD_ENV_CONF {
 
 sub _error_page {
     my ($code, $title, $description) = @_;
-    warn "urlbase: ", Bugzilla->urlbase, "\n";
     my $host = Bugzilla->urlbase->host;
 
     return <<EOT;
