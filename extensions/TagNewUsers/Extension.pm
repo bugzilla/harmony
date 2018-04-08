@@ -133,9 +133,14 @@ sub object_before_create {
     my ($self, $args) = @_;
     my ($class, $params) = @$args{qw(class params)};
     if ($class->isa('Bugzilla::User')) {
-        my ($timestamp) = Bugzilla->dbh->selectrow_array("SELECT NOW()");
-        $params->{comment_count} = 0;
-        $params->{creation_ts} = $timestamp;
+        my $dbh = Bugzilla->dbh;
+        my ($timestamp) = $dbh->selectrow_array("SELECT NOW()");
+        if ($dbh->bz_column_info($class->DB_TABLE, 'comment_count')) {
+            $params->{comment_count} = 0;
+        }
+        if ($dbh->bz_column_info($class->DB_TABLE, 'creation_ts')) {
+            $params->{creation_ts} = $timestamp;
+        }
     } elsif ($class->isa('Bugzilla::Attachment')) {
         if ($params->{ispatch} && !Bugzilla->user->first_patch_bug_id) {
             Bugzilla->user->first_patch_bug_id($params->{bug}->id);
