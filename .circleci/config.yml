@@ -160,7 +160,7 @@ jobs:
           BMO_urlbase: http://localhost/
           DB_DUMP_URL: "https://github.com/bugzilla/harmony-test-fixtures/blob/master/db-dumps/bugzilla-4.2_mysql.sql.gz?raw=true"
           DB_DUMP_FILE: "bugzilla-4.2_mysql.sql"
-      - image: mysql:5.8
+      - <<: *mysql_image
         environment: *mysql_env
     steps:
       - checkout
