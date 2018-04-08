@@ -109,6 +109,7 @@
     [% END %]
 
     [%- js_BUGZILLA = {
+            QUANTUM => Bugzilla.usage_mode == constants.USAGE_MODE_QUANTUM,
             param => {
                 maxattachmentsize => Param('maxattachmentsize'),
                 maxusermatches => Param('maxusermatches'),
