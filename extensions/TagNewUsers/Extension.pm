@@ -123,7 +123,9 @@ sub object_columns {
     my ($self, $args) = @_;
     my ($class, $columns) = @$args{qw(class columns)};
     if ($class->isa('Bugzilla::User')) {
-        push(@$columns, qw(comment_count creation_ts first_patch_bug_id));
+        my $dbh = Bugzilla->dbh;
+        my @new_columns = qw(comment_count creation_ts first_patch_bug_id);
+        push @$columns, grep { $dbh->bz_column_info($class->DB_TABLE, $_) } @new_columns;
     }
 }
 

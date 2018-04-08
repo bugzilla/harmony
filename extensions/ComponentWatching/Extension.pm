@@ -158,7 +158,9 @@ sub object_columns {
     my $columns = $args->{columns};
     return unless $class->isa('Bugzilla::Component');
 
-    push(@$columns, 'watch_user');
+    if (Bugzilla->dbh->bz_column_info($class->DB_TABLE, 'watch_user')) {
+        push @$columns, 'watch_user';
+    }
 }
 
 sub object_update_columns {
