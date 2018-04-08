@@ -27,6 +27,13 @@ sub script_name {
     return $self->controller->req->env->{SCRIPT_NAME};
 }
 
+sub referer {
+    my ($self) = @_;
+    my $c = $self->controller;
+
+    return $c->req->headers->referrer;
+}
+
 sub http {
     my ($self, $header) = @_;
     return $self->controller->req->headers->header($header);
