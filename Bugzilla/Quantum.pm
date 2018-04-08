@@ -11,11 +11,35 @@ use Mojo::Base 'Mojolicious';
 use Bugzilla::Quantum::CGI;
 use Bugzilla::Quantum::Template;
 use Bugzilla::Quantum::Legacy;
+use Bugzilla::PSGI qw(compile_cgi);
+
+use Bugzilla ();
+use Bugzilla::Constants ();
+use Bugzilla::BugMail ();
+use Bugzilla::CGI ();
+use Bugzilla::Extension ();
+use Bugzilla::Install::Requirements ();
+use Bugzilla::Util ();
+use Bugzilla::RNG ();
 
 sub startup {
     my ($self) = @_;
 
+    Bugzilla::Extension->load_all();
+    Bugzilla->preload_features();
+    Bugzilla->template;
+
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
+
+    $self->plugin(
+        'MountPSGI' => {
+            rewrite => 1,
+            '/rest' => $rest,
+            '/rest.cgi' => $rest,
+            '/jsonrpc.cgi' => compile_cgi('jsonrpc.cgi'),
+            '/xmlrpc.cgi' => compile_cgi('xmlrpc.cgi'),
+        }
+    );
     my $r = $self->routes;
 
     $r->any( '/' )->to('legacy#index_cgi');
