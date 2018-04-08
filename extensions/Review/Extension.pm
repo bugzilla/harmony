@@ -287,7 +287,9 @@ sub object_columns {
         push @$columns, 'reviewer_required';
     }
     elsif ($class->isa('Bugzilla::User')) {
-        push @$columns, qw(review_request_count feedback_request_count needinfo_request_count);
+        my $dbh = Bugzilla->dbh;
+        my @new_columns = qw(review_request_count feedback_request_count needinfo_request_count);
+        push @$columns, grep { $dbh->bz_column_info(Bugzilla::User->DB_TABLE, $_ } @new_columns;
     }
 }
 
