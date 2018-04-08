@@ -70,7 +70,10 @@ sub object_columns {
     my ($self, $args) = @_;
     my ($class, $columns) = @$args{qw(class columns)};
     if ($class->isa('Bugzilla::User')) {
-        push(@$columns, 'first_patch_reviewed_id');
+        my $dbh = Bugzilla->dbh;
+        if ($dbh->bz_column_info('profiles', 'first_patch_reviewed_id')) {
+            push(@$columns, 'first_patch_reviewed_id');
+        }
     }
 }
 
