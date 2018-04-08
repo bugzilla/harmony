@@ -68,7 +68,9 @@ sub object_columns {
     my ($self, $args) = @_;
     my ($class, $columns) = @$args{qw(class columns)};
     if ($class->isa('Bugzilla::Bug')) {
-        push(@$columns, 'restrict_comments');
+        if (Bugzilla->dbh->bz_column_info($class->DB_TABLE, 'restrict_comments')) {
+            push @$columns, 'restrict_comments';
+        }
     }
 }
 

@@ -26,17 +26,24 @@ use Scalar::Util qw(blessed);
 
 use constant IS_CONFIG => 1;
 
-use constant DB_COLUMNS => qw(
-    groups.id
-    groups.name
-    groups.description
-    groups.isbuggroup
-    groups.userregexp
-    groups.isactive
-    groups.icon_url
-    groups.owner_user_id
-    groups.idle_member_removal
-);
+sub DB_COLUMNS {
+    my $class = shift;
+    my @columns = qw(
+        id
+        name
+        description
+        isbuggroup
+        userregexp
+        isactive
+        icon_url
+        owner_user_id
+        idle_member_removal
+    );
+    my $dbh = Bugzilla->dbh;
+    my $table = $class->DB_TABLE;
+
+    return map { "$table.$_" } grep { $dbh->bz_column_info($table, $_) } @columns;
+}
 
 use constant DB_TABLE => 'groups';
 

@@ -150,6 +150,28 @@ jobs:
           path: /app/artifacts
       - *store_log
 
+  migrate_4.2_mysql:
+    parallelism: 1
+    working_directory: /app
+    docker:
+      - <<: *bmo_slim_image
+        environment:
+          <<: *bmo_env
+          BMO_urlbase: http://localhost/
+          DB_DUMP_URL: "https://github.com/bugzilla/harmony-test-fixtures/blob/master/db-dumps/bugzilla-4.2_mysql.sql.gz?raw=true"
+          DB_DUMP_FILE: "bugzilla-4.2_mysql.sql"
+      - <<: *mysql_image
+        environment: *mysql_env
+    steps:
+      - checkout
+      - run: |
+          mv /opt/bmo/local /app/local
+          /app/scripts/entrypoint.pl wait_for_db
+          curl -L "$DB_DUMP_URL" > "$DB_DUMP_FILE"
+          zcat "$DB_DUMP_FILE" | mysql -u$BMO_db_user -p$BMO_db_pass -h $BMO_db_host $BMO_db_name
+          perl checksetup.pl
+
+
   test_bmo:
     parallelism: 1
     working_directory: /app
@@ -189,9 +211,20 @@ workflows:
             - test_selenium
       - test_sanity:
           filters: *main_filters
+      - migrate_4.2_mysql:
+          filters: *main_filters
       - test_bmo:
           filters: *main_filters
       - test_webservices:
           filters: *main_filters
       - test_selenium:
           filters: *main_filters
+          requires:
+            - test_sanity
+            - migrate_4.2_mysql
+      - build:
+          filters: *main_filters
+          requires:
+            - test_sanity
+            - test_bmo
+            - test_webservices

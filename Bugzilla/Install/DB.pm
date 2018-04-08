@@ -3895,7 +3895,16 @@ sub _migrate_group_owners {
     my $dbh = Bugzilla->dbh;
     return if $dbh->bz_column_info('groups', 'owner_user_id');
     $dbh->bz_add_column('groups', 'owner_user_id', {TYPE => 'INT3'});
-    my $nobody = Bugzilla::User->check(Bugzilla->params->{'nobody_user'});
+    my $nobody = Bugzilla::User->new({ name => Bugzilla->params->{'nobody_user'}, cache => 1 });
+    unless ($nobody) {
+        $nobody = Bugzilla::User->create(
+            {
+                login_name    => Bugzilla->params->{'nobody_user'},
+                realname      => 'Nobody (ok to assign bugs to)',
+                cryptpassword => '*',
+            }
+        );
+    }
     $dbh->do('UPDATE groups SET owner_user_id = ?', undef, $nobody->id);
 }
 

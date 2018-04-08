@@ -191,7 +191,9 @@ sub object_columns {
     my ($self, $args) = @_;
     my ($class, $columns) = @$args{qw(class columns)};
     if ($class->isa('Bugzilla::Comment')) {
-        push(@$columns, 'edit_count');
+        if (Bugzilla->dbh->bz_column_info($class->DB_TABLE, 'edit_count')) {
+            push @$columns, 'edit_count';
+        }
     }
 }
 
