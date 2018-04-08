@@ -289,7 +289,7 @@ sub object_columns {
     elsif ($class->isa('Bugzilla::User')) {
         my $dbh = Bugzilla->dbh;
         my @new_columns = qw(review_request_count feedback_request_count needinfo_request_count);
-        push @$columns, grep { $dbh->bz_column_info(Bugzilla::User->DB_TABLE, $_ } @new_columns;
+        push @$columns, grep { $dbh->bz_column_info(Bugzilla::User->DB_TABLE, $_) } @new_columns;
     }
 }
 
