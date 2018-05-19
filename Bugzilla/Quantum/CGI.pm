@@ -63,4 +63,32 @@ sub Vars {
     return $self->controller->req->query_params->to_hash;
 }
 
+sub query_string {
+    my ($self) = @_;
+
+    return $self->controller->req->query_params->to_string;
+}
+
+sub send_cookie {
+    my ($self, %params) = @_;
+    my $name = delete $params{'-name'};
+    my $value = delete $params{'-value'} or ThrowCodeError('cookies_need_value');
+    state $uri      = URI->new( Bugzilla->localconfig->{urlbase} );
+    my %attrs = (
+        path => $uri->path,
+        secure => lc( $uri->scheme ) eq 'https',
+        samesite => 'Lax',
+    );
+    my $expires = delete $params{'-expires'};
+    $attrs{expires} = $expires if $expires;
+    $attrs{httponly} = 1 if delete $params{'-httponly'};
+
+    if (keys %params) {
+        die "Unknown keys: " . join(", ", keys %params);
+    }
+
+    $self->controller->cookie($name, $value, \%params);
+}
+
 1;
+

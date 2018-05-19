@@ -24,6 +24,7 @@ sub compile_cgi {
     my $app = CGI::Emulate::PSGI->handler(
         sub {
             Bugzilla::init_page();
+            $ENV{PATH_INFO} = '' if $ENV{PATH_INFO} eq '/';
             $cgi->();
         }
     );

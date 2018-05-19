@@ -7,41 +7,52 @@
 
 package Bugzilla::Quantum::Legacy;
 use Mojo::Base 'Mojolicious::Controller';
+use CGI::Compile;
 use File::Spec::Functions qw(catfile);
 use Bugzilla::Constants qw(bz_locations);
 use Taint::Util qw(untaint);
 use Sub::Name qw(subname);
-use autodie;
+use File::Slurper qw(read_text);
+use Sub::Quote 2.005000;
+use Try::Tiny;
 
-_load_cgi(index_cgi => 'index.cgi');
-_load_cgi(show_bug => 'show_bug.cgi');
+my %CGIS;
+my %SKIP = ( 'xmlrpc.cgi' => 1, 'jsonrpc.cgi' => 1, 'rest.cgi' => 1);
+
+_load_all();
+
+sub expose_routes {
+    my ($class, $r) = @_;
+    foreach my $cgi (keys %CGIS) {
+        $r->any("/$cgi")->to("Legacy#$CGIS{$cgi}");
+    }
+}
+
+sub _load_all {
+    foreach my $script (glob '*.cgi') {
+        next if $SKIP{$script};
+        my $name = _load_cgi($script);
+        $CGIS{ $script } = $name;
+    }
+}
 
 sub _load_cgi {
-    my ($name, $file) = @_;
-    my $content;
-    {
-        local $/ = undef;
-        open my $fh, '<', catfile(bz_locations->{cgi_path}, $file);
-        $content = <$fh>;
-        untaint($content);
-        close $fh;
-    }
-    my $pkg = __PACKAGE__ . '::' . $name;
-    my @lines = (
-        qq{package $pkg;},
-        qq{#line 1 "$file"},
-        "sub { my (\$self) = \@_; $content };"
+    my ($file) = @_;
+    my $name = $file;
+    $name =~ s/\./_/g;
+    $name =~ s/\W+/_/g;
+    my $content = read_text(catfile(bz_locations->{cgi_path}, $file));
+    untaint($content);
+    $content = 'my ($self) = @_; ' . $content;
+    my %options = (
+        package => __PACKAGE__ . "::$name",
+        file    => $file,
+        line    => 1,
+        no_defer => 1,
     );
-    my $code = join "\n", @lines;
-    my $sub = _eval($code);
-    {
-        no strict 'refs'; ## no critic (strict)
-        *{ $name } = subname($name, $sub);
-    }
+    quote_sub $name, $content, {}, \%options;
+    return $name;
 }
 
-sub _eval { ## no critic (unpack)
-    return eval $_[0]; ## no critic (eval)
-}
 
 1;

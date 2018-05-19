@@ -79,6 +79,7 @@ my %requires = (
     'Template'                 => '2.24',
     'Text::CSV_XS'             => '1.26',
     'Throwable'                => '0.200013',
+    'Sub::Quote'               => '2.005000',
     'Type::Tiny'               => '1.000005',
     'URI'                      => '1.55',
     'URI::Escape::XS'          => '0.14',

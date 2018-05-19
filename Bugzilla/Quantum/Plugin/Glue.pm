@@ -47,12 +47,13 @@ sub register {
             my ($next, $c) = @_;
             try {
                 local %{ Bugzilla->request_cache } = ();
+                local $CGI::Compile::USE_REAL_EXIT = 0;
                 Bugzilla->usage_mode(USAGE_MODE_QUANTUM);
                 Bugzilla->cgi( Bugzilla::Quantum::CGI->new(controller => $c) );
                 Bugzilla->template( Bugzilla::Quantum::Template->new( controller => $c, template => $template ) );
                 $next->();
             } catch {
-                die $_ unless /\bModPerl::Util::exit\b/;
+                die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
             };
         }
     );

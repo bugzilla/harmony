@@ -8,43 +8,86 @@
 package Bugzilla::Quantum;
 use Mojo::Base 'Mojolicious';
 
+use CGI::Compile; # Primarily for its exit overload.
 use Bugzilla::Quantum::CGI;
 use Bugzilla::Quantum::Template;
 use Bugzilla::Quantum::Legacy;
+use Bugzilla::Quantum::Static;
 use Bugzilla::PSGI qw(compile_cgi);
 
 use Bugzilla ();
-use Bugzilla::Constants ();
+use Bugzilla::Constants qw(bz_locations);
 use Bugzilla::BugMail ();
 use Bugzilla::CGI ();
 use Bugzilla::Extension ();
 use Bugzilla::Install::Requirements ();
 use Bugzilla::Util ();
 use Bugzilla::RNG ();
+use Cwd qw(realpath);
+
+has 'static' => sub { Bugzilla::Quantum::Static->new };
 
 sub startup {
     my ($self) = @_;
 
-    Bugzilla::Extension->load_all();
+    my $extensions = Bugzilla::Extension->load_all();
     Bugzilla->preload_features();
     Bugzilla->template;
 
+    my $rest = compile_cgi('rest.cgi');
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
-
     $self->plugin(
         'MountPSGI' => {
             rewrite => 1,
             '/rest' => $rest,
+        }
+    );
+    $self->plugin(
+        'MountPSGI' => {
+            rewrite => 1,
             '/rest.cgi' => $rest,
-            '/jsonrpc.cgi' => compile_cgi('jsonrpc.cgi'),
+        }
+    );
+    $self->plugin(
+        'MountPSGI' => {
+            rewrite => 1,
             '/xmlrpc.cgi' => compile_cgi('xmlrpc.cgi'),
         }
     );
+    $self->plugin(
+        'MountPSGI' => {
+rewrite => 1,
+            '/jsonrpc.cgi' => compile_cgi('jsonrpc.cgi'),
+        }
+    );
     my $r = $self->routes;
+    Bugzilla::Quantum::Legacy->expose_routes($r);
 
-    $r->any( '/' )->to('legacy#index_cgi');
-    $r->any( '/show_bug.cgi' )->to('legacy#show_bug');
-    $r->any('/bug/:id')->to('legacy#show_bug');
+    $r->any('/')->to('Legacy#index_cgi');
+
+    my $urlbase = Bugzilla->localconfig->{urlbase};
+    $r->get(
+        '/quicksearch.html' => sub {
+            my $c = shift;
+            $c->res->code(301);
+            $c->redirect_to( $urlbase . 'page.cgi?id=quicksearch.html' );
+        }
+    );
+    $r->get(
+        '/bugwritinghelp.html' => sub {
+            my $c = shift;
+            $c->res->code(301);
+            $c->redirect_to( $urlbase . 'page.cgi?id=bug-writing.html', 301 );
+        }
+    );
+    $r->get(
+        '/<bug_id:num>' => sub {
+            my $c = shift;
+            $c->res->code(301);
+            my $bug_id = $c->param('bug_id');
+            $c - redirect_to( $urlbase . "show_bug.cgi?id=$bug_id" );
+        }
+    );
 }
 
 1;
