@@ -321,8 +321,9 @@ sub do_ssl_redirect_if_required {
 
 # Returns the real remote address of the client,
 sub remote_ip {
-    if (Bugzilla->usage_mode == USAGE_MODE_QUANTUM) {
-        return Bugzilla->cgi->controller->tx->remote_address;
+    my $cgi = Bugzilla->cgi;
+    if ($cgi->can('controller')) {
+        return $cgi->controller->tx->remote_address;
     }
     else {
         my $remote_ip       = $ENV{'REMOTE_ADDR'} || '127.0.0.1';

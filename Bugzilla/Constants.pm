@@ -131,7 +131,6 @@ use Memoize;
     USAGE_MODE_JSON
     USAGE_MODE_TEST
     USAGE_MODE_REST
-    USAGE_MODE_QUANTUM
 
     ERROR_MODE_WEBPAGE
     ERROR_MODE_DIE
@@ -489,7 +488,6 @@ use constant USAGE_MODE_EMAIL      => 3;
 use constant USAGE_MODE_JSON       => 4;
 use constant USAGE_MODE_TEST       => 5;
 use constant USAGE_MODE_REST       => 6;
-use constant USAGE_MODE_QUANTUM       => 7;
 
 # Error modes. Default set by Bugzilla->usage_mode (so ERROR_MODE_WEBPAGE
 # usually). Use with Bugzilla->error_mode.

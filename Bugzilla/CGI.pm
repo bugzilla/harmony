@@ -658,18 +658,6 @@ sub send_cookie {
     push(@{$self->{'Bugzilla_cookie_list'}}, $self->cookie(%paramhash));
 }
 
-# Cookies are removed by setting an expiry date in the past.
-# This method is a send_cookie wrapper doing exactly this.
-sub remove_cookie {
-    my $self = shift;
-    my ($cookiename) = (@_);
-
-    # Expire the cookie, giving a non-empty dummy value (bug 268146).
-    $self->send_cookie('-name'    => $cookiename,
-                       '-expires' => 'Tue, 15-Sep-1998 21:49:00 GMT',
-                       '-value'   => 'X');
-}
-
 # To avoid infinite redirection recursion, track when we're within a redirect
 # request.
 sub redirect {

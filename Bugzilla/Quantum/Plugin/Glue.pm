@@ -48,7 +48,8 @@ sub register {
             try {
                 local %{ Bugzilla->request_cache } = ();
                 local $CGI::Compile::USE_REAL_EXIT = 0;
-                Bugzilla->usage_mode(USAGE_MODE_QUANTUM);
+                # HACK, should just make i_am_cgi smarter.
+                local $ENV{'SERVER_SOFTWARE'} = 1;
                 Bugzilla->cgi( Bugzilla::Quantum::CGI->new(controller => $c) );
                 Bugzilla->template( Bugzilla::Quantum::Template->new( controller => $c, template => $template ) );
                 $next->();

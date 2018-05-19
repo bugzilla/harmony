@@ -68,4 +68,17 @@ sub csp_nonce {
     return $csp->has_nonce ? $csp->nonce : '';
 }
 
+# Cookies are removed by setting an expiry date in the past.
+# This method is a send_cookie wrapper doing exactly this.
+sub remove_cookie {
+    my ($self, $name) = @_;
+
+    # Expire the cookie, giving a non-empty dummy value (bug 268146).
+    $self->send_cookie(
+        '-name'    => $name,
+        '-expires' => 'Tue, 15-Sep-1998 21:49:00 GMT',
+        '-value'   => 'X'
+    );
+}
+
 1;

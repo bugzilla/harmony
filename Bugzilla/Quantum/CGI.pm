@@ -7,11 +7,12 @@
 
 package Bugzilla::Quantum::CGI;
 use 5.10.1;
+use Carp qw(confess);
 use Moo;
 
 has 'controller' => (
     is      => 'ro',
-    handles => [qw(param cookie)],
+    handles => [qw[req res]],
 );
 
 has 'csp_object' => (
@@ -24,31 +25,74 @@ with 'Bugzilla::CGI::Role';
 sub script_name {
     my ($self) = @_;
 
-    return $self->controller->req->env->{SCRIPT_NAME};
+    return $self->req->env->{SCRIPT_NAME};
 }
 
 sub referer {
     my ($self) = @_;
-    my $c = $self->controller;
 
-    return $c->req->headers->referrer;
+    return $self->req->headers->referrer;
 }
 
 sub http {
     my ($self, $header) = @_;
-    return $self->controller->req->headers->header($header);
+    return $self->req->headers->header($header);
 }
 
 sub header {
     my ($self, @args) = @_;
-    my $c = $self->controller;
     return '' if @args == 0;
 
     if (@args == 1) {
-        $c->res->headers->content_type($args[0]);
+        $self->res->headers->content_type($args[0]);
     }
 
     return '';
+}
+
+sub cookie { ## no critic (unpack)
+    my $self = shift;
+    my $c = $self->controller;
+    if (@_ == 1 && !ref $_[0]) {
+        my ($name) = @_;
+        return $c->cookie($name);
+    }
+    else {
+        die "cookie(@_) is not understood";
+    }
+}
+
+sub user_agent {
+    my $self = shift;
+
+    return $self->req->headers->user_agent;
+}
+
+sub url { ## no critic (unpack)
+    my $self = shift;
+    my $c = $self->controller;
+    if ($_[0] eq '-relative' && $_[1] == 1) {
+        return $c->url_for;
+    }
+    else {
+        confess "url(@_) is not understood";
+    }
+}
+
+sub param { ## no critic (unpack)
+    my $self = shift;
+    if (@_ == 1) {
+        my ($name) = @_;
+        return $self->req->param($name);
+    }
+    else {
+        die "param(@_) is not understood";
+    }
+}
+
+sub delete { ## no critic (builtin)
+    my ($self, $name) = @_;
+    $self->req->params->remove($name);
 }
 
 sub redirect {
@@ -60,13 +104,13 @@ sub redirect {
 sub Vars {
     my ($self) = @_;
 
-    return $self->controller->req->query_params->to_hash;
+    return $self->req->query_params->to_hash;
 }
 
 sub query_string {
     my ($self) = @_;
 
-    return $self->controller->req->query_params->to_string;
+    return $self->req->query_params->to_string;
 }
 
 sub send_cookie {

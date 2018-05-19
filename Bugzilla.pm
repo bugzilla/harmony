@@ -576,9 +576,6 @@ sub usage_mode {
         elsif ($newval == USAGE_MODE_REST) {
             $class->error_mode(ERROR_MODE_REST);
         }
-        elsif ($newval == USAGE_MODE_QUANTUM) {
-            $class->error_mode(ERROR_MODE_DIE);
-        }
         else {
             ThrowCodeError('usage_mode_invalid',
                            {'invalid_usage_mode', $newval});

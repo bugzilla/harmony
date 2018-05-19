@@ -98,9 +98,7 @@
       <meta charset="UTF-8">
     [% END %]
     [% USE Bugzilla %]
-    [% IF Bugzilla.usage_mode == constants.USAGE_MODE_QUANTUM %]
-      <base href="[% urlbase FILTER html %]">
-    [% END %]
+    <base href="[% urlbase FILTER html %]">
 
     [% IF Bugzilla.cgi.should_block_referrer %]
       <meta name="referrer" content="origin">
@@ -109,7 +107,6 @@
     [% END %]
 
     [%- js_BUGZILLA = {
-            QUANTUM => Bugzilla.usage_mode == constants.USAGE_MODE_QUANTUM,
             param => {
                 maxattachmentsize => Param('maxattachmentsize'),
                 maxusermatches => Param('maxusermatches'),
