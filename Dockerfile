@@ -17,6 +17,7 @@ ENV HTTPD_MaxClients=256
 ENV HTTPD_MaxRequestsPerChild=4000
 
 ENV PORT=8000
+ENV MOJO_LISTEN http://*:$PORT
 
 # we run a loopback logging server on this TCP port.
 ENV LOGGING_PORT=5880
@@ -28,7 +29,8 @@ RUN mv /opt/bmo/local /app && \
     chown -R app:app /app && \
     perl -I/app -I/app/local/lib/perl5 -c -E 'use Bugzilla; BEGIN { Bugzilla->extensions }' && \
     perl -c /app/scripts/entrypoint.pl && \
-    setcap 'cap_net_bind_service=+ep' /usr/sbin/httpd
+    setcap 'cap_net_bind_service=+ep' /usr/sbin/httpd && \
+    setcap 'cap_net_bind_service=+ep' /usr/bin/perl
 
 USER app
 
