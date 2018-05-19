@@ -66,6 +66,13 @@ rewrite => 1,
 
     $r->any('/')->to('Legacy#index_cgi');
 
+    $r->get(
+        '/__lbheartbeat__' => sub {
+            my $c = shift;
+            $c->reply->file($c->app->home->child('__lbheartbeat__'));
+        },
+    );
+
     my $urlbase = Bugzilla->localconfig->{urlbase};
     $r->get(
         '/quicksearch.html' => sub {

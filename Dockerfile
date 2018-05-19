@@ -17,7 +17,6 @@ ENV HTTPD_MaxClients=256
 ENV HTTPD_MaxRequestsPerChild=4000
 
 ENV PORT=8000
-ENV MOJO_LISTEN http://*:$PORT
 
 # we run a loopback logging server on this TCP port.
 ENV LOGGING_PORT=5880

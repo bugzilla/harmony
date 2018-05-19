@@ -24,7 +24,7 @@ sub file {
         return $self->SUPER::file($legacy_rel);
     }
     else {
-        warn "legacy $rel\n";
+        warn "mojo $rel\n";
         return $self->SUPER::file($rel);
     }
 }

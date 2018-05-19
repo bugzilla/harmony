@@ -103,7 +103,8 @@ sub run_httpd {
             # we have to setsid() to make a new process group
             # or else apache will kill its parent.
             setsid();
-            my @command = ( HTTPD_BIN, '-DFOREGROUND', '-f' => HTTPD_CONFIG, @args );
+            warn "ignoring args: @args";
+            my @command = ( $^X, '/app/scripts/bugzilla_quantum', 'daemon', "--listen=http://*:$ENV{PORT}" );
             exec @command
               or die "failed to exec $command[0] $!";
         },

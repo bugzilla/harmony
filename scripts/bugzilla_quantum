@@ -4,11 +4,12 @@ use strict;
 use warnings;
 
 use File::Basename qw(basename dirname);
-use File::Spec::Functions qw(catdir rel2abs);
+use File::Spec::Functions qw(catdir);
+use Cwd qw(realpath);
 
 BEGIN {
     require lib;
-    my $dir = rel2abs( catdir(dirname(__FILE__), '..') );
+    my $dir = realpath( catdir(dirname(__FILE__), '..') );
     lib->import( $dir, catdir( $dir, 'lib' ), catdir( $dir, qw(local lib perl5) ) );
 }
 use Mojolicious::Commands;
