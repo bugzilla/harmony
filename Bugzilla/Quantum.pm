@@ -33,6 +33,7 @@ sub startup {
     my $extensions = Bugzilla::Extension->load_all();
     Bugzilla->preload_features();
     Bugzilla->template;
+    $self->secrets([Bugzilla->localconfig->{side_wide_secret}]);
 
     my $rest = compile_cgi('rest.cgi');
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');

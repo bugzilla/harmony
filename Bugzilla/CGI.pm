@@ -26,7 +26,7 @@ use URI;
 
 use Role::Tiny::With;
 
-with 'Bugzilla::CGI::ContentSecurityPolicyAttr';
+with 'Bugzilla::CGI::Role';
 
 BEGIN {
     if (ON_WINDOWS) {

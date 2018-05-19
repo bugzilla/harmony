@@ -19,7 +19,7 @@ has 'csp_object' => (
     writer => 'set_csp_object',
 );
 
-with 'Bugzilla::CGI::ContentSecurityPolicyAttr';
+with 'Bugzilla::CGI::Role';
 
 sub script_name {
     my ($self) = @_;
