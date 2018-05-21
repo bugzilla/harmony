@@ -561,10 +561,9 @@ sub header {
         }
     }
     my $headers = $self->SUPER::header(%headers) || '';
-    warn "if (". $self->server_software." eq 'Bugzilla::Quantum::Plugin::Glue') {";
     if ($self->server_software eq 'Bugzilla::Quantum::Plugin::Glue') {
         my $c = Bugzilla->request_cache->{mojo_controller};
-        $c->res->headers(Mojo::Headers->new->parse($headers)) if $headers;
+        $c->res->headers->parse($headers);
         return '';
     }
     else {
@@ -671,10 +670,12 @@ sub send_cookie {
 sub redirect {
     my $self = shift;
     $self->{bz_redirecting} = 1;
-    warn "redirect: @_\n";
+    use Carp;
+    carp "redirect @_\n";
     if ($self->server_software eq 'Bugzilla::Quantum::Plugin::Glue') {
         my $c = Bugzilla->request_cache->{mojo_controller};
-        $c->redirect_to(@_);
+        $self->SUPER::redirect(@_);
+        $c->redirect_to($c->res->headers->location);
         return '';
     }
     else {

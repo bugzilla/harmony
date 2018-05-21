@@ -217,7 +217,7 @@ sub changePassword {
             reason   => 'Setting your password',
             password => $password,
             token    => $token,
-            postback => {
+        postback => {
                 action      => 'token.cgi',
                 token_field => 't',
                 fields      => {
@@ -450,6 +450,7 @@ sub mfa_event_from_token {
 
     # create user from token
     my ($user_id) = Bugzilla::Token::GetTokenData($token);
+    warn "$user_id id from $token\n";
     my $user = Bugzilla::User->check({ id => $user_id, cache => 1 });
 
     # sanity check

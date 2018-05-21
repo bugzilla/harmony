@@ -20,11 +20,9 @@ sub file {
 
     if (my ($legacy_rel) = $rel =~ $LEGACY_RE) {
         local $self->{paths} = [ bz_locations->{cgi_path} ];
-        warn "legacy $legacy_rel\n";
         return $self->SUPER::file($legacy_rel);
     }
     else {
-        warn "mojo $rel\n";
         return $self->SUPER::file($rel);
     }
 }

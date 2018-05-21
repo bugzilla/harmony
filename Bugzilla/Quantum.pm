@@ -36,34 +36,13 @@ sub startup {
 
     my $rest = compile_cgi('rest.cgi');
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
-    $self->plugin(
-        'MountPSGI' => {
-            rewrite => 1,
-            '/rest' => $rest,
-        }
-    );
-    $self->plugin(
-        'MountPSGI' => {
-            rewrite => 1,
-            '/rest.cgi' => $rest,
-        }
-    );
-    $self->plugin(
-        'MountPSGI' => {
-            rewrite => 1,
-            '/xmlrpc.cgi' => compile_cgi('xmlrpc.cgi'),
-        }
-    );
-    $self->plugin(
-        'MountPSGI' => {
-rewrite => 1,
-            '/jsonrpc.cgi' => compile_cgi('jsonrpc.cgi'),
-        }
-    );
+
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->expose_routes($r);
 
     $r->any('/')->to('CGI#handle_index');
+    $r->any('/rest')->to('CGI#handle_rest');
+    $r->any('/rest/*path_info')->to('CGI#handle_rest');
 
     $r->get(
         '/__lbheartbeat__' => sub {

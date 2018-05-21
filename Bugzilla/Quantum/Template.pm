@@ -24,8 +24,7 @@ sub process {
     my ($self, $file, $vars, $output) = @_;
 
     if (@_ < 4) {
-        my $stash = $self->controller->stash;
-        $stash->{$_} = $vars->{$_} for keys %$vars;
+        $self->controller->stash->{vars} = $vars;
         $self->controller->render(template => $file, handler => 'bugzilla');
         return 1;
     }

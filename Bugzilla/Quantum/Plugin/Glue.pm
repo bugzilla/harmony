@@ -13,6 +13,7 @@ use Bugzilla::Constants;
 use Bugzilla::Quantum::Template;
 use Socket qw(AF_INET inet_aton);
 use Sys::Hostname;
+use IO::String;
 
 sub register {
     my ( $self, $app, $conf ) = @_;
@@ -23,7 +24,7 @@ sub register {
     $app->renderer->add_handler(
         'bugzilla' => sub {
             my ( $renderer, $c, $output, $options ) = @_;
-            my %params;
+            my $vars = delete $c->stash->{vars};
 
             # Helpers
             my %helper;
@@ -31,16 +32,15 @@ sub register {
                 my $sub = $renderer->helpers->{$method};
                 $helper{$method} = sub { $c->$sub(@_) };
             }
-            $params{helper} = \%helper;
+            $vars->{helper} = \%helper;
 
-            # Stash values
-            $params{$_} = $c->stash->{$_} for grep {m/^\w+\z/} keys %{ $c->stash };
-            $params{self} = $params{c} = $c;
+            # The controller
+            $vars->{c} = $c;
             my $name = $options->{template};
             unless ($name =~ /\./) {
                 $name = sprintf '%s.%s.tmpl', $options->{template}, $options->{format};
             }
-            $template->process( $name, \%params, $output )
+            $template->process( $name, $vars, $output )
                 or die $template->error;
         }
     );
@@ -48,21 +48,32 @@ sub register {
     $app->hook(
         around_dispatch => sub {
             my ($next, $c) = @_;
+            local %ENV = _ENV($c);
+            my $stdin = _STDIN($c);
+            my $stdout = '';
             try {
                 local $CGI::Compile::USE_REAL_EXIT = 0;
-                local %ENV = _ENV($c);
-                my $stdin = _STDIN($c);
-                warn "stdin path ", $stdin->path, "\n";
-                local *STDIN;
+                local *STDIN; ## no critic (local)
+                local *STDOUT;
                 open STDIN, '<', $stdin->path or die "STDIN @{[$stdin->path]}: $!" if -s $stdin->path;
+                open STDOUT, '>', \$stdout or die "STDOUT capture: $!";
+
                 Bugzilla::init_page();
                 Bugzilla->request_cache->{mojo_controller} = $c;
                 Bugzilla->template( Bugzilla::Quantum::Template->new( controller => $c, template => $template ) );
                 $next->();
+            }
+            catch {
+                die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
+            }
+            finally {
+                if (length $stdout) {
+                    warn "setting body\n";
+                    $c->res->body($stdout);
+                    $c->rendered;
+                }
                 Bugzilla::_cleanup; ## no critic (private)
                 CGI::initialize_globals();
-            } catch {
-                die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
             };
         }
     );

@@ -16,7 +16,6 @@ use Sub::Quote 2.005000;
 use Taint::Util qw(untaint);
 
 my %CGIS;
-my %SKIP = ( 'xmlrpc.cgi' => 1, 'jsonrpc.cgi' => 1, 'rest.cgi' => 1);
 
 _load_all();
 
@@ -29,7 +28,6 @@ sub expose_routes {
 
 sub _load_all {
     foreach my $script (glob '*.cgi') {
-        next if $SKIP{$script};
         my $name = _load_cgi($script);
         $CGIS{ $script } = $name;
     }
