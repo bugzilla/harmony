@@ -94,7 +94,7 @@ sub new {
 
     # Under mod_perl, CGI's global variables get reset on each request,
     # so we need to set them up again every time.
-    $class->_init_bz_cgi_globals() if $ENV{MOD_PERL};
+    $class->_init_bz_cgi_globals();
 
     my $self = $class->SUPER::new(@args);
 
@@ -561,10 +561,10 @@ sub header {
         }
     }
     my $headers = $self->SUPER::header(%headers) || '';
-
+    warn "if (". $self->server_software." eq 'Bugzilla::Quantum::Plugin::Glue') {";
     if ($self->server_software eq 'Bugzilla::Quantum::Plugin::Glue') {
-        my $c = Bugzilla::request_cache->{mojo_controller};
-        $c->res->headers(Mojo::Headers->parse($headers));
+        my $c = Bugzilla->request_cache->{mojo_controller};
+        $c->res->headers(Mojo::Headers->new->parse($headers)) if $headers;
         return '';
     }
     else {
@@ -671,7 +671,15 @@ sub send_cookie {
 sub redirect {
     my $self = shift;
     $self->{bz_redirecting} = 1;
-    return $self->SUPER::redirect(@_);
+    warn "redirect: @_\n";
+    if ($self->server_software eq 'Bugzilla::Quantum::Plugin::Glue') {
+        my $c = Bugzilla->request_cache->{mojo_controller};
+        $c->redirect_to(@_);
+        return '';
+    }
+    else {
+        return $self->SUPER::redirect(@_);
+    }
 }
 
 # This helps implement Bugzilla::Search::Recent, and also shortens search

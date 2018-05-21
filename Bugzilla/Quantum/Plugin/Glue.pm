@@ -26,10 +26,12 @@ sub register {
             my %params;
 
             # Helpers
+            my %helper;
             foreach my $method ( grep {m/^\w+\z/} keys %{ $renderer->helpers } ) {
                 my $sub = $renderer->helpers->{$method};
-                $params{$method} = sub { $c->$sub(@_) };
+                $helper{$method} = sub { $c->$sub(@_) };
             }
+            $params{helper} = \%helper;
 
             # Stash values
             $params{$_} = $c->stash->{$_} for grep {m/^\w+\z/} keys %{ $c->stash };
@@ -49,11 +51,16 @@ sub register {
             try {
                 local $CGI::Compile::USE_REAL_EXIT = 0;
                 local %ENV = _ENV($c);
+                my $stdin = _STDIN($c);
+                warn "stdin path ", $stdin->path, "\n";
+                local *STDIN;
+                open STDIN, '<', $stdin->path or die "STDIN @{[$stdin->path]}: $!" if -s $stdin->path;
                 Bugzilla::init_page();
-                Bugzilla::request_cache->{mojo_controller} = $c;
+                Bugzilla->request_cache->{mojo_controller} = $c;
                 Bugzilla->template( Bugzilla::Quantum::Template->new( controller => $c, template => $template ) );
                 $next->();
                 Bugzilla::_cleanup; ## no critic (private)
+                CGI::initialize_globals();
             } catch {
                 die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
             };
@@ -75,6 +82,7 @@ sub _ENV {
         $env_headers{$key} = $headers->header($name);
     }
 
+    my $remote_user;
     if ( my $userinfo = $c->req->url->to_abs->userinfo ) {
         $remote_user = $userinfo =~ /([^:]+)/ ? $1 : '';
     }
@@ -95,11 +103,29 @@ sub _ENV {
         REMOTE_PORT => $tx->remote_port,
         REMOTE_USER => $remote_user || '',
         REQUEST_METHOD  => $req->method,
-        SCRIPT_NAME     => $req->env->{SCRIPT_NAME} SERVER_NAME => hostname,
+        SCRIPT_NAME     => $req->env->{SCRIPT_NAME},
+        SERVER_NAME     => hostname,
         SERVER_PORT     => $tx->local_port,
         SERVER_PROTOCOL => $req->is_secure ? 'HTTPS' : 'HTTP', # TODO: Version is missing
         SERVER_SOFTWARE => __PACKAGE__,
     );
 }
+
+sub _STDIN {
+    my $c = shift;
+    my $stdin;
+
+    if ( $c->req->content->is_multipart ) {
+        $stdin = Mojo::Asset::File->new;
+        $stdin->add_chunk( $c->req->build_body );
+    }
+    else {
+        $stdin = $c->req->content->asset;
+    }
+
+    return $stdin if $stdin->isa('Mojo::Asset::File');
+    return Mojo::Asset::File->new->add_chunk( $stdin->slurp );
+}
+
 
 1;

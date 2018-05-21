@@ -13,15 +13,6 @@ use warnings;
 
 use Bugzilla::Logging;
 
-# We want any compile errors to get to the browser, if possible.
-BEGIN {
-    # This makes sure we're in a CGI.
-    if ($ENV{SERVER_SOFTWARE} && !$ENV{MOD_PERL}) {
-        require CGI::Carp;
-        CGI::Carp->import('fatalsToBrowser');
-    }
-}
-
 our $VERSION = '20180627.1';
 
 use Bugzilla::Auth;
@@ -340,9 +331,6 @@ sub login {
     my ($class, $type) = @_;
 
     return $class->user if $class->user->id;
-
-    # Load all extensions here if not running under mod_perl
-    $class->extensions unless $ENV{MOD_PERL};
 
     my $authorizer = new Bugzilla::Auth();
     $type = LOGIN_REQUIRED if $class->cgi->param('GoAheadAndLogIn');

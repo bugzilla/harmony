@@ -9,9 +9,8 @@ package Bugzilla::Quantum;
 use Mojo::Base 'Mojolicious';
 
 use CGI::Compile; # Primarily for its exit overload.
-use Bugzilla::Quantum::CGI;
 use Bugzilla::Quantum::Template;
-use Bugzilla::Quantum::Legacy;
+use Bugzilla::Quantum::CGI;
 use Bugzilla::Quantum::Static;
 use Bugzilla::PSGI qw(compile_cgi);
 
@@ -62,9 +61,9 @@ rewrite => 1,
         }
     );
     my $r = $self->routes;
-    Bugzilla::Quantum::Legacy->expose_routes($r);
+    Bugzilla::Quantum::CGI->expose_routes($r);
 
-    $r->any('/')->to('Legacy#index_cgi');
+    $r->any('/')->to('CGI#handle_index');
 
     $r->get(
         '/__lbheartbeat__' => sub {
