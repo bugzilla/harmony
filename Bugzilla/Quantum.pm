@@ -8,7 +8,8 @@
 package Bugzilla::Quantum;
 use Mojo::Base 'Mojolicious';
 
-use CGI::Compile; # Primarily for its exit overload.
+use CGI::Compile; # Needed for its exit() overload
+use Bugzilla::Logging;
 use Bugzilla::Quantum::Template;
 use Bugzilla::Quantum::CGI;
 use Bugzilla::Quantum::Static;
@@ -34,6 +35,8 @@ sub startup {
     $self->secrets([Bugzilla->localconfig->{side_wide_secret}]);
 
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
+
+    $self->log(Log::Log4perl->get_logger(__PACKAGE__));
 
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);
