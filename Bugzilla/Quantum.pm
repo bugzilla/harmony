@@ -24,6 +24,8 @@ use Bugzilla::Util ();
 use Bugzilla::RNG ();
 use Cwd qw(realpath);
 
+use MojoX::Log::Log4perl::Tiny;
+
 has 'static' => sub { Bugzilla::Quantum::Static->new };
 
 sub startup {
@@ -35,8 +37,11 @@ sub startup {
     $self->secrets([Bugzilla->localconfig->{side_wide_secret}]);
 
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
-
-    $self->log(Log::Log4perl->get_logger(__PACKAGE__));
+    $self->log(
+        MojoX::Log::Log4perl::Tiny->new(
+            logger => Log::Log4perl->get_logger(__PACKAGE__)
+        )
+    );
 
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);

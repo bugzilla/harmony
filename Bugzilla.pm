@@ -194,7 +194,7 @@ sub init_page {
 #####################################################################
 
 sub template {
-    request_cache->{template} // Bugzilla::Template->create();
+    request_cache->{template} //= Bugzilla::Template->create();
     request_cache->{template}->{_is_main} = 1;
 
     if (Bugzilla->cgi->server_software eq 'Bugzilla::Quantum::CGI') {
