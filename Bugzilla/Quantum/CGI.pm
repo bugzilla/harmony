@@ -17,8 +17,8 @@ use Sub::Quote 2.005000;
 use Try::Tiny;
 use Taint::Util qw(untaint);
 use Socket qw(AF_INET inet_aton);
-use Capture::Tiny qw(capture_stdout);
 use Sys::Hostname;
+use English qw(-no_match_vars);
 
 sub load_all {
     my ($class, $r) = @_;
@@ -60,24 +60,24 @@ sub _load_cgi {
         my ($c) = @_;
         my $stdin  = $c->_STDIN;
         my $stdout = '';
+        local $Bugzilla::C = $c;
         local %ENV = $c->_ENV;
         local *STDIN;  ## no critic (local)
+        local *STDOUT;  ## no critic (local)
         local $CGI::Compile::USE_REAL_EXIT = 0;
+        local $PROGRAM_NAME = $file;
         open STDIN, '<', $stdin->path or die "STDIN @{[$stdin->path]}: $!" if -s $stdin->path;
+        open STDOUT, '>', \$stdout or die "STDOUT capture: $!";
         try {
             Bugzilla->init_page();
-            Bugzilla->request_cache->{mojo_controller} = $c;
-            $stdout = capture_stdout \&$inner;
+            $inner->();
         }
         catch {
+            $c->render(text => $_);
             die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
         }
         finally {
-            if ( length $stdout ) {
-                warn "setting body\n";
-                $c->res->body($stdout);
-                $c->rendered;
-            }
+            $c->res->body($stdout) if $stdout
             Bugzilla->_cleanup;    ## no critic (private)
             CGI::initialize_globals();
         };
@@ -107,6 +107,7 @@ sub _ENV {
         $remote_user = $authenticate =~ /Basic\s+(.*)/ ? b64_decode $1 : '';
         $remote_user = $remote_user =~ /([^:]+)/       ? $1            : '';
     }
+    my $path_info = $c->stash('PATH_INFO') || '';
 
     return (
         CONTENT_LENGTH => $content_length        || 0,
@@ -115,6 +116,7 @@ sub _ENV {
         HTTPS             => $req->is_secure ? 'YES' : 'NO',
         %env_headers,
         QUERY_STRING => $c->stash('cgi.query_string') || $req->url->query->to_string,
+        PATH_INFO   => $path_info ? "/$path_info" : '',
         REMOTE_ADDR => $tx->remote_address,
         REMOTE_HOST => gethostbyaddr( inet_aton( $tx->remote_address || '127.0.0.1' ), AF_INET ) || '',
         REMOTE_PORT => $tx->remote_port,

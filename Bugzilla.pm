@@ -200,7 +200,7 @@ sub template {
     if (Bugzilla->cgi->server_software eq 'Bugzilla::Quantum::CGI') {
         return request_cache->{quantum_template} //= do {
             my $template = request_cache->{template};
-            my $c = request_cache->{mojo_controller};
+            my $c = $Bugzilla::C;
             my $q_template = Bugzilla::Quantum::Template->new( controller => $c, template => $template );
             $q_template->{_is_main} = 1;
             $q_template;

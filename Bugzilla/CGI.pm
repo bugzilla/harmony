@@ -601,8 +601,11 @@ sub header {
     }
     my $headers = $self->SUPER::header(%headers) || '';
     if ($self->server_software eq 'Bugzilla::Quantum::CGI') {
-        my $c = Bugzilla->request_cache->{mojo_controller};
+        my $c = $Bugzilla::C;
         $c->res->headers->parse($headers);
+        if ($c->res->headers->status =~ /^([0-9]+)/) {
+            $c->res->code($1);
+        }
         return '';
     }
     else {
@@ -712,7 +715,7 @@ sub redirect {
     use Carp;
     carp "redirect @_\n";
     if ($self->server_software eq 'Bugzilla::Quantum::CGI') {
-        my $c = Bugzilla->request_cache->{mojo_controller};
+        my $c = $Bugzilla::C;
         $self->SUPER::redirect(@_);
         $c->redirect_to($c->res->headers->location);
         return '';

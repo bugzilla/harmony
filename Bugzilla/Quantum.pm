@@ -48,7 +48,7 @@ sub startup {
 
     $r->any('/')->to('CGI#index_cgi');
     $r->any('/rest')->to('CGI#rest_cgi');
-    $r->any('/rest/*path_info')->to('CGI#rest_cgi');
+    $r->any('/rest/*PATH_INFO')->to('CGI#rest_cgi');
 
     $r->get(
         '/__lbheartbeat__' => sub {
