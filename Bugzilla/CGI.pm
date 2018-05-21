@@ -600,7 +600,7 @@ sub header {
         }
     }
     my $headers = $self->SUPER::header(%headers) || '';
-    if ($self->server_software eq 'Bugzilla::Quantum::Plugin::Glue') {
+    if ($self->server_software eq 'Bugzilla::Quantum::CGI') {
         my $c = Bugzilla->request_cache->{mojo_controller};
         $c->res->headers->parse($headers);
         return '';
@@ -711,7 +711,7 @@ sub redirect {
     $self->{bz_redirecting} = 1;
     use Carp;
     carp "redirect @_\n";
-    if ($self->server_software eq 'Bugzilla::Quantum::Plugin::Glue') {
+    if ($self->server_software eq 'Bugzilla::Quantum::CGI') {
         my $c = Bugzilla->request_cache->{mojo_controller};
         $self->SUPER::redirect(@_);
         $c->redirect_to($c->res->headers->location);

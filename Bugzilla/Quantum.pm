@@ -12,7 +12,6 @@ use CGI::Compile; # Primarily for its exit overload.
 use Bugzilla::Quantum::Template;
 use Bugzilla::Quantum::CGI;
 use Bugzilla::Quantum::Static;
-use Bugzilla::PSGI qw(compile_cgi);
 
 use Bugzilla ();
 use Bugzilla::Constants qw(bz_locations);
@@ -34,15 +33,14 @@ sub startup {
     Bugzilla->template;
     $self->secrets([Bugzilla->localconfig->{side_wide_secret}]);
 
-    my $rest = compile_cgi('rest.cgi');
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
 
     my $r = $self->routes;
-    Bugzilla::Quantum::CGI->expose_routes($r);
+    Bugzilla::Quantum::CGI->load_all($r);
 
-    $r->any('/')->to('CGI#handle_index');
-    $r->any('/rest')->to('CGI#handle_rest');
-    $r->any('/rest/*path_info')->to('CGI#handle_rest');
+    $r->any('/')->to('CGI#index_cgi');
+    $r->any('/rest')->to('CGI#rest_cgi');
+    $r->any('/rest/*path_info')->to('CGI#rest_cgi');
 
     $r->get(
         '/__lbheartbeat__' => sub {
