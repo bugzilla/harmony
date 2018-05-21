@@ -77,7 +77,7 @@ sub _load_cgi {
             die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
         }
         finally {
-            $c->res->body($stdout) if $stdout
+            $c->res->body($stdout) if $stdout;
             Bugzilla->_cleanup;    ## no critic (private)
             CGI::initialize_globals();
         };
