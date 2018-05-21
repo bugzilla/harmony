@@ -560,8 +560,16 @@ sub header {
             $headers{'-link'} .= ', <https://www.google-analytics.com>; rel="preconnect"; crossorigin';
         }
     }
+    my $headers = $self->SUPER::header(%headers) || '';
 
-    return $self->SUPER::header(%headers) || "";
+    if ($self->server_software eq 'Bugzilla::Quantum::Plugin::Glue') {
+        my $c = Bugzilla::request_cache->{mojo_controller};
+        $c->res->headers(Mojo::Headers->parse($headers));
+        return '';
+    }
+    else {
+        return $headers;
+    }
 }
 
 sub param {

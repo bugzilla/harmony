@@ -235,14 +235,7 @@ sub extensions {
 }
 
 sub cgi {
-    my ( undef, $cgi ) = @_;
-
-    if ( defined $cgi ) {
-        return request_cache->{cgi} = $cgi;
-    }
-    else {
-        return request_cache->{cgi} ||= Bugzilla::CGI->new;
-    }
+    return request_cache->{cgi} ||= Bugzilla::CGI->new;
 }
 
 sub input_params {
