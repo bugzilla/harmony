@@ -22,6 +22,7 @@ use Bugzilla::Extension ();
 use Bugzilla::Install::Requirements ();
 use Bugzilla::Util ();
 use Bugzilla::RNG ();
+use JSON::MaybeXS qw(decode_json);
 use Cwd qw(realpath);
 
 use MojoX::Log::Log4perl::Tiny;
@@ -30,6 +31,30 @@ has 'static' => sub { Bugzilla::Quantum::Static->new };
 
 sub startup {
     my ($self) = @_;
+    my %D;
+    if ($ENV{BUGZILLA_HTTPD_ARGS}) {
+        my $args = decode_json($ENV{BUGZILLA_HTTPD_ARGS});
+        foreach my $arg (@$args) {
+            if ($arg =~ /^-D(\w+)$/) {
+                $D{$1} = 1;
+            }
+            else {
+                die "Unknown httpd arg: $arg";
+            }
+        }
+    }
+
+    $self->hook(
+        before_dispatch => sub {
+             my $c = shift;
+
+             if ($D{HTTPD_IN_SUBDIR}) {
+                my $path = $c->req->url->path;
+                $path =~ s{^/bmo}{}s;
+                $c->req->url->path($path);
+             }
+        }
+    );
 
     my $extensions = Bugzilla::Extension->load_all();
     Bugzilla->preload_features();

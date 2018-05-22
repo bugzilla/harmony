@@ -23,6 +23,7 @@ use IO::Async::Protocol::LineStream;
 use IO::Async::Signal;
 use IO::Socket;
 use LWP::Simple qw(get);
+use JSON::MaybeXS qw(encode_json);
 use POSIX qw(setsid WEXITSTATUS);
 
 use base qw(Exporter);
@@ -103,7 +104,7 @@ sub run_httpd {
             # we have to setsid() to make a new process group
             # or else apache will kill its parent.
             setsid();
-            warn "ignoring args: @args";
+            $ENV{BUGZILLA_HTTPD_ARGS} = encode_json(\@args);
             my @command = ( $^X, '/app/scripts/bugzilla_quantum', 'daemon', "--listen=http://*:$ENV{PORT}" );
             exec @command
               or die "failed to exec $command[0] $!";
