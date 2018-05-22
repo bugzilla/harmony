@@ -22,30 +22,20 @@ use Sys::Hostname;
 use English qw(-no_match_vars);
 
 our $C;
+my %SEEN;
 
 sub load_all {
     my ($class, $r) = @_;
-    my $stash = Package::Stash->new(__PACKAGE__);
 
-    foreach my $script (glob '*.cgi') {
-        my ($name, $method) = $class->_load_cgi($script);
-        $stash->add_symbol("&$name" => $method);
-        $r->any("/$script")->to("CGI#$name");
+    foreach my $file (glob '*.cgi') {
+        my $name   = _file_to_method($file);
+        $class->load_one($name, $file);
+        $r->any("/$file")->to("CGI#$name");
     }
 }
 
-sub _file_to_method {
-    my ($name) = @_;
-    $name =~ s/\./_/s;
-    $name =~ s/\W+/_/gs;
-    return $name;
-}
-
-my %SEEN;
-
-sub _load_cgi {
-    my ($class, $file) = @_;
-    my $name       = _file_to_method($file);
+sub load_one {
+    my ($class, $name, $file) = @_;
     my $package    = __PACKAGE__ . "::$name",
     my $inner_name = "_$name";
     my $content    = read_text( catfile( bz_locations->{cgi_path}, $file ) );
@@ -84,7 +74,10 @@ sub _load_cgi {
             CGI::initialize_globals();
         };
     };
-    return ($name, subname($name, $wrapper));
+
+    no strict 'refs'; ## no critic (strict)
+    *{$name} = subname($name, $wrapper);
+    return 1;
 }
 
 sub _ENV {
@@ -147,5 +140,13 @@ sub _STDIN {
     return $stdin if $stdin->isa('Mojo::Asset::File');
     return Mojo::Asset::File->new->add_chunk( $stdin->slurp );
 }
+
+sub _file_to_method {
+    my ($name) = @_;
+    $name =~ s/\./_/s;
+    $name =~ s/\W+/_/gs;
+    return $name;
+}
+
 
 1;

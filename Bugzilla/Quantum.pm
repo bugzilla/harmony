@@ -45,6 +45,8 @@ sub startup {
 
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);
+    Bugzilla::Quantum::CGI->load_one('bzapi_cgi', 'extensions/BzAPI/bin/rest.cgi');
+    $r->any('/bzapi/*PATH_INFO')->to('CGI#bzapi_cgi');
 
     $r->any('/')->to('CGI#index_cgi');
     $r->any('/rest')->to('CGI#rest_cgi');
