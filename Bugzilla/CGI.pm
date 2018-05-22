@@ -601,10 +601,17 @@ sub header {
     }
     my $headers = $self->SUPER::header(%headers) || '';
     if ($self->server_software eq 'Bugzilla::Quantum::CGI') {
-        my $c = $Bugzilla::C;
+        my $c = $Bugzilla::Quantum::CGI::C;
         $c->res->headers->parse($headers);
-        if ($c->res->headers->status =~ /^([0-9]+)/) {
+        my $status = $c->res->headers->status;
+        if ($status && $status =~ /^([0-9]+)/) {
             $c->res->code($1);
+        }
+        elsif ($c->res->headers->location) {
+            $c->res->code(302);
+        }
+        else {
+            $c->res->code(200);
         }
         return '';
     }

@@ -21,6 +21,8 @@ use Socket qw(AF_INET inet_aton);
 use Sys::Hostname;
 use English qw(-no_match_vars);
 
+our $C;
+
 sub load_all {
     my ($class, $r) = @_;
     my $stash = Package::Stash->new(__PACKAGE__);
@@ -61,12 +63,13 @@ sub _load_cgi {
         my ($c) = @_;
         my $stdin  = $c->_STDIN;
         my $stdout = '';
-        local %ENV = $c->_ENV;
+        local $C = $c;
+        local %ENV = $c->_ENV($file);
         local *STDIN;  ## no critic (local)
         local $CGI::Compile::USE_REAL_EXIT = 0;
         local $PROGRAM_NAME = $file;
         open STDIN, '<', $stdin->path or die "STDIN @{[$stdin->path]}: $!" if -s $stdin->path;
-        tie STDOUT, 'Bugzilla::Quantum::Stdout', controller => $c; ## no critic (tie)
+        tie *STDOUT, 'Bugzilla::Quantum::Stdout', controller => $c; ## no critic (tie)
         try {
             Bugzilla->init_page();
             $inner->();
@@ -75,6 +78,8 @@ sub _load_cgi {
             die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
         }
         finally {
+            untie *STDOUT;
+            $c->finish;
             Bugzilla->_cleanup;    ## no critic (private)
             CGI::initialize_globals();
         };
@@ -83,7 +88,7 @@ sub _load_cgi {
 }
 
 sub _ENV {
-    my ($c)     = @_;
+    my ($c, $script_name) = @_;
     my $tx      = $c->tx;
     my $req     = $tx->req;
     my $headers = $req->headers;
@@ -119,7 +124,7 @@ sub _ENV {
         REMOTE_PORT => $tx->remote_port,
         REMOTE_USER => $remote_user || '',
         REQUEST_METHOD  => $req->method,
-        SCRIPT_NAME     => $req->env->{SCRIPT_NAME},
+        SCRIPT_NAME     => "/$script_name",
         SERVER_NAME     => hostname,
         SERVER_PORT     => $tx->local_port,
         SERVER_PROTOCOL => $req->is_secure ? 'HTTPS' : 'HTTP', # TODO: Version is missing
