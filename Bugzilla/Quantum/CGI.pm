@@ -10,6 +10,7 @@ use Mojo::Base 'Mojolicious::Controller';
 
 use CGI::Compile;
 use Bugzilla::Constants qw(bz_locations);
+use Bugzilla::Quantum::Stdout;
 use File::Slurper qw(read_text);
 use File::Spec::Functions qw(catfile);
 use Sub::Name;
@@ -60,24 +61,20 @@ sub _load_cgi {
         my ($c) = @_;
         my $stdin  = $c->_STDIN;
         my $stdout = '';
-        local $Bugzilla::C = $c;
         local %ENV = $c->_ENV;
         local *STDIN;  ## no critic (local)
-        local *STDOUT;  ## no critic (local)
         local $CGI::Compile::USE_REAL_EXIT = 0;
         local $PROGRAM_NAME = $file;
         open STDIN, '<', $stdin->path or die "STDIN @{[$stdin->path]}: $!" if -s $stdin->path;
-        open STDOUT, '>', \$stdout or die "STDOUT capture: $!";
+        tie STDOUT, 'Bugzilla::Quantum::Stdout', controller => $c; ## no critic (tie)
         try {
             Bugzilla->init_page();
             $inner->();
         }
         catch {
-            $c->render(text => $_);
             die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
         }
         finally {
-            $c->res->body($stdout) if $stdout;
             Bugzilla->_cleanup;    ## no critic (private)
             CGI::initialize_globals();
         };

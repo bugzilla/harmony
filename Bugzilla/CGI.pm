@@ -712,17 +712,7 @@ sub send_cookie {
 sub redirect {
     my $self = shift;
     $self->{bz_redirecting} = 1;
-    use Carp;
-    carp "redirect @_\n";
-    if ($self->server_software eq 'Bugzilla::Quantum::CGI') {
-        my $c = $Bugzilla::C;
-        $self->SUPER::redirect(@_);
-        $c->redirect_to($c->res->headers->location);
-        return '';
-    }
-    else {
-        return $self->SUPER::redirect(@_);
-    }
+    return $self->SUPER::redirect(@_);
 }
 
 # This helps implement Bugzilla::Search::Recent, and also shortens search

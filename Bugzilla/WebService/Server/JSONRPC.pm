@@ -112,9 +112,6 @@ sub response {
         print $cgi->header(-status => $response->code, @header_args);
         print $response->content;
     }
-    if ($cgi->server_software eq 'Bugzilla::Quantum::CGI') {
-        $Bugzilla::C->rendered;
-    }
 }
 
 # The JSON-RPC 1.1 GET specification is not so great--you can't specify
