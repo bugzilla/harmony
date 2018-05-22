@@ -29,9 +29,9 @@ sub PRINT { ## no critic (unpack)
     my $self = shift;
 
     foreach my $chunk (@_) {
-        $chunk = "$chunk";
-        utf8::encode($chunk);
-        $self->controller->write($chunk);
+        my $str = "$chunk";
+        utf8::encode($str);
+        $self->controller->write($str);
     }
 }
 
