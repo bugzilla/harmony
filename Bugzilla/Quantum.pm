@@ -84,29 +84,6 @@ sub startup {
         },
     );
 
-    my $urlbase = Bugzilla->localconfig->{urlbase};
-    $r->get(
-        '/quicksearch.html' => sub {
-            my $c = shift;
-            $c->res->code(301);
-            $c->redirect_to( $urlbase . 'page.cgi?id=quicksearch.html' );
-        }
-    );
-    $r->get(
-        '/bugwritinghelp.html' => sub {
-            my $c = shift;
-            $c->res->code(301);
-            $c->redirect_to( $urlbase . 'page.cgi?id=bug-writing.html', 301 );
-        }
-    );
-    $r->get(
-        '/<bug_id:num>' => sub {
-            my $c = shift;
-            $c->res->code(301);
-            my $bug_id = $c->param('bug_id');
-            $c - redirect_to( $urlbase . "show_bug.cgi?id=$bug_id" );
-        }
-    );
 }
 
 1;

@@ -17,22 +17,29 @@ while (<>) {
         my ($regex, $target, $flags) = @args;
         $flags //= '';
         next if $flags =~ /E=HTTP/;
+        next if $target eq '-';
+        next if $target =~ /BzAPI/;
+        next if $target =~ /rest\.cgi/;
         my $action = 'rewrite_query';
         if ($flags =~ /R/) {
             $action = 'redirect';
         }
-        say qq{# from line $. of $ARGV};
         say "if (my \@match = \$path =~ m{$regex}s) {";
         say "    $action(\$c, q{$target}, \@match);";
         say "    return;" if $flags =~ /L/;
         say "}";
     }
     elsif (lc($cmd) eq "\LRedirect") {
-        say qq{# from line $. of $ARGV};
-        say "if (my \@match = \$path =~ m{$regex}s) {";
-        say "    $action(\$c, q{$target}, \@match);";
-        say "    return;" if $flags =~ /L/;
-        say "}";
+        my ($type, $path, $url) = @args;
+        if ($type eq 'permanent') {
+            say "if (\$path =~ m{^\Q$path\E}s) {";
+            say "    redirect(\$c, q{$url});";
+            say "    return;";
+            say "}";
+        }
+        else {
+            warn "I don't understand Redirect $type\n";
+        }
     }
 }
 
