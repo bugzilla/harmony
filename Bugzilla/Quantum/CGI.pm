@@ -102,7 +102,13 @@ sub _ENV {
         $remote_user = $authenticate =~ /Basic\s+(.*)/ ? b64_decode $1 : '';
         $remote_user = $remote_user =~ /([^:]+)/       ? $1            : '';
     }
-    my $path_info = $c->stash('PATH_INFO') || '';
+    my $path_info = delete $c->stash->{'mojo_captures'}{PATH_INFO};
+    my %captures = %{ $c->stash->{'mojo.captures'} // {} };
+    foreach my $key (keys %captures) {
+        delete $captures{$key} if $key =~ /^REWRITE_/;
+    }
+    my $cgi_query = Mojo::Parameters->new(%captures);
+    $cgi_query->append($req->url->query);
 
     return (
         CONTENT_LENGTH => $content_length        || 0,
@@ -110,7 +116,7 @@ sub _ENV {
         GATEWAY_INTERFACE => 'CGI/1.1',
         HTTPS             => $req->is_secure ? 'YES' : 'NO',
         %env_headers,
-        QUERY_STRING => $c->stash('cgi.query_string') || $req->url->query->to_string,
+        QUERY_STRING => $cgi_query->to_string,
         PATH_INFO   => $path_info ? "/$path_info" : '',
         REMOTE_ADDR => $tx->remote_address,
         REMOTE_HOST => gethostbyaddr( inet_aton( $tx->remote_address || '127.0.0.1' ), AF_INET ) || '',

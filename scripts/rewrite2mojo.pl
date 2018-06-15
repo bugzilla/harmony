@@ -9,6 +9,8 @@
 use 5.10.1;
 use strict;
 use warnings;
+use Mojo::Parameters;
+use Data::Dumper;
 
 while (<>) {
     my ($cmd, @args) = split /\s+/, $_;
@@ -18,29 +20,51 @@ while (<>) {
         $flags //= '';
         next if $flags =~ /E=HTTP/;
         next if $target eq '-';
-        next if $target =~ /BzAPI/;
-        next if $target =~ /rest\.cgi/;
         my $action = 'rewrite_query';
         if ($flags =~ /R/) {
-            $action = 'redirect';
+            next;
         }
-        say "if (my \@match = \$path =~ m{$regex}s) {";
-        say "    $action(\$c, q{$target}, \@match);";
-        say "    return;" if $flags =~ /L/;
-        say "}";
+        my ($script, $query) = $target =~ /^([^?]+)(?:\?(.+))?$/;
+        my $name = _file_to_method($script);
+        $regex =~ s/^\^//;
+        $regex =~ s/\$$//;
+        my $regex_name = _regex_to_name($regex);
+        my $param_hash = Mojo::Parameters->new($query)->to_hash;
+        my $param_str = Data::Dumper->new([$param_hash])->Terse(1)->Indent(0)->Dump;
+        say "\$r->any('/:$regex_name' => [$regex_name => qr{$regex}])->to(";
+        say "    'CGI#$name' => $param_str";
+        say ");";
+
     }
-    elsif (lc($cmd) eq "\LRedirect") {
-        my ($type, $path, $url) = @args;
-        if ($type eq 'permanent') {
-            say "if (\$path =~ m{^\Q$path\E}s) {";
-            say "    redirect(\$c, q{$url});";
-            say "    return;";
-            say "}";
-        }
-        else {
-            warn "I don't understand Redirect $type\n";
-        }
-    }
+    # elsif (lc($cmd) eq "\LRedirect") {
+    #     my ($type, $path, $url) = @args;
+    #     if ($type eq 'permanent') {
+    #         say "if (\$path =~ m{^\Q$path\E}s) {";
+    #         say "    redirect(\$c, q{$url});";
+    #         say "    return;";
+    #         say "}";
+    #     }
+    #     else {
+    #         warn "I don't understand Redirect $type\n";
+    #     }
+    # }
+}
+
+sub _file_to_method {
+    my ($name) = @_;
+    $name =~ s/\./_/s;
+    $name =~ s/\W+/_/gs;
+    return $name;
+}
+
+sub _regex_to_name {
+    my ($name) = @_;
+    $name =~ s/\./_/s;
+    $name =~ s/\W+/_/gs;
+    $name =~ s/_+/_/g;
+    $name =~ s/^_//s;
+    $name =~ s/_$//s;
+    return $name;
 }
 
 
