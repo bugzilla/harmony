@@ -102,10 +102,12 @@ sub _ENV {
         $remote_user = $authenticate =~ /Basic\s+(.*)/ ? b64_decode $1 : '';
         $remote_user = $remote_user =~ /([^:]+)/       ? $1            : '';
     }
-    my $path_info = delete $c->stash->{'mojo_captures'}{PATH_INFO};
+    my $path_info = $c->param('PATH_INFO');
     my %captures = %{ $c->stash->{'mojo.captures'} // {} };
     foreach my $key (keys %captures) {
-        delete $captures{$key} if $key =~ /^REWRITE_/;
+        if ($key eq 'action' || $key eq 'PATH_INFO' || $key =~ /^REWRITE_/) {
+            delete $captures{$key};
+        }
     }
     my $cgi_query = Mojo::Parameters->new(%captures);
     $cgi_query->append($req->url->query);
