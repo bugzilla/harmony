@@ -105,7 +105,7 @@ sub run_httpd {
             # or else apache will kill its parent.
             setsid();
             $ENV{BUGZILLA_HTTPD_ARGS} = encode_json(\@args);
-            my @command = ( $^X, '/app/scripts/bugzilla_quantum', 'daemon', "--listen=http://*:$ENV{PORT}" );
+            my @command = ( $^X, '/app/bugzilla.pl', 'daemon', "--listen=http://*:$ENV{PORT}" );
             exec @command
               or die "failed to exec $command[0] $!";
         },

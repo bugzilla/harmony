@@ -31,42 +31,11 @@ has 'static' => sub { Bugzilla::Quantum::Static->new };
 
 sub startup {
     my ($self) = @_;
-    my %D;
-    if ($ENV{BUGZILLA_HTTPD_ARGS}) {
-        my $args = decode_json($ENV{BUGZILLA_HTTPD_ARGS});
-        foreach my $arg (@$args) {
-            if ($arg =~ /^-D(\w+)$/) {
-                $D{$1} = 1;
-            }
-            else {
-                die "Unknown httpd arg: $arg";
-            }
-        }
-    }
-
-    $self->hook(
-        before_dispatch => sub {
-             my $c = shift;
-
-             if ($D{HTTPD_IN_SUBDIR}) {
-                my $path = $c->req->url->path;
-                $path =~ s{^/bmo}{}s;
-                $c->req->url->path($path);
-             }
-        }
-    );
-
-    my $extensions = Bugzilla::Extension->load_all();
-    Bugzilla->preload_features();
-    Bugzilla->template;
-    $self->secrets([Bugzilla->localconfig->{side_wide_secret}]);
 
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
-    $self->log(
-        MojoX::Log::Log4perl::Tiny->new(
-            logger => Log::Log4perl->get_logger(__PACKAGE__)
-        )
-    );
+    my $port = $ENV{PORT} // 3000;
+    untaint($port);
+    $self->config(hypnotoad => {listen => ["http://*:$port"]});
 
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);
@@ -74,6 +43,7 @@ sub startup {
 
     $r->any('/')->to('CGI#index_cgi');
     $r->any('/rest')->to('CGI#rest_cgi');
+    $r->any('/rest.cgi/*PATH_INFP')->to('CGI#rest_cgi' => { PATH_INFO => '' });
     $r->any('/rest/*PATH_INFO')->to( 'CGI#rest_cgi' => { PATH_INFO => '' });
     $r->any('/bug/:id')->to('CGI#show_bug_cgi');
     $r->any('/extensions/BzAPI/bin/rest.cgi/*PATH_INFO')->to('CGI#bzapi_cgi');
@@ -83,9 +53,8 @@ sub startup {
             $c->reply->file($c->app->home->child('__lbheartbeat__'));
         },
     );
-
-    $r->any('/__heartbeat__')->to( 'CGI#heartbeat_cgi');
-    $r->any('/robots.txt')->to( 'CGI#robots_cgi' );
+    $r->get('/__heartbeat__')->to( 'CGI#heartbeat_cgi');
+    $r->get('/robots.txt')->to( 'CGI#robots_cgi' );
 
     $r->any('/review')->to( 'CGI#page_cgi' => {'id' => 'splinter.html'});
     $r->any('/user_profile')->to( 'CGI#page_cgi' => {'id' => 'user_profile.html'});

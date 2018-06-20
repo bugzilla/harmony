@@ -9,7 +9,7 @@ use Cwd qw(realpath);
 
 BEGIN {
     require lib;
-    my $dir = realpath( catdir(dirname(__FILE__), '..') );
+    my $dir = realpath( dirname(__FILE__) );
     lib->import( $dir, catdir( $dir, 'lib' ), catdir( $dir, qw(local lib perl5) ) );
 }
 use Mojolicious::Commands;

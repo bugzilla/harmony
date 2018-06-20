@@ -11,12 +11,45 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Try::Tiny;
 use Bugzilla::Constants;
 use Bugzilla::Quantum::Template;
+use Bugzilla::Logging;
 
 sub register {
     my ( $self, $app, $conf ) = @_;
 
-    my $template = Bugzilla::Template->create;
-    $template->{_is_main} = 1;
+    my %D;
+    if ($ENV{BUGZILLA_HTTPD_ARGS}) {
+        my $args = decode_json($ENV{BUGZILLA_HTTPD_ARGS});
+        foreach my $arg (@$args) {
+            if ($arg =~ /^-D(\w+)$/) {
+                $D{$1} = 1;
+            }
+            else {
+                die "Unknown httpd arg: $arg";
+            }
+        }
+    }
+
+    $app->hook(
+        around_dispatch => sub {
+            my ($next, $c) = @_;
+
+             if ($D{HTTPD_IN_SUBDIR}) {
+                my $path = $c->req->url->path;
+                $path =~ s{^/bmo}{}s;
+                $c->req->url->path($path);
+             }
+             $next->();
+        }
+    );
+
+    Bugzilla::Extension->load_all();
+    if ($app->mode ne 'development') {
+        Bugzilla->preload_features();
+        DEBUG("preloading templates");
+        Bugzilla->preload_templates();
+        DEBUG("done preloading templates");
+    }
+    $app->secrets([Bugzilla->localconfig->{side_wide_secret}]);
 
     $app->renderer->add_handler(
         'bugzilla' => sub {
@@ -37,9 +70,16 @@ sub register {
             unless ($name =~ /\./) {
                 $name = sprintf '%s.%s.tmpl', $options->{template}, $options->{format};
             }
+            my $template = Bugzilla->template;
             $template->process( $name, $vars, $output )
                 or die $template->error;
         }
+    );
+
+    $app->log(
+        MojoX::Log::Log4perl::Tiny->new(
+            logger => Log::Log4perl->get_logger(ref $app)
+        )
     );
 }
 
