@@ -222,5 +222,8 @@
     - include_tasks: apache.yml
       vars:
         LAZY: 0
+    - include_tasks: hypnotoad.yml
+      vars:
+        LAZY: 0
     - import_tasks: devtools.yml
 

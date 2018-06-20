@@ -29,6 +29,13 @@ sub register {
         }
     }
 
+    # hypnotoad is weird and doesn't look for MOJO_LISTEN itself.
+    $app->config(
+        hypnotoad => {
+            listen => [ $ENV{MOJO_LISTEN} ],
+        },
+    );
+
     $app->hook(
         around_dispatch => sub {
             my ($next, $c) = @_;

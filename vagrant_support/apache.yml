@@ -7,7 +7,7 @@
   when: LAZY == 0
 
 - name: disable httpd
-  service: name=httpd enabled=yes
+  service: name=httpd enabled=no
   when: LAZY == 0
 
 - name: ensure bugzilla.log has right permissions

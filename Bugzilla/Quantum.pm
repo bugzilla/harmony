@@ -33,9 +33,6 @@ sub startup {
     my ($self) = @_;
 
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
-    my $port = $ENV{PORT} // 3000;
-    untaint($port);
-    $self->config(hypnotoad => {listen => ["http://*:$port"]});
 
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);
