@@ -65,7 +65,7 @@ sub load_one {
             $inner->();
         }
         catch {
-            die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /^Died at.*Error\.pm/
+            die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n";
         }
         finally {
             untie *STDOUT;
