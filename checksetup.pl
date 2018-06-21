@@ -135,7 +135,7 @@ require Bugzilla::Install::Localconfig;
 import Bugzilla::Install::Localconfig qw(update_localconfig);
 
 require Bugzilla::Install::Filesystem;
-import Bugzilla::Install::Filesystem qw(update_filesystem create_htaccess
+import Bugzilla::Install::Filesystem qw(update_filesystem
                                         fix_all_file_permissions);
 require Bugzilla::Install::DB;
 require Bugzilla::DB;
