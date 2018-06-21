@@ -53,16 +53,17 @@ sub register {
         }
     );
 
-    if ($D{HTTPD_IN_SUBDIR}) {
-        $app->hook(
-            before_dispatch => sub {
+    $app->hook(
+        before_dispatch => sub {
+            if ($D{HTTPD_IN_SUBDIR}) {
                 my ($c) = @_;
                 my $path = $c->req->url->path;
                 $path =~ s{^/bmo}{}s;
                 $c->req->url->path($path);
             }
-        );
-    }
+            Log::Log4perl::MDC->put(request_id => $c->req->request_id);
+        }
+    );
 
     Bugzilla::Extension->load_all();
     if ($app->mode ne 'development') {
