@@ -21,7 +21,6 @@ use Bugzilla::CGI ();
 use Bugzilla::Extension ();
 use Bugzilla::Install::Requirements ();
 use Bugzilla::Util ();
-use Bugzilla::RNG ();
 use Cwd qw(realpath);
 
 use MojoX::Log::Log4perl::Tiny;

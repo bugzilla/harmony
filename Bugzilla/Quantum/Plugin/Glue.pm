@@ -12,6 +12,7 @@ use Try::Tiny;
 use Bugzilla::Constants;
 use Bugzilla::Quantum::Template;
 use Bugzilla::Logging;
+use Bugzilla::RNG ();
 use JSON::MaybeXS qw(decode_json);
 
 sub register {
@@ -39,7 +40,9 @@ sub register {
 
     Mojo::IOLoop->next_tick(
         sub {
-
+            Bugzilla::RNG::srand();
+            srand();
+            eval { Bugzilla->dbh->ping };
         }
     );
 
