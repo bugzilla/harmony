@@ -201,7 +201,6 @@ unless ($switch{'no-database'}) {
 ###########################################################################
 
 update_filesystem({ index_html => $lc_hash->{'index_html'} });
-create_htaccess() if $lc_hash->{'create_htaccess'};
 
 # Remove parameters from the params file that no longer exist in Bugzilla,
 # and set the defaults for new ones

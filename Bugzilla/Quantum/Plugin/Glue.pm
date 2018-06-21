@@ -55,8 +55,8 @@ sub register {
 
     $app->hook(
         before_dispatch => sub {
+            my ($c) = @_;
             if ($D{HTTPD_IN_SUBDIR}) {
-                my ($c) = @_;
                 my $path = $c->req->url->path;
                 $path =~ s{^/bmo}{}s;
                 $c->req->url->path($path);
