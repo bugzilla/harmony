@@ -14,7 +14,7 @@ use Bugzilla::Logging;
 use Bugzilla::Constants qw(bz_locations);
 use Cwd qw(realpath);
 use English qw(-no_match_vars $PROGRAM_NAME);
-use File::Spec::Functions qw(catfile);
+use File::Spec::Functions qw(catfile catdir);
 use Future::Utils qw(repeat try_repeat);
 use Future;
 use IO::Async::Loop;
@@ -41,11 +41,13 @@ our %EXPORT_TAGS = (
     utils => [qw(catch_signal on_exception on_finish)],
 );
 
+use constant BUGZILLA_DIR => realpath(bz_locations->{cgi_path});
+
 use constant {
-    JOBQUEUE_BIN => realpath( catfile( bz_locations->{cgi_path}, 'jobqueue.pl' ) ),
-    CEREAL_BIN   => realpath( catfile( bz_locations->{cgi_path}, 'scripts', 'cereal.pl' ) ),
-    HTTPD_BIN    => '/usr/sbin/httpd',
-    HTTPD_CONFIG => realpath( catfile( bz_locations->{confdir}, 'httpd.conf' ) ),
+    JOBQUEUE_BIN  => catfile( BUGZILLA_DIR, 'jobqueue.pl' ),
+    CEREAL_BIN    => catfile( BUGZILLA_DIR, 'scripts', 'cereal.pl' ),
+    HYPNOTOAD_BIN => catfile( BUGZILLA_DIR, 'local', 'bin', 'hypnotoad' ),
+    PERL5LIB      => join(':', BUGZILLA_DIR, catdir(BUGZILLA_DIR, 'lib'), catdir(BUGZILLA_DIR, 'local', 'lib', 'perl5'),
 };
 
 sub catch_signal {
@@ -101,7 +103,8 @@ sub run_httpd {
     my $httpd  = IO::Async::Process->new(
         code => sub {
             $ENV{BUGZILLA_HTTPD_ARGS} = encode_json(\@args);
-            my @command = ( 'hypnotoad', '/app/bugzilla.pl', '-f' );
+            $ENV{PERL5LIB} = PERL5LIB;
+            my @command = ( HYPNOTOAD_BIN, catfile(BUGZILLA_DIR, 'bugzilla.pl'), '-f' );
             exec @command
               or die "failed to exec $command[0] $!";
         },

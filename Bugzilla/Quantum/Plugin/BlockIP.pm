@@ -11,7 +11,7 @@ my $MEMCACHED = Bugzilla::Memcached->_new()->{memcached};
 sub register {
     my ( $self, $app, $conf ) = @_;
 
-    $app->hook(before_routes => \&_before_routes)
+    $app->hook(before_routes => \&_before_routes);
     $app->helper(block_ip    => \&_block_ip);
     $app->helper(unblock_ip  => \&_unblock_ip);
 }

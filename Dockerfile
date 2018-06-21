@@ -9,8 +9,6 @@ ENV CIRCLE_BUILD_URL=${CIRCLE_BUILD_URL}
 ENV CIRCLE_SHA1=${CIRCLE_SHA1}
 
 ENV LOG4PERL_CONFIG_FILE=log4perl-json.conf
-ENV PATH=/app/local/bin:/opt/rh/sclo-git25/root/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV PERL5LIB=/app:/app/local/lib/perl5:/app/lib
 
 ENV PORT=8000
 
