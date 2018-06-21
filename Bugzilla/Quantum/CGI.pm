@@ -65,7 +65,7 @@ sub load_one {
             $inner->();
         }
         catch {
-            die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /\bModPerl::Util::exit\b/;
+            die $_ unless ref $_ eq 'ARRAY' && $_->[0] eq "EXIT\n" || /^Died at.*Error\.pm/
         }
         finally {
             untie *STDOUT;
