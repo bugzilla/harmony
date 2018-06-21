@@ -24,7 +24,7 @@ use IO::Async::Signal;
 use IO::Socket;
 use LWP::Simple qw(get);
 use JSON::MaybeXS qw(encode_json);
-use POSIX qw(setsid WEXITSTATUS);
+use POSIX qw(WEXITSTATUS);
 
 use base qw(Exporter);
 
@@ -100,12 +100,8 @@ sub run_httpd {
     my $exit_f = $loop->new_future;
     my $httpd  = IO::Async::Process->new(
         code => sub {
-
-            # we have to setsid() to make a new process group
-            # or else apache will kill its parent.
-            setsid();
             $ENV{BUGZILLA_HTTPD_ARGS} = encode_json(\@args);
-            my @command = ( $^X, '/app/local/bin/hypnotoad', '/app/bugzilla.pl', '-f' ); 
+            my @command = ( 'hypnotoad', '/app/bugzilla.pl', '-f' );
             exec @command
               or die "failed to exec $command[0] $!";
         },

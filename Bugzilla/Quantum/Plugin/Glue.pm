@@ -12,6 +12,7 @@ use Try::Tiny;
 use Bugzilla::Constants;
 use Bugzilla::Quantum::Template;
 use Bugzilla::Logging;
+use JSON::MaybeXS qw(decode_json);
 
 sub register {
     my ( $self, $app, $conf ) = @_;
@@ -34,6 +35,12 @@ sub register {
         hypnotoad => {
             listen => [ $ENV{MOJO_LISTEN} ],
         },
+    );
+
+    Mojo::IOLoop->next_tick(
+        sub {
+
+        }
     );
 
     $app->hook(

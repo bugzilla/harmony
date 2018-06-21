@@ -22,7 +22,6 @@ use Bugzilla::Extension ();
 use Bugzilla::Install::Requirements ();
 use Bugzilla::Util ();
 use Bugzilla::RNG ();
-use JSON::MaybeXS qw(decode_json);
 use Cwd qw(realpath);
 
 use MojoX::Log::Log4perl::Tiny;
