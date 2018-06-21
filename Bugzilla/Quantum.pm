@@ -31,6 +31,7 @@ sub startup {
     my ($self) = @_;
 
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
+    $self->plugin('Bugzilla::Quantum::Plugin::Hostage');
 
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);
