@@ -34,6 +34,15 @@ sub startup {
     $self->plugin('Bugzilla::Quantum::Plugin::Hostage');
     $self->plugin('Bugzilla::Quantum::Plugin::BlockIP');
 
+    if ( $self->mode ne 'development' ) {
+        $self->hook(
+            after_static => sub {
+                my ($c) = @_;
+                $c->res->headers->cache_control('public, max-age=31536000');
+            }
+        );
+    }
+
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);
     Bugzilla::Quantum::CGI->load_one('bzapi_cgi', 'extensions/BzAPI/bin/rest.cgi');
@@ -47,9 +56,10 @@ sub startup {
     $r->get(
         '/__lbheartbeat__' => sub {
             my $c = shift;
-            $c->reply->file($c->app->home->child('__lbheartbeat__'));
+            $c->reply->file( $c->app->home->child('__lbheartbeat__') );
         },
     );
+
     $r->get('/__heartbeat__')->to( 'CGI#heartbeat_cgi');
     $r->get('/robots.txt')->to( 'CGI#robots_cgi' );
 
