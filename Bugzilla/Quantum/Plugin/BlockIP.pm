@@ -31,7 +31,6 @@ sub _before_routes {
     return if $c->stash->{'mojo.static'};
 
     my $ip = $c->tx->remote_address;
-    $c->app->log->debug("remote ip: $ip");
     if ($MEMCACHED && $MEMCACHED->get("block_ip:$ip")) {
         $c->block_ip($ip);
         $c->res->code(429);
