@@ -8,6 +8,7 @@
     content: |
       BUGZILLA=/vagrant
       USER=vagrant
+      MOJO_MODE=development
 
 - name: hypnotoad daemon init file
   template:

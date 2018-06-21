@@ -33,6 +33,7 @@ USER=vagrant
 
 PERL5LIB="$BUGZILLA:$BUGZILLA/lib:$BUGZILLA/local/lib/perl5"
 export PERL5LIB
+export MOJO_MODE
 
 if [[ x$PORT == x ]]; then
     PORT=80
