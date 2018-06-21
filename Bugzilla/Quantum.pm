@@ -32,6 +32,7 @@ sub startup {
 
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
     $self->plugin('Bugzilla::Quantum::Plugin::Hostage');
+    $self->plugin('Bugzilla::Quantum::Plugin::BlockIP');
 
     my $r = $self->routes;
     Bugzilla::Quantum::CGI->load_all($r);
