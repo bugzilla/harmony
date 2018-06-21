@@ -6,6 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::Quantum::Plugin::Glue;
+use 5.10.1;
 use Mojo::Base 'Mojolicious::Plugin';
 
 use Try::Tiny;
@@ -52,18 +53,16 @@ sub register {
         }
     );
 
-    $app->hook(
-        around_dispatch => sub {
-            my ($next, $c) = @_;
-
-             if ($D{HTTPD_IN_SUBDIR}) {
+    if ($D{HTTPD_IN_SUBDIR}) {
+        $app->hook(
+            before_dispatch => sub {
+                my ($c) = @_;
                 my $path = $c->req->url->path;
                 $path =~ s{^/bmo}{}s;
                 $c->req->url->path($path);
-             }
-             $next->();
-        }
-    );
+            }
+        );
+    }
 
     Bugzilla::Extension->load_all();
     if ($app->mode ne 'development') {
