@@ -47,7 +47,7 @@ use constant {
     JOBQUEUE_BIN  => catfile( BUGZILLA_DIR, 'jobqueue.pl' ),
     CEREAL_BIN    => catfile( BUGZILLA_DIR, 'scripts', 'cereal.pl' ),
     HYPNOTOAD_BIN => catfile( BUGZILLA_DIR, 'local', 'bin', 'hypnotoad' ),
-    PERL5LIB      => join(':', BUGZILLA_DIR, catdir(BUGZILLA_DIR, 'lib'), catdir(BUGZILLA_DIR, 'local', 'lib', 'perl5'),
+    PERL5LIB      => join(':', BUGZILLA_DIR, catdir(BUGZILLA_DIR, 'lib'), catdir(BUGZILLA_DIR, 'local', 'lib', 'perl5')),
 };
 
 sub catch_signal {
