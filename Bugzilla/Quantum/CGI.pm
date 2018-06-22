@@ -113,6 +113,7 @@ sub _ENV {
     $cgi_query->append($req->url->query);
 
     return (
+        %ENV,
         CONTENT_LENGTH => $content_length        || 0,
         CONTENT_TYPE   => $headers->content_type || '',
         GATEWAY_INTERFACE => 'CGI/1.1',
