@@ -33,6 +33,7 @@ sub startup {
     $self->plugin('Bugzilla::Quantum::Plugin::Glue');
     $self->plugin('Bugzilla::Quantum::Plugin::Hostage');
     $self->plugin('Bugzilla::Quantum::Plugin::BlockIP');
+    $self->log->info("\$ENV{LOG4PERL_STDERR_DISABLE} = $ENV{LOG4PERL_STDERR_DISABLE}");
 
     if ( $self->mode ne 'development' ) {
         $self->hook(
