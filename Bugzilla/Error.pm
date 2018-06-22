@@ -126,7 +126,7 @@ sub _throw_error {
                                  version     => $server->version);
             # if _bz_request_id is set, we're inside the _handle() function
             # and we don't need to call $server->response.
-            unless ($self->{_bz_request_id}) {
+            unless ($server->{_bz_request_id}) {
                 $server->response($server->error_response_header);
             }
         }
