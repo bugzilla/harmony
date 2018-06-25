@@ -31,7 +31,7 @@ use Scalar::Util qw(blessed);
 sub _in_eval {
     my $in_eval = 0;
     for (my $stack = 1; my $sub = (caller($stack))[3]; $stack++) {
-        last if $sub =~ /^ModPerl/;
+        last if $sub =~ /^Bugzilla::Quantum::CGI::try/;
         $in_eval = 1 if $sub =~ /^\(eval\)/;
     }
     return $in_eval;
