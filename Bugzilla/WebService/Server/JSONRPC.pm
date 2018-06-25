@@ -271,7 +271,6 @@ sub _handle {
     my $self = shift;
     my ($obj) = @_;
     $self->{_bz_request_id} = $obj->{id};
-    local $self->{_bz_will_handle_error} = 1;
 
     my $result = $self->SUPER::_handle(@_);
 

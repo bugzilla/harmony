@@ -124,11 +124,12 @@ sub _throw_error {
                                  message     => $message,
                                  id          => $server->{_bz_request_id},
                                  version     => $server->version);
-            # if _bz_will_handle_error is set, we're inside the _handle() function
-            # and we don't need to call $server->response.
-            unless ($server->{_bz_will_handle_error}) {
-                $server->response($server->error_response_header);
-            }
+            # Most JSON-RPC Throw*Error calls happen within an eval inside
+            # of JSON::RPC. So, in that circumstance, instead of exiting,
+            # we die with no message. JSON::RPC checks raise_error before
+            # it checks $@, so it returns the proper error.
+            die if _in_eval();
+            $server->response($server->error_response_header);
         }
     }
 
