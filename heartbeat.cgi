@@ -36,10 +36,3 @@ FATAL("heartbeat error: $@") if !$ok && $@;
 my $cgi = Bugzilla->cgi;
 print $cgi->header(-type => 'text/plain', -status => $ok ? '200 OK' : '500 Internal Server Error');
 print $ok ? "Bugzilla OK\n" : "Bugzilla NOT OK\n";
-
-if ($ENV{MOD_PERL}) {
-    my $r = $cgi->r;
-    # doing this supresses the error document, but does not change the http response code.
-    $r->rflush;
-    $r->status(200);
-}

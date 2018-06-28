@@ -289,18 +289,6 @@ my %optional_features = (
             }
         },
     },
-    mod_perl => {
-        description => 'mod_perl support under Apache',
-        prereqs     => {
-            runtime => {
-                requires => {
-                    'mod_perl2'          => '1.999022',
-                    'Apache2::SizeLimit' => '0.96',
-                    'Plack::Handler::Apache2' => 0,
-                }
-            }
-        }
-    },
     inbound_email => {
         description => 'Inbound Email',
         prereqs     => {

@@ -477,11 +477,6 @@ sub _prevent_unsafe_response {
             print $self->SUPER::header(-type => 'text/html',  -status => '403 Forbidden');
             if ($content_type ne 'text/html') {
                 print "Untrusted Referer Header\n";
-                if ($ENV{MOD_PERL}) {
-                    my $r = $self->r;
-                    $r->rflush;
-                    $r->status(200);
-                }
             }
             exit;
         }
@@ -804,9 +799,6 @@ sub redirect_to_https {
     # and do not work with 302. Our redirect really is permanent anyhow, so
     # it doesn't hurt to make it a 301.
     print $self->redirect(-location => $url, -status => 301);
-
-    # When using XML-RPC with mod_perl, we need the headers sent immediately.
-    $self->r->rflush if $ENV{MOD_PERL};
     exit;
 }
 

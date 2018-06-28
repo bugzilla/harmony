@@ -196,7 +196,7 @@ sub ThrowTemplateError {
 
     # mod_perl overrides exit to call die with this string
     # we never want to display this to the user
-    exit if $template_err =~ /\bModPerl::Util::exit\b/;
+    die $template_err if ref($template_err) eq 'ARRAY' && $template_err->[0] eq "EXIT\n";
 
     state $logger = Log::Log4perl->get_logger('Bugzilla.Error.Template');
     $logger->error($template_err);
