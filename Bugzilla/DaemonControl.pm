@@ -41,14 +41,17 @@ our %EXPORT_TAGS = (
     utils => [qw(catch_signal on_exception on_finish)],
 );
 
-use constant BUGZILLA_DIR => realpath(bz_locations->{cgi_path});
+my $BUGZILLA_DIR  = realpath(bz_locations->{cgi_path});
+my $JOBQUEUE_BIN  = catfile( $BUGZILLA_DIR, 'jobqueue.pl' );
+my $CEREAL_BIN    = catfile( $BUGZILLA_DIR, 'scripts', 'cereal.pl' );
+my $BUGZILLA_BIN  = catfile( $BUGZILLA_DIR, 'bugzilla.pl' );
+my $HYPNOTOAD_BIN = catfile( $BUGZILLA_DIR, 'local', 'bin', 'hypnotoad' );
+my @PERL5LIB      = ( $BUGZILLA_DIR, catdir($BUGZILLA_DIR, 'lib'), catdir($BUGZILLA_DIR, 'local', 'lib', 'perl5') );
 
-use constant {
-    JOBQUEUE_BIN  => catfile( BUGZILLA_DIR, 'jobqueue.pl' ),
-    CEREAL_BIN    => catfile( BUGZILLA_DIR, 'scripts', 'cereal.pl' ),
-    HYPNOTOAD_BIN => catfile( BUGZILLA_DIR, 'local', 'bin', 'hypnotoad' ),
-    PERL5LIB      => join(':', BUGZILLA_DIR, catdir(BUGZILLA_DIR, 'lib'), catdir(BUGZILLA_DIR, 'local', 'lib', 'perl5')),
-};
+my %HTTP_COMMAND = (
+    hypnotoad => [ $HYPNOTOAD_BIN, $BUGZILLA_BIN, '-f' ],
+    simple    => [ $BUGZILLA_BIN, 'daemon' ],
+);
 
 sub catch_signal {
     my ($name, @done)   = @_;
@@ -79,7 +82,7 @@ sub run_cereal {
     my $loop   = IO::Async::Loop->new;
     my $exit_f = $loop->new_future;
     my $cereal = IO::Async::Process->new(
-        command      => [CEREAL_BIN],
+        command      => [$CEREAL_BIN],
         on_finish    => on_finish($exit_f),
         on_exception => on_exception( 'cereal', $exit_f ),
     );
@@ -103,10 +106,11 @@ sub run_httpd {
     my $httpd  = IO::Async::Process->new(
         code => sub {
             $ENV{BUGZILLA_HTTPD_ARGS} = encode_json(\@args);
-            $ENV{PERL5LIB} = PERL5LIB;
-            my @command = ( HYPNOTOAD_BIN, catfile(BUGZILLA_DIR, 'bugzilla.pl'), '-f' );
-            exec @command
-              or die "failed to exec $command[0] $!";
+            $ENV{PERL5LIB} = join(':', @PERL5LIB);
+            my $backend = $ENV{HTTP_BACKEND} // 'hypnotoad';
+            my $command = $HTTP_COMMAND{ $backend };
+            exec @$command
+              or die "failed to exec $command->[0] $!";
         },
         on_finish    => on_finish($exit_f),
         on_exception => on_exception( 'httpd', $exit_f ),
@@ -123,7 +127,7 @@ sub run_jobqueue {
     my $loop     = IO::Async::Loop->new;
     my $exit_f   = $loop->new_future;
     my $jobqueue = IO::Async::Process->new(
-        command   => [ JOBQUEUE_BIN, 'start', '-f', '-d', @args ],
+        command   => [ $JOBQUEUE_BIN, 'start', '-f', '-d', @args ],
         on_finish => on_finish($exit_f),
         on_exception => on_exception( 'httpd', $exit_f ),
     );
