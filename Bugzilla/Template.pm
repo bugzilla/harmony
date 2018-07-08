@@ -1042,11 +1042,7 @@ sub create {
 
     # under mod_perl, use a provider (template loader) that preloads all templates into memory
     my $provider_class
-<<<<<<< HEAD
-        = BZ_PERSISTENT
-=======
         = $opts{preload}
->>>>>>> dylanwh/mojo-poc
         ? 'Bugzilla::Template::PreloadProvider'
         : 'Template::Provider';
 
