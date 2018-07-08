@@ -36,6 +36,7 @@ use Cwd ();
 use File::Slurp;
 use IO::File;
 use POSIX ();
+use English qw(-no_match_vars $OSNAME);
 
 use base qw(Exporter);
 our @EXPORT = qw(
@@ -106,6 +107,7 @@ use constant HTTPD_ENV => qw(
     LOCALCONFIG_ENV
     BUGZILLA_UNSAFE_AUTH_DELEGATION
     LOG4PERL_CONFIG_FILE
+    LOG4PERL_STDERR_DISABLE
     USE_NYTPROF
     NYTPROF_DIR
 );
@@ -206,6 +208,8 @@ sub DIR_CGI_OVERWRITE { _group() ? 0770 : 0777 };
 # (or their subdirectories) to the user, via the webserver.
 sub DIR_ALSO_WS_SERVE { _suexec() ? 0001 : 0 };
 
+sub DIR_ALSO_WS_STICKY { $OSNAME eq 'linux' ? 02000 : 0 }
+
 # This looks like a constant because it effectively is, but
 # it has to call other subroutines and read the current filesystem,
 # so it's defined as a sub. This is not exported, so it doesn't have
@@ -230,7 +234,7 @@ sub FILESYSTEM {
     my $template_cache = bz_locations()->{'template_cache'};
     my $graphsdir      = bz_locations()->{'graphsdir'};
     my $assetsdir      = bz_locations()->{'assetsdir'};
-    my $error_reports  = bz_locations()->{'error_reports'};
+    my $logsdir        = bz_locations()->{'logsdir'};
 
     # We want to set the permissions the same for all localconfig files
     # across all PROJECTs, so we do something special with $localconfig,
@@ -265,8 +269,6 @@ sub FILESYSTEM {
         'runtests.pl'     => { perms => OWNER_EXECUTE },
         'jobqueue.pl'     => { perms => OWNER_EXECUTE },
         'migrate.pl'      => { perms => OWNER_EXECUTE },
-        'sentry.pl'       => { perms => WS_EXECUTE },
-        'metrics.pl'      => { perms => WS_EXECUTE },
         'Makefile.PL'     => { perms => OWNER_EXECUTE },
         'gen-cpanfile.pl' => { perms => OWNER_EXECUTE },
         'jobqueue-worker.pl' => { perms => OWNER_EXECUTE },
@@ -315,8 +317,6 @@ sub FILESYSTEM {
         # Writeable directories
          $template_cache    => { files => CGI_READ,
                                   dirs => DIR_CGI_OVERWRITE },
-         $error_reports     => { files => CGI_READ,
-                                  dirs => DIR_CGI_WRITE },
          $attachdir         => { files => CGI_WRITE,
                                   dirs => DIR_CGI_WRITE },
          $webdotdir         => { files => WS_SERVE,
@@ -325,6 +325,8 @@ sub FILESYSTEM {
                                   dirs => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE },
          "$datadir/db"      => { files => CGI_WRITE,
                                   dirs => DIR_CGI_WRITE },
+         $logsdir           => { files => CGI_WRITE,
+                                 dirs  => DIR_CGI_WRITE | DIR_ALSO_WS_STICKY },
          $assetsdir         => { files => WS_SERVE,
                                   dirs => DIR_CGI_OVERWRITE | DIR_ALSO_WS_SERVE },
 
@@ -409,7 +411,7 @@ sub FILESYSTEM {
         $webdotdir              => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE,
         $assetsdir              => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE,
         $template_cache         => DIR_CGI_WRITE,
-        $error_reports          => DIR_CGI_WRITE,
+        $logsdir                => DIR_CGI_WRITE | DIR_ALSO_WS_STICKY,
         # Directories that contain content served directly by the web server.
         "$skinsdir/custom"      => DIR_WS_SERVE,
         "$skinsdir/contrib"     => DIR_WS_SERVE,
@@ -543,8 +545,6 @@ sub FILESYSTEM {
         "$confdir/.htaccess"         => { perms    => WS_SERVE,
                                           contents => HT_DEFAULT_DENY },
         "$datadir/.htaccess"         => { perms    => WS_SERVE,
-                                          contents => HT_DEFAULT_DENY },
-        "$error_reports/.htaccess"   => { perms    => WS_SERVE,
                                           contents => HT_DEFAULT_DENY },
         "$graphsdir/.htaccess"       => { perms => WS_SERVE,
                                           contents => HT_GRAPHS_DIR },

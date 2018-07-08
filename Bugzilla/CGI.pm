@@ -42,6 +42,11 @@ sub DEFAULT_CSP {
         img_src     => [ 'self', 'https://secure.gravatar.com', 'https://www.google-analytics.com' ],
         style_src   => [ 'self', 'unsafe-inline' ],
         object_src  => [ 'none' ],
+        connect_src => [
+            'self',
+            # This is from extensions/OrangeFactor/web/js/orange_factor.js
+            'https://treeherder.mozilla.org/api/failurecount/',
+        ],
         form_action => [
             'self',
             # used in template/en/default/search/search-google.html.tmpl
@@ -69,7 +74,7 @@ sub SHOW_BUG_MODAL_CSP {
         connect_src => [
             'self',
             # This is from extensions/OrangeFactor/web/js/orange_factor.js
-            'https://brasstacks.mozilla.com/orangefactor/api/count',
+            'https://treeherder.mozilla.org/api/failurecount/',
         ],
         frame_src   => [ 'self', ],
         worker_src  => [ 'none', ],
@@ -590,6 +595,9 @@ sub header {
             "skins/standard/fonts/MaterialIcons-Regular.woff2",
         );
         $headers{'-link'} = join(", ", map { sprintf('</static/v%s/%s>; rel="preload"; as="font"', Bugzilla->VERSION, $_) } @fonts);
+        if (Bugzilla->params->{google_analytics_tracking_id}) {
+            $headers{'-link'} .= ', <https://www.google-analytics.com>; rel="preconnect"; crossorigin';
+        }
     }
 
     return $self->SUPER::header(%headers) || "";
@@ -683,6 +691,8 @@ sub send_cookie {
     # we don't set the domain.
     $paramhash{'-secure'} = 1
       if lc( $uri->scheme ) eq 'https';
+
+    $paramhash{'-samesite'} = 'Lax';
 
     push(@{$self->{'Bugzilla_cookie_list'}}, $self->cookie(%paramhash));
 }

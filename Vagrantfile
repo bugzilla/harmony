@@ -22,6 +22,7 @@ RSYNC_ARGS = [
   '--copy-links',
   '--exclude=local/',
   '--exclude=data/',
+  '--exclude=logs/',
   '--exclude=template_cache/',
   '--exclude=localconfig',
   '--include=.git/'
@@ -38,7 +39,6 @@ Vagrant.configure('2') do |config|
 
   config.vm.provision 'main', type: 'ansible_local', run: 'always' do |ansible|
     ansible.playbook = 'vagrant_support/playbook.yml'
-    ansible.version = 'latest'
     ansible.extra_vars = {
       WEB_IP:            WEB_IP,
       DB_IP:             DB_IP,
@@ -51,7 +51,6 @@ Vagrant.configure('2') do |config|
   if ARGV.include? '--provision-with'
     config.vm.provision 'update', type: 'ansible_local', run: 'never' do |update|
       update.playbook = 'vagrant_support/update.yml'
-      update.version = 'latest'
     end
   end
 

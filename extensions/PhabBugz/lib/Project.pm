@@ -9,15 +9,14 @@ package Bugzilla::Extension::PhabBugz::Project;
 
 use 5.10.1;
 use Moo;
+use Scalar::Util qw(blessed);
 use Types::Standard -all;
 use Type::Utils;
 
 use Bugzilla::Error;
 use Bugzilla::Util qw(trim);
-use Bugzilla::Extension::PhabBugz::Util qw(
-  request
-  get_phab_bmo_ids
-);
+use Bugzilla::Extension::PhabBugz::User;
+use Bugzilla::Extension::PhabBugz::Util qw(request);
 
 #########################
 #    Initialization     #
@@ -47,7 +46,18 @@ sub new_from_query {
 
     my $result = request( 'project.search', $data );
     if ( exists $result->{result}{data} && @{ $result->{result}{data} } ) {
-        return $class->new( $result->{result}{data}[0] );
+        # If name is used as a query param, we need to loop through and look
+        # for exact match as Conduit will tokenize the name instead of doing
+        # exact string match :( If name is not used, then return first one.
+        if ( exists $params->{name} ) {
+            foreach my $item ( @{ $result->{result}{data} } ) {
+                next if $item->{fields}{name} ne $params->{name};
+                return $class->new($item);
+            }
+        }
+        else {
+            return $class->new( $result->{result}{data}[0] );
+        }
     }
 }
 
@@ -157,7 +167,7 @@ sub create {
     my $result = request( 'project.edit', $data );
 
     return $class->new_from_query(
-        { phids => $result->{result}{object}{phid} } );
+        { phids => [ $result->{result}{object}{phid} ] } );
 }
 
 sub update {
@@ -270,20 +280,20 @@ sub set_description {
 sub add_member {
     my ( $self, $member ) = @_;
     $self->{add_members} ||= [];
-    my $member_phid = blessed $member ? $member->phab_phid : $member;
+    my $member_phid = blessed $member ? $member->phid : $member;
     push( @{ $self->{add_members} }, $member_phid );
 }
 
 sub remove_member {
     my ( $self, $member ) = @_;
     $self->{remove_members} ||= [];
-    my $member_phid = blessed $member ? $member->phab_phid : $member;
+    my $member_phid = blessed $member ? $member->phid : $member;
     push( @{ $self->{remove_members} }, $member_phid );
 }
 
 sub set_members {
     my ( $self, $members ) = @_;
-    $self->{set_members} = [ map { $_->phab_phid } @$members ];
+    $self->{set_members} = [ map { blessed $_ ? $_->phid : $_ } @$members ];
 }
 
 sub set_policy {
@@ -307,16 +317,13 @@ sub _build_members {
 
     return [] if !@phids;
 
-    my $users = get_phab_bmo_ids( { phids => \@phids } );
+    my $users = Bugzilla::Extension::PhabBugz::User->match(
+      {
+        phids => \@phids
+      }
+    );
 
-    my @members;
-    foreach my $user (@$users) {
-        my $member = Bugzilla::User->new( { id => $user->{id}, cache => 1 } );
-        $member->{phab_phid} = $user->{phid};
-        push( @members, $member );
-    }
-
-    return \@members;
+    return [ map { $_->bugzilla_user } @$users ];
 }
 
 1;

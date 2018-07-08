@@ -33,14 +33,16 @@ BEGIN {
 
 # PREREQ_PM
 my %requires = (
+    'Alien::libcmark_gfm'      => 0,
     'Algorithm::BloomFilter'   => '0.02',
-    'CGI'                      => '3.51',
+    'CGI'                      => '4.31',
     'CGI::Compile'             => 0,
     'CGI::Emulate::PSGI'       => 0,
     'CPAN::Meta::Prereqs'      => '2.132830',
     'CPAN::Meta::Requirements' => '2.121',
     'Class::XSAccessor'        => '1.18',
     'DBI'                      => '1.614',
+    'DBIx::Connector'          => 0,
     'Data::Password::passwdqc' => '0.08',
     'Date::Format'             => '2.23',
     'DateTime'                 => '0.75',
@@ -49,7 +51,9 @@ my %requires = (
     'Digest::SHA'              => '5.47',
     'Email::MIME'              => '1.904',
     'Email::Send'              => '1.911',
+    'FFI::Platypus'            => 0,
     'File::Slurp'              => '9999.13',
+    'File::Slurper'            => '0.012',
     'Future'                   => '0.34',
     'HTML::Escape'             => '1.10',
     'IPC::System::Simple'      => 0,
@@ -64,6 +68,7 @@ my %requires = (
     'Math::Random::ISAAC'      => '1.0.1',
     'Module::Metadata'         => '1.000033',
     'Module::Runtime'          => '0.014',
+    'Mojolicious'              => '7.71',
     'Moo'                      => '2.002004',
     'MooX::StrictConstructor'  => '0.008',
     'Mozilla::CA'              => '20160104',
@@ -109,6 +114,16 @@ if ( $OSNAME eq 'linux' && -f '/etc/debian_version' ) {
 }
 
 my %optional_features = (
+    argon2 => {
+        description => 'Support hashing passwords with Argon2',
+        prereqs => {
+            runtime => {
+                requires => {
+                    'Crypt::Argon2' => '0.004',
+                },
+            },
+        },
+    },
     smtp_auth => {
         description => 'SMTP Authentication',
         prereqs     => { runtime => { requires => { 'Authen::SASL' => 0 } } },
@@ -423,13 +438,14 @@ META.json: Makefile.PL
 \tmake distmeta 2>&1 /dev/null; mv */META.json .
 
 META.yml: Makefile.PL
+1:	hit EOF seeking end of quote/pattern starting at line 1 ending in /
 \tmake distmeta 2>&1 /dev/null; mv */META.yml .
 MAKE
 }
 
 sub is_bmo_feature {
     local $_ = shift;
-    return 1 if $OSNAME eq 'linux' && /^linux/;
+    return $OSNAME eq 'linux' if /^linux/;
     return !m{
         ^
         (?: pg

@@ -398,7 +398,8 @@ use constant ABSTRACT_SCHEMA => {
                                 DEFAULT => 'FALSE'},
             type            => {TYPE => 'INT2', NOTNULL => 1,
                                 DEFAULT => '0'},
-            extra_data      => {TYPE => 'varchar(255)'}
+            extra_data      => {TYPE => 'varchar(255)'},
+            is_markdown     => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'}
         ],
         INDEXES => [
             longdescs_bug_id_idx   => ['bug_id'],
@@ -923,6 +924,8 @@ use constant ABSTRACT_SCHEMA => {
             cryptpassword  => {TYPE => 'varchar(128)'},
             realname       => {TYPE => 'varchar(255)', NOTNULL => 1,
                                DEFAULT => "''"},
+            nickname       => {TYPE => 'varchar(255)', NOTNULL => 1,
+                               DEFAULT => "''"},
             disabledtext   => {TYPE => 'MEDIUMTEXT', NOTNULL => 1,
                                DEFAULT => "''"},
             disable_mail   => {TYPE => 'BOOLEAN', NOTNULL => 1,
@@ -942,7 +945,10 @@ use constant ABSTRACT_SCHEMA => {
             profiles_login_name_idx => {FIELDS => ['login_name'],
                                         TYPE => 'UNIQUE'},
             profiles_extern_id_idx => {FIELDS => ['extern_id'],
-                                       TYPE   => 'UNIQUE'}
+                                       TYPE   => 'UNIQUE'},
+            profiles_nickname_idx  => ['nickname'],
+            profiles_realname_ft_idx => {FIELDS => ['realname'],
+                                         TYPE => 'FULLTEXT'},
         ],
     },
 

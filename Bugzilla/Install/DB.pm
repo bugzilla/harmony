@@ -710,6 +710,11 @@ sub update_table_definitions {
     # 2014-07-27 LpSolit@gmail.com - Bug 1044561
     _fix_user_api_keys_indexes();
 
+
+    # 2018-06-14 dylan@mozilla.com - Bug 1468818
+    $dbh->bz_add_column('longdescs', 'is_markdown',
+                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'});
+
     # 2014-10-?? dkl@mozilla.com - Bug 1062940
     $dbh->bz_alter_column('bugs', 'alias', { TYPE => 'varchar(40)' });
 
@@ -761,6 +766,13 @@ sub update_table_definitions {
     # 2016-09-01 dkl@mozilla.com - Bug 1268317
     $dbh->bz_add_column('components', 'triage_owner_id',
                         {TYPE => 'INT3'});
+
+    $dbh->bz_add_column('profiles', 'nickname',
+                        {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"});
+    $dbh->bz_add_index('profiles', 'profiles_nickname_idx', [qw(nickname)]);
+
+    $dbh->bz_add_index('profiles', 'profiles_realname_ft_idx',
+                       {TYPE => 'FULLTEXT', FIELDS => ['realname']});
 
     ################################################################
     # New --TABLE-- changes should go *** A B O V E *** this point #

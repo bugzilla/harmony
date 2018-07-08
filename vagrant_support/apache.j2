@@ -1,6 +1,8 @@
 PerlSwitches -wT
 PerlSetEnv USE_NYTPROF 0
 PerlSetEnv BUGZILLA_UNSAFE_AUTH_DELEGATION 1
+PerlSetEnv LOG4PERL_CONFIG_FILE log4perl-vagrant.conf
+PerlSetEnv LOG4PERL_STDERR_DISABLE 1
 PerlConfigRequire /vagrant/mod_perl.pl
 
 <IfModule mpm_prefork_module>

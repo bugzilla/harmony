@@ -41,7 +41,7 @@ has 'rules' => (
 
 has 'rule_projects' => (
     is => 'lazy',
-    isa => ArrayRef[Str],
+    isa => ArrayRef[Object],
 );
 
 # {
@@ -88,7 +88,7 @@ sub new_from_query {
 }
 
 sub create {
-    my ($class, $project_names) = @_;
+    my ($class, $projects) = @_;
 
     my $data = {
         objectType => 'DREV',
@@ -97,23 +97,19 @@ sub create {
             {
                 action => 'allow',
                 rule   => 'PhabricatorSubscriptionsSubscribersPolicyRule',
+            },
+            {
+                action => 'allow',
+                rule   => 'PhabricatorDifferentialReviewersPolicyRule'
             }
         ]
     };
 
-    if (@$project_names) {
-        my $project_phids = [];
-        foreach my $project_name (@$project_names) {
-            my $project = Bugzilla::Extension::PhabBugz::Project->new_from_query({ name => $project_name });
-            push @$project_phids, $project->phid if $project;
-        }
-
-        ThrowUserError('invalid_phabricator_sync_groups') unless @$project_phids;
-
+    if (@$projects) {
         push @{ $data->{policy} }, {
             action => 'allow',
-            rule   => 'PhabricatorProjectsPolicyRule',
-            value  => $project_phids,
+            rule   => 'PhabricatorProjectsAllPolicyRule',
+            value  => [ map { $_->phid } @$projects ],
         };
     }
     else {
@@ -131,11 +127,9 @@ sub _build_rule_projects {
     my ($self) = @_;
 
     return [] unless $self->rules;
-    my $rule = first { $_->{rule} eq 'PhabricatorProjectsPolicyRule'} @{ $self->rules };
+    my $rule = first { $_->{rule} =~ /PhabricatorProjects(?:All)?PolicyRule/ } @{ $self->rules };
     return [] unless $rule;
     return [
-        map  { $_->name }
-        grep { $_ }
         map  { Bugzilla::Extension::PhabBugz::Project->new_from_query( { phids => [$_] } ) }
         @{ $rule->{value} }
     ];

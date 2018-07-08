@@ -695,9 +695,8 @@ sub _bz_locations {
         # The script should really generate these graphs directly...
         'webdotdir'      => "$datadir/webdot",
         'extensionsdir'  => "$libpath/extensions",
+        'logsdir'        => "$libpath/logs",
         'assetsdir'      => "$datadir/assets",
-        # error_reports store error/warnings destined for sentry
-        'error_reports'  => "$libpath/error_reports",
         'confdir'        => $confdir,
     };
 }

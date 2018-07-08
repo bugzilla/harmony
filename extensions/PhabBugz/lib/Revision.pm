@@ -17,10 +17,9 @@ use Type::Utils;
 use Bugzilla::Bug;
 use Bugzilla::Error;
 use Bugzilla::Util qw(trim);
-use Bugzilla::Extension::PhabBugz::Util qw(
-  get_phab_bmo_ids
-  request
-);
+use Bugzilla::Extension::PhabBugz::Project;
+use Bugzilla::Extension::PhabBugz::User;
+use Bugzilla::Extension::PhabBugz::Util qw(request);
 
 #########################
 #    Initialization     #
@@ -37,12 +36,12 @@ has author_phid      => ( is => 'ro',   isa => Str );
 has bug_id           => ( is => 'ro',   isa => Str );
 has view_policy      => ( is => 'ro',   isa => Str );
 has edit_policy      => ( is => 'ro',   isa => Str );
-has projects_raw     => ( is => 'ro',   isa => ArrayRef [Str] );
 has subscriber_count => ( is => 'ro',   isa => Int );
 has bug              => ( is => 'lazy', isa => Object );
 has author           => ( is => 'lazy', isa => Object );
 has reviewers        => ( is => 'lazy', isa => ArrayRef [Object] );
 has subscribers      => ( is => 'lazy', isa => ArrayRef [Object] );
+has projects         => ( is => 'lazy', isa => ArrayRef [Object] );
 has reviewers_raw => (
     is  => 'ro',
     isa => ArrayRef [
@@ -60,6 +59,12 @@ has subscribers_raw => (
         subscriberPHIDs => ArrayRef [Str],
         subscriberCount => Int,
         viewerIsSubscribed => Bool,
+    ]
+);
+has projects_raw => (
+    is => 'ro',
+    isa => Dict [
+        projectPHIDs => ArrayRef [Str]
     ]
 );
 
@@ -93,18 +98,18 @@ sub new_from_query {
 sub BUILDARGS {
     my ( $class, $params ) = @_;
 
-    $params->{title}           = $params->{fields}->{title};
-    $params->{summary}         = $params->{fields}->{summary};
-    $params->{status}          = $params->{fields}->{status}->{value};
-    $params->{creation_ts}     = $params->{fields}->{dateCreated};
-    $params->{modification_ts} = $params->{fields}->{dateModified};
-    $params->{author_phid}     = $params->{fields}->{authorPHID};
-    $params->{bug_id}          = $params->{fields}->{'bugzilla.bug-id'};
-    $params->{view_policy}     = $params->{fields}->{policy}->{view};
-    $params->{edit_policy}     = $params->{fields}->{policy}->{edit};
-    $params->{reviewers_raw} = $params->{attachments}->{reviewers}->{reviewers};
-    $params->{subscribers_raw} = $params->{attachments}->{subscribers};
-    $params->{projects}        = $params->{attachments}->{projects};
+    $params->{title}            = $params->{fields}->{title};
+    $params->{summary}          = $params->{fields}->{summary};
+    $params->{status}           = $params->{fields}->{status}->{value};
+    $params->{creation_ts}      = $params->{fields}->{dateCreated};
+    $params->{modification_ts}  = $params->{fields}->{dateModified};
+    $params->{author_phid}      = $params->{fields}->{authorPHID};
+    $params->{bug_id}           = $params->{fields}->{'bugzilla.bug-id'};
+    $params->{view_policy}      = $params->{fields}->{policy}->{view};
+    $params->{edit_policy}      = $params->{fields}->{policy}->{edit};
+    $params->{reviewers_raw}    = $params->{attachments}->{reviewers}->{reviewers};
+    $params->{subscribers_raw}  = $params->{attachments}->{subscribers};
+    $params->{projects_raw}     = $params->{attachments}->{projects};
     $params->{subscriber_count} =
       $params->{attachments}->{subscribers}->{subscriberCount};
 
@@ -284,12 +289,13 @@ sub _build_bug {
 sub _build_author {
     my ($self) = @_;
     return $self->{author} if $self->{author};
-    my $users = get_phab_bmo_ids( { phids => [ $self->author_phid ] } );
-    if (@$users) {
-        $self->{author} =
-          new Bugzilla::User( { id => $users->[0]->{id}, cache => 1 } );
-        $self->{author}->{phab_phid} = $self->author_phid;
-        return $self->{author};
+    my $phab_user = Bugzilla::Extension::PhabBugz::User->new_from_query(
+      {
+        phids => [ $self->author_phid ]
+      }
+    );
+    if ($phab_user) {
+        return $self->{author} = $phab_user;
     }
 }
 
@@ -306,22 +312,22 @@ sub _build_reviewers {
 
     return [] unless @phids;
 
-    my $users = get_phab_bmo_ids( { phids => \@phids } );
+    my $users = Bugzilla::Extension::PhabBugz::User->match(
+      {
+        phids => \@phids
+      }
+    );
 
-    my @reviewers;
     foreach my $user (@$users) {
-        my $reviewer = Bugzilla::User->new( { id => $user->{id}, cache => 1 } );
-        $reviewer->{phab_phid} = $user->{phid};
         foreach my $reviewer_data ( @{ $self->reviewers_raw } ) {
-            if ( $reviewer_data->{reviewerPHID} eq $user->{phid} ) {
-                $reviewer->{phab_review_status} = $reviewer_data->{status};
+            if ( $reviewer_data->{reviewerPHID} eq $user->phid ) {
+                $user->{phab_review_status} = $reviewer_data->{status};
                 last;
             }
         }
-        push @reviewers, $reviewer;
     }
 
-    return \@reviewers;
+    return $self->{reviewers} = $users;
 }
 
 sub _build_subscribers {
@@ -335,19 +341,31 @@ sub _build_subscribers {
         push @phids, $phid;
     }
 
-    my $users = get_phab_bmo_ids( { phids => \@phids } );
+    my $users = Bugzilla::Extension::PhabBugz::User->match(
+      {
+        phids => \@phids
+      }
+    );
 
-    return [] unless @phids;
+    return $self->{subscribers} = $users;
+}
 
-    my @subscribers;
-    foreach my $user (@$users) {
-        my $subscriber =
-          Bugzilla::User->new( { id => $user->{id}, cache => 1 } );
-        $subscriber->{phab_phid} = $user->{phid};
-        push @subscribers, $subscriber;
+sub _build_projects {
+    my ($self) = @_;
+
+    return $self->{projects} if $self->{projects};
+    return [] unless $self->projects_raw->{projectPHIDs};
+
+    my @projects;
+    foreach my $phid ( @{ $self->projects_raw->{projectPHIDs} } ) {
+        push @projects, Bugzilla::Extension::PhabBugz::Project->new_from_query(
+          {
+            phids => [ $phid ]
+          }
+        );
     }
 
-    return \@subscribers;
+    return $self->{projects} = \@projects;
 }
 
 #########################
@@ -364,27 +382,27 @@ sub add_comment {
 sub add_reviewer {
     my ( $self, $reviewer ) = @_;
     $self->{add_reviewers} ||= [];
-    my $reviewer_phid = blessed $reviewer ? $reviewer->phab_phid : $reviewer;
+    my $reviewer_phid = blessed $reviewer ? $reviewer->phid : $reviewer;
     push @{ $self->{add_reviewers} }, $reviewer_phid;
 }
 
 sub remove_reviewer {
     my ( $self, $reviewer ) = @_;
     $self->{remove_reviewers} ||= [];
-    my $reviewer_phid = blessed $reviewer ? $reviewer->phab_phid : $reviewer;
+    my $reviewer_phid = blessed $reviewer ? $reviewer->phid : $reviewer;
     push @{ $self->{remove_reviewers} }, $reviewer_phid;
 }
 
 sub set_reviewers {
     my ( $self, $reviewers ) = @_;
-    $self->{set_reviewers} = [ map { $_->phab_phid } @$reviewers ];
+    $self->{set_reviewers} = [ map { $_->phid } @$reviewers ];
 }
 
 sub add_subscriber {
     my ( $self, $subscriber ) = @_;
     $self->{add_subscribers} ||= [];
     my $subscriber_phid =
-      blessed $subscriber ? $subscriber->phab_phid : $subscriber;
+      blessed $subscriber ? $subscriber->phid : $subscriber;
     push @{ $self->{add_subscribers} }, $subscriber_phid;
 }
 
@@ -392,7 +410,7 @@ sub remove_subscriber {
     my ( $self, $subscriber ) = @_;
     $self->{remove_subscribers} ||= [];
     my $subscriber_phid =
-      blessed $subscriber ? $subscriber->phab_phid : $subscriber;
+      blessed $subscriber ? $subscriber->phid : $subscriber;
     push @{ $self->{remove_subscribers} }, $subscriber_phid;
 }
 
@@ -421,6 +439,52 @@ sub remove_project {
     my $project_phid = blessed $project ? $project->phid : $project;
     return undef unless $project_phid;
     push @{ $self->{remove_projects} }, $project_phid;
+}
+
+sub make_private {
+    my ( $self, $project_names ) = @_;
+
+    my $secure_revision_project =
+      Bugzilla::Extension::PhabBugz::Project->new_from_query(
+        {
+          name => 'secure-revision'
+        }
+      );
+
+    my @set_projects;
+    foreach my $name (@$project_names) {
+        my $set_project =
+          Bugzilla::Extension::PhabBugz::Project->new_from_query(
+            {
+                name => $name
+            }
+            );
+        push @set_projects, $set_project;
+    }
+
+    my $new_policy = Bugzilla::Extension::PhabBugz::Policy->create(\@set_projects);
+    $self->set_policy('view', $new_policy->phid);
+    $self->set_policy('edit', $new_policy->phid);
+
+    foreach my $project ($secure_revision_project, @set_projects) {
+        $self->add_project($project->phid);
+    }
+
+    return $self;
+}
+
+sub make_public {
+    my ( $self ) = @_;
+
+    $self->set_policy('view', 'public');
+    $self->set_policy('edit', 'users');
+
+    my @current_group_projects = grep { $_->name =~ /^(bmo-.*|secure-revision)$/ } @{ $self->projects };
+    foreach my $project (@current_group_projects) {
+        $self->remove_project($project->phid);
+    }
+
+    return $self;
 }
 
 1;

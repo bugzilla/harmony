@@ -80,6 +80,12 @@ or db is changed, do a full provision:
 
     vagrant rsync && vagrant provision
 
+If you are using Visual Studio Code, these tasks are available from the editor's
+`Tasks menu`_. The update command can be run by simply hitting `Ctrl+Shift+B` on
+Windows/Linux or `Command+Shift+B` on macOS.
+
+.. _`Tasks menu`: https://code.visualstudio.com/docs/editor/tasks
+
 Testing Auth delegation
 -----------------------
 
@@ -376,6 +382,13 @@ LOG4PERL_CONFIG_FILE
 
 .. _`Devel::NYTProf`: https://metacpan.org/pod/Devel::NYTProf
 .. _`Log::Log4perl`: https://metacpan.org/pod/Log::Log4perl
+
+LOG4PERL_STDERR_DISABLE
+  Boolean. By default log messages are logged as plain text to `STDERR`.
+  Setting this to a true value disables this behavior.
+
+  Note: For programs that run using the `cereal` log aggregator, this environemnt
+  variable will be ignored.
 
 Persistent Data Volume
 ----------------------

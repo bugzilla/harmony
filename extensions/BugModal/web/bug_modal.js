@@ -96,6 +96,54 @@ $(function() {
         $('#editing').val('');
     }
 
+    function saveBugComment(text) {
+        if (text.length < 1) return clearSavedBugComment();
+        if (text.length >  65535) return;
+        let key = `bug-modal-saved-comment-${BUGZILLA.bug_id}`;
+        let value = {
+            text: text,
+            savedAt: Date.now()
+        };
+        localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function clearSavedBugComment() {
+        let key = `bug-modal-saved-comment-${BUGZILLA.bug_id}`;
+        localStorage.removeItem(key);
+    }
+
+    function restoreSavedBugComment() {
+        expireSavedComments();
+        let key = `bug-modal-saved-comment-${BUGZILLA.bug_id}`;
+        let value = JSON.parse(localStorage.getItem(key));
+        if (value){
+            let commentBox = document.querySelector("textarea#comment");
+            commentBox.value = value['text'];
+            if (BUGZILLA.user.settings.autosize_comments) {
+                autosize.update(commentBox);
+            }
+        }
+    }
+
+    function expireSavedComments() {
+        const AGE_THRESHOLD = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds.
+        let expiredKeys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+            if (key.match(/^bug-modal-saved-comment-/)) {
+                let value = JSON.parse(localStorage.getItem(key));
+                let savedAt = value['savedAt'] || 0;
+                let age = Date.now() - savedAt;
+                if (age < 0 || age > AGE_THRESHOLD) {
+                    expiredKeys.push(key);
+                }
+            }
+        }
+        expiredKeys.forEach((key) => {
+            localStorage.removeItem(key);
+        });
+    }
+
     // expand/colapse module
     $('.module-latch')
         .click(function(event) {
@@ -309,7 +357,9 @@ $(function() {
                     // execCommand("copy") only works on selected text
                     $('#clip-container').show();
                     $('#clip').val(clipboardSummary()).select();
-                    document.execCommand("copy");
+                    $('#floating-message-text')
+                        .text(document.execCommand("copy") ? 'Bug summary copied!' : 'Couldn’t copy bug summary');
+                    $('#floating-message').fadeIn(250).delay(2500).fadeOut();
                     $('#clip-container').hide();
                 });
         }
@@ -509,6 +559,8 @@ $(function() {
                     keywords = data.keywords;
                     $('#keywords')
                         .devbridgeAutocomplete({
+                            appendTo: $('#main-inner'),
+                            forceFixPosition: true,
                             lookup: function(query, done) {
                                 query = query.toLowerCase();
                                 var matchStart =
@@ -586,6 +638,8 @@ $(function() {
                     .toArray()
                     .join(' ')
             );
+
+            clearSavedBugComment();
         })
         .attr('disabled', false);
 
@@ -1272,15 +1326,111 @@ $(function() {
             }
         });
 
+    // Save comments in progress
+    $('#comment')
+        .on('input', function(event) {
+            saveBugComment(event.target.value);
+        });
+
     // finally switch to edit mode if we navigate back to a page that was editing
     $(window).on('pageshow', restoreEditMode);
+    $(window).on('pageshow', restoreSavedBugComment);
+    $(window).on('focus', restoreSavedBugComment);
     restoreEditMode();
+    restoreSavedBugComment();
 });
 
 function confirmUnsafeURL(url) {
     return confirm(
         'This is considered an unsafe URL and could possibly be harmful.\n' +
         'The full URL is:\n\n' + url + '\n\nContinue?');
+}
+
+function show_new_changes_indicator() {
+    const url = `rest/bug_user_last_visit/${BUGZILLA.bug_id}`;
+
+    // Get the last visited timestamp
+    bugzilla_ajax({ url }, data => {
+        // Save the current timestamp
+        bugzilla_ajax({ url, type: 'POST' });
+
+        if (!data[0] || !data[0].last_visit_ts) {
+            return;
+        }
+
+        const last_visit_ts = new Date(data[0].last_visit_ts);
+        const new_changes = [...document.querySelectorAll('main .change-set')].filter($change => {
+            // Exclude hidden CC changes
+            return $change.clientHeight > 0 &&
+                new Date($change.querySelector('[data-time]').getAttribute('data-time') * 1000) > last_visit_ts;
+        });
+
+        if (new_changes.length === 0) {
+            return;
+        }
+
+        const now = new Date();
+        const date_locale = document.querySelector('html').lang;
+        const date_options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false,
+            timeZone: BUGZILLA.user.timezone,
+            timeZoneName: 'short',
+        };
+
+        if (last_visit_ts.getFullYear() === now.getFullYear()) {
+            delete date_options.year;
+
+            if (last_visit_ts.getMonth() === now.getMonth() && last_visit_ts.getDate() === now.getDate()) {
+                delete date_options.month;
+                delete date_options.day;
+            }
+        }
+
+        const $link = document.createElement('div');
+        const $separator = document.createElement('div');
+        const comments_count = new_changes.filter($change => !!$change.querySelector('.comment')).length;
+        const changes_count = new_changes.length - comments_count;
+        const date_attr = last_visit_ts.toISOString();
+        const date_label = last_visit_ts.toLocaleString(date_locale, date_options);
+
+        // Insert a link
+        $link.className = 'new-changes-link';
+        $link.innerHTML =
+            (c => c === 0 ? '' : (c === 1 ? `${c} new comment` : `${c} new comments`))(comments_count) +
+            (comments_count > 0 && changes_count > 0 ? ', ' : '') +
+            (c => c === 0 ? '' : (c === 1 ? `${c} new change` : `${c} new changes`))(changes_count) +
+            ` since <time datetime="${date_attr}">${date_label}</time>`;
+        $link.addEventListener('click', () => {
+            $link.remove();
+            scroll_element_into_view($separator);
+        }, { once: true });
+        document.querySelector('#changeform').insertAdjacentElement('beforebegin', $link);
+
+        // Insert a separator
+        $separator.className = 'new-changes-separator';
+        $separator.innerHTML = '<span>New</span>';
+        new_changes[0].insertAdjacentElement('beforebegin', $separator);
+
+        // Remove the link once the separator goes into the viewport
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+                if (entry.intersectionRatio > 0) {
+                    observer.unobserve($separator);
+                    $link.remove();
+                }
+            }), { root: document.querySelector('#bugzilla-body') });
+
+            observer.observe($separator);
+        }
+
+        // TODO: Enable auto-scroll once the modal page layout is optimized
+        // scroll_element_into_view($separator);
+    });
 }
 
 // fix url after bug creation/update

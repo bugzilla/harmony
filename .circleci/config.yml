@@ -111,6 +111,13 @@ jobs:
           mv /opt/bmo/local /app/local
           mkdir artifacts
       - run: |
+<<<<<<< HEAD
+=======
+          [[ -f build_info/only_version_changed.txt ]] && exit 0
+          perl -I/app -I/app/local/lib/perl5 -c -E 'use Bugzilla; BEGIN { Bugzilla->extensions }'
+      - run: |
+          [[ -f build_info/only_version_changed.txt ]] && exit 0
+>>>>>>> bmo/master
           perl Makefile.PL
       - run:
           name: run sanity tests
