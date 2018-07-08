@@ -127,13 +127,18 @@ sub _set_ftc_states {
             'active_or_has_flags' => $bug->id,
         });
 
-        my $types = join(',', map { $_->id } @$flag_types);
-        my $states = "'" . join("','", FLAGTYPE_COMMENT_STATES) . "'";
-        $db_result = $dbh->selectall_arrayref(
-            "SELECT type_id AS flagtype, on_status AS state, comment AS text
-               FROM flagtype_comments
-              WHERE type_id IN ($types) AND on_status IN ($states)",
-            { Slice => {} });
+        if (@$flag_types) {
+            my $types = join(',', map { $_->id } @$flag_types);
+            my $states = "'" . join("','", FLAGTYPE_COMMENT_STATES) . "'";
+            $db_result = $dbh->selectall_arrayref(
+                "SELECT type_id AS flagtype, on_status AS state, comment AS text
+                FROM flagtype_comments
+                WHERE type_id IN ($types) AND on_status IN ($states)",
+                { Slice => {} });
+        }
+        else {
+            $db_result = [];
+        }
     }
 
     foreach my $row (@$db_result) {
