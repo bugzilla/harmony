@@ -13,16 +13,7 @@ use warnings;
 
 use Bugzilla::Logging;
 
-# We want any compile errors to get to the browser, if possible.
-BEGIN {
-    # This makes sure we're in a CGI.
-    if ($ENV{SERVER_SOFTWARE} && !$ENV{MOD_PERL}) {
-        require CGI::Carp;
-        CGI::Carp->import('fatalsToBrowser');
-    }
-}
-
-our $VERSION = '20180703.1';
+our $VERSION = '5.13';
 
 use Bugzilla::Auth;
 use Bugzilla::Auth::Persist::Cookie;
@@ -189,8 +180,17 @@ sub init_page {
 # Subroutines and Methods
 #####################################################################
 
+my $preload_templates = 0;
+sub preload_templates {
+    $preload_templates = 1;
+
+    delete request_cache->{template};
+    template();
+    return 1;
+}
+
 sub template {
-    request_cache->{template} ||= Bugzilla::Template->create();
+    request_cache->{template} //= Bugzilla::Template->create(preload => $preload_templates);
     request_cache->{template}->{_is_main} = 1;
 
     return request_cache->{template};
@@ -201,7 +201,8 @@ sub template_inner {
     my $cache = request_cache;
     my $current_lang = $cache->{template_current_lang}->[0];
     $lang ||= $current_lang || '';
-    return $cache->{"template_inner_$lang"} ||= Bugzilla::Template->create(language => $lang);
+    my %options = (language => $lang, preload => $preload_templates);
+    return $cache->{"template_inner_$lang"} ||= Bugzilla::Template->create(%options);
 }
 
 sub extensions {
@@ -240,7 +241,7 @@ sub has_extension {
 }
 
 sub cgi {
-    return request_cache->{cgi} ||= new Bugzilla::CGI();
+    return request_cache->{cgi} ||= Bugzilla::CGI->new;
 }
 
 sub input_params {
@@ -352,9 +353,6 @@ sub login {
     my ($class, $type) = @_;
 
     return $class->user if $class->user->id;
-
-    # Load all extensions here if not running under mod_perl
-    $class->extensions unless BZ_PERSISTENT;
 
     my $authorizer = new Bugzilla::Auth();
     $type = LOGIN_REQUIRED if $class->cgi->param('GoAheadAndLogIn');
@@ -816,7 +814,7 @@ sub check_rate_limit {
             my $limit = join("/", @$limit);
             Bugzilla->audit("[rate_limit] action=$action, ip=$ip, limit=$limit, name=$name");
             if ($action eq 'block') {
-                Bugzilla::ModPerl::BlockIP->block_ip($ip);
+                $Bugzilla::Quantum::CGI::C->block_ip($ip);
                 ThrowUserError("rate_limit");
             }
         }

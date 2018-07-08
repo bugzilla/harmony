@@ -15,6 +15,7 @@ use base qw(Exporter);
 
 # For bz_locations
 use File::Basename;
+use Cwd qw(realpath);
 use Memoize;
 
 @Bugzilla::Constants::EXPORT = qw(
@@ -651,7 +652,7 @@ sub _bz_locations {
     #
     # On mod_cgi this will be a relative path. On mod_perl it will be an
     # absolute path.
-    my $libpath = dirname(dirname($INC{'Bugzilla/Constants.pm'}));
+    my $libpath = realpath(dirname(dirname(__FILE__)));
     # We have to detaint $libpath, but we can't use Bugzilla::Util here.
     $libpath =~ /(.*)/;
     $libpath = $1;
