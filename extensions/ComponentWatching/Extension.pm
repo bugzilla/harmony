@@ -469,15 +469,18 @@ sub bugmail_relationships {
 #
 
 sub _getWatches {
-    my ($user) = @_;
+    my ($user, $watch_id) = @_;
     my $dbh = Bugzilla->dbh;
+
+    $watch_id = (defined $watch_id && $watch_id =~ /^(\d+)$/) ? $1 : undef;
 
     my $sth = $dbh->prepare("
         SELECT id, product_id, component_id, component_prefix
           FROM component_watch
-         WHERE user_id = ?
-    ");
-    $sth->execute($user->id);
+         WHERE user_id = ?" . ($watch_id ? " AND id = ?" : "")
+    );
+    $watch_id ? $sth->execute($user->id, $watch_id) : $sth->execute($user->id);
+
     my @watches;
     while (my ($id, $productId, $componentId, $prefix) = $sth->fetchrow_array) {
         my $product = Bugzilla::Product->new({ id => $productId, cache => 1 });
@@ -498,6 +501,10 @@ sub _getWatches {
         }
 
         push @watches, \%watch;
+    }
+
+    if ($watch_id) {
+        return $watches[0] || {};
     }
 
     @watches = sort {
@@ -565,6 +572,8 @@ sub _addProductWatch {
              VALUES (?, ?)
     ");
     $sth->execute($user->id, $product->id);
+
+    return _getWatches($user, $dbh->bz_last_key());
 }
 
 sub _addComponentWatch {
@@ -585,6 +594,8 @@ sub _addComponentWatch {
              VALUES (?, ?, ?)
     ");
     $sth->execute($user->id, $component->product_id, $component->id);
+
+    return _getWatches($user, $dbh->bz_last_key());
 }
 
 sub _addPrefixWatch {
@@ -620,8 +631,9 @@ sub _deleteWatch {
     my $dbh = Bugzilla->dbh;
 
     detaint_natural($id) || ThrowCodeError("component_watch_invalid_id");
-    $dbh->do("DELETE FROM component_watch WHERE id=? AND user_id=?",
-             undef, $id, $user->id);
+
+    return $dbh->do("DELETE FROM component_watch WHERE id=? AND user_id=?",
+                    undef, $id, $user->id);
 }
 
 sub _addDefaultSettings {
@@ -715,6 +727,15 @@ sub sanitycheck_repair {
             $row->{component_id},
         );
     }
+}
+
+#
+# webservice
+#
+
+sub webservice {
+    my ($self,  $args) = @_;
+    $args->{dispatch}->{ComponentWatching} = "Bugzilla::Extension::ComponentWatching::WebService";
 }
 
 __PACKAGE__->NAME;

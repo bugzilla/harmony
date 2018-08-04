@@ -26,7 +26,7 @@ has id              => ( is => 'ro', isa => Int );
 has phid            => ( is => 'ro', isa => Str );
 has type            => ( is => 'ro', isa => Str );
 has name            => ( is => 'ro', isa => Str );
-has description     => ( is => 'ro', isa => Str );
+has description     => ( is => 'ro', isa => Maybe[Str] );
 has creation_ts     => ( is => 'ro', isa => Str );
 has modification_ts => ( is => 'ro', isa => Str );
 has view_policy     => ( is => 'ro', isa => Str );
@@ -307,7 +307,7 @@ sub set_policy {
 ############
 
 sub _build_members {
-    my ($self) = @_;
+    my ( $self ) = @_;
     return [] unless $self->members_raw;
 
     my @phids;
@@ -317,13 +317,11 @@ sub _build_members {
 
     return [] if !@phids;
 
-    my $users = Bugzilla::Extension::PhabBugz::User->match(
+    return Bugzilla::Extension::PhabBugz::User->match(
       {
         phids => \@phids
       }
     );
-
-    return [ map { $_->bugzilla_user } @$users ];
 }
 
 1;

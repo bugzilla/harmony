@@ -15,8 +15,8 @@
   <div class="dropdown">
     <button type="button" id="comment-tags-btn" arai-haspopup="true" aria-label="Tags Menu"
       aria-expanded="false" aria-controls="comment-tags-menu" class="dropdown-button minor">Tags &#9662;</button>
-    <ul id="comment-tags-menu" role="menu" tabindex="0" class="dropdown-content" style="display:none">
-      <li class="dropdown-separator" role="presentation">
+    <ul id="comment-tags-menu" role="menu" tabindex="0" class="dropdown-content left" style="display:none">
+      <li role="presentation">
         <a role="menuitem" tabindex="-1" data-comment-tag="">Reset</a>
       </li>
     </ul>
@@ -24,19 +24,21 @@
   <div class="dropdown">
     <button type="button" id="view-menu-btn" arai-haspopup="true" aria-label="View Menu"
       aria-expanded="false" aria-controls="view-menu" class="dropdown-button minor">View &#9662;</button>
-    <ul id="view-menu" role="menu" tabindex="0" class="dropdown-content" style="display:none">
-      <li class="dropdown-separator" role="presentation">
+    <ul id="view-menu" role="menu" tabindex="0" class="dropdown-content left" style="display:none">
+      <li role="presentation">
         <a id="view-reset" role="menuitem" tabindex="-1">Reset</a>
       </li>
+      <li role="separator"></li>
       <li role="presentation">
         <a id="view-collapse-all" role="menuitem" tabindex="-1">Collapse All</a>
       </li>
       <li role="presentation">
         <a id="view-expand-all" role="menuitem" tabindex="-1">Expand All</a>
       </li>
-      <li class="dropdown-separator" role="presentation">
+      <li role="presentation">
         <a id="view-comments-only" role="menuitem" tabindex="-1">Comments Only</a>
       </li>
+      <li role="separator"></li>
       <li role="presentation">
         <a id="view-toggle-cc" role="menuitem" tabindex="-1">Show CC Changes</a>
       </li>
@@ -146,7 +148,7 @@
             [% END %]
             <button type="button" class="reply-btn minor"
               data-reply-id="[% comment.count FILTER none %]"
-              data-reply-name="[% comment.author.name || comment.author.moz_nick FILTER html %]"
+              data-reply-name="[% comment.author.name || comment.author.nick FILTER html %]"
               >Reply</button>
           [% END %]
           <button type="button" class="change-spinner minor" id="cs-[% comment.count FILTER none %]">-</button>
@@ -184,9 +186,9 @@
       <tr>
         <td class="comment-collapse-reason"
             [% IF user.setting("ui_use_absolute_time") == "on" %]
-            title="[% comment.author.moz_nick FILTER html %] [[% comment.creation_ts FILTER time("%Y-%m-%d %H:%M %Z") FILTER html %]]">
+            title="[% comment.author.nick FILTER html %] [[% comment.creation_ts FILTER time("%Y-%m-%d %H:%M %Z") FILTER html %]]">
             [% ELSE %]
-            title="[% comment.author.moz_nick FILTER html %] [[% comment.creation_ts FILTER time_duration FILTER html %]]">
+            title="[% comment.author.nick FILTER html %] [[% comment.creation_ts FILTER time_duration FILTER html %]]">
             [% END %]
             Comment hidden ([% comment.collapsed_reason FILTER html %])
         </td>
@@ -383,7 +385,7 @@
           value FILTER bug_list_link;
 
         ELSE;
-          value FILTER truncate(256, '&hellip;') FILTER html;
+          value FILTER truncate(256, '…') FILTER html;
 
         END;
     END;

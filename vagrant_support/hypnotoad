@@ -90,6 +90,7 @@ stop ()
 
 restart ()
 {
+    stop
     start
 }
 

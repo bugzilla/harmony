@@ -39,11 +39,13 @@ sub DEFAULT_CSP {
         script_src  => [ 'self', 'nonce', 'unsafe-inline', 'https://www.google-analytics.com' ],
         frame_src   => [ 'none', ],
         worker_src  => [ 'none', ],
-        img_src     => [ 'self', 'https://secure.gravatar.com', 'https://www.google-analytics.com' ],
+        img_src     => [ 'self', 'https://secure.gravatar.com' ],
         style_src   => [ 'self', 'unsafe-inline' ],
         object_src  => [ 'none' ],
         connect_src => [
             'self',
+            # This is for extensions/GoogleAnalytics using beacon or XHR
+            'https://www.google-analytics.com',
             # This is from extensions/OrangeFactor/web/js/orange_factor.js
             'https://treeherder.mozilla.org/api/failurecount/',
         ],
@@ -70,9 +72,11 @@ sub SHOW_BUG_MODAL_CSP {
     my ($bug_id) = @_;
     my %policy = (
         script_src  => ['self', 'nonce', 'unsafe-inline', 'unsafe-eval', 'https://www.google-analytics.com' ],
-        img_src     => [ 'self', 'https://secure.gravatar.com', 'https://www.google-analytics.com' ],
+        img_src     => [ 'self', 'https://secure.gravatar.com' ],
         connect_src => [
             'self',
+            # This is for extensions/GoogleAnalytics using beacon or XHR
+            'https://www.google-analytics.com',
             # This is from extensions/OrangeFactor/web/js/orange_factor.js
             'https://treeherder.mozilla.org/api/failurecount/',
         ],
@@ -137,6 +141,7 @@ sub new {
             # apache collapses // to / in $ENV{PATH_INFO} but not in $self->path_info.
             # url() requires the full path in ENV in order to generate the correct url.
             $ENV{PATH_INFO} = $path;
+            DEBUG("redirecting because we see PATH_INFO and don't like it");
             print $self->redirect($self->url(-path => 0, -query => 1));
             exit;
         }
@@ -147,6 +152,7 @@ sub new {
 
     # Redirect to urlbase if we are not viewing an attachment.
     if ($self->url_is_attachment_base and $script ne 'attachment.cgi') {
+        DEBUG("Redirecting to urlbase because the url is in the attachment base and not attachment.cgi");
         $self->redirect_to_urlbase();
     }
 
@@ -611,7 +617,7 @@ sub header {
         return '';
     }
     else {
-        return $headers;
+        LOGDIE("Bugzilla::CGI->header() should only be called from inside Bugzilla::Quantum::CGI!");
     }
 }
 
@@ -729,6 +735,7 @@ sub redirect {
     return $self->SUPER::redirect(@_);
 }
 
+use Bugzilla::Logging;
 # This helps implement Bugzilla::Search::Recent, and also shortens search
 # URLs that get POSTed to buglist.cgi.
 sub redirect_search_url {
@@ -777,6 +784,7 @@ sub redirect_search_url {
     # are only redirected if they're under the CGI_URI_LIMIT though.
     my $self_url = $self->self_url();
     if ($self->request_method() ne 'POST' or length($self_url) < CGI_URI_LIMIT) {
+        DEBUG("Redirecting search url");
         print $self->redirect(-url => $self_url);
         exit;
     }
@@ -798,6 +806,7 @@ sub redirect_to_https {
     # XML-RPC clients (SOAP::Lite at least) require a 301 to redirect properly
     # and do not work with 302. Our redirect really is permanent anyhow, so
     # it doesn't hurt to make it a 301.
+    DEBUG("Redirecting to https");
     print $self->redirect(-location => $url, -status => 301);
     exit;
 }

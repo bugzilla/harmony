@@ -12,7 +12,7 @@ use 5.10.1;
 use IO::Async::Timer::Periodic;
 use IO::Async::Loop;
 use List::Util qw(first);
-use List::MoreUtils qw(any);
+use List::MoreUtils qw(any uniq);
 use Moo;
 use Scalar::Util qw(blessed);
 use Try::Tiny;
@@ -322,11 +322,27 @@ sub group_query {
 
         # Make sure phab-bot also a member of the new project group so that it can
         # make policy changes to the private revisions
-        INFO("Setting project members for " . $project->name);
-        my $set_members = $self->get_group_members( $group );
-        push @$set_members, $phab_user unless grep $_->phid eq $phab_user->phid, @$set_members;
-        $project->set_members( $set_members );
-        $project->update();
+        INFO( "Checking project members for " . $project->name );
+        my $set_members          = $self->get_group_members($group);
+        my @set_member_phids     = uniq map { $_->phid } ( @$set_members, $phab_user );
+        my @current_member_phids = uniq map { $_->phid } @{ $project->members };
+        my ( $removed, $added )  = diff_arrays( \@current_member_phids, \@set_member_phids );
+
+        if (@$added) {
+            INFO( 'Adding project members: ' . join( ',', @$added ) );
+            $project->add_member($_) foreach @$added;
+        }
+
+        if (@$removed) {
+            INFO( 'Removing project members: ' . join( ',', @$removed ) );
+            $project->remove_member($_) foreach @$removed;
+        }
+
+        if (@$added || @$removed) {
+            my $result = $project->update();
+            local Bugzilla::Logging->fields->{api_result} = $result;
+            INFO( "Project " . $project->name . " updated" );
+        }
     }
 }
 
@@ -424,9 +440,9 @@ sub process_revision_change {
     my ($timestamp) = Bugzilla->dbh->selectrow_array("SELECT NOW()");
 
     INFO('Checking for revision attachment');
-    my $attachment = create_revision_attachment($bug, $revision, $timestamp, $revision->author->bugzilla_user);
-    INFO('Attachment ' . $attachment->id . ' created or already exists.');
-    
+    my $rev_attachment = create_revision_attachment($bug, $revision, $timestamp, $revision->author->bugzilla_user);
+    INFO('Attachment ' . $rev_attachment->id . ' created or already exists.');
+
     # ATTACHMENT OBSOLETES
 
     # fixup attachments on current bug
@@ -567,7 +583,7 @@ sub process_revision_change {
     # Email changes for this revisions bug and also for any other
     # bugs that previously had these revision attachments
     foreach my $bug_id ($revision->bug_id, keys %other_bugs) {
-        Bugzilla::BugMail::Send($bug_id, { changer => Bugzilla->user });
+        Bugzilla::BugMail::Send($bug_id, { changer => $rev_attachment->attacher });
     }
 
     Bugzilla->set_user($old_user);
