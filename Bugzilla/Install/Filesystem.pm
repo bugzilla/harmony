@@ -382,37 +382,6 @@ sub FILESYSTEM {
 
     # Create static error pages.
     $create_dirs{"errors"} = DIR_CGI_READ;
-    $create_files{"errors/401.html"} = {
-        perms     => CGI_READ,
-        overwrite => 1,
-        contents  => _error_page(
-            401, 'Authentication Required',
-            "This server could not verify that you are authorized to access
-            that url. you either supplied the wrong credentials (e.g., bad
-            password), or your browser doesn't understand how to supply the
-            credentials required.")
-    };
-    $create_files{"errors/403.html"} = {
-        perms     => CGI_READ,
-        overwrite => 1,
-        contents  => _error_page(
-            403, 'Access Denied',
-            "Access to the requested resource has been denied.")
-    };
-    $create_files{"errors/404.html"} = {
-        perms     => CGI_READ,
-        overwrite => 1,
-        contents  => _error_page(
-            404, 'Object Not Found',
-            "The requested URL was not found on this server.")
-    };
-    $create_files{"errors/500.html"} = {
-        perms     => CGI_READ,
-        overwrite => 1,
-        contents  => _error_page(
-            500, 'Internal Server Error',
-            "The server encountered an internal error and was unable to complete your request.")
-    };
 
     # Because checksetup controls the creation of index.html separately
     # from all other files, it gets its very own hash.
