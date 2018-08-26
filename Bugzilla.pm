@@ -114,20 +114,6 @@ sub init_page {
     # 001compile.t test).
     return if $^C;
 
-    # IIS prints out warnings to the webpage, so ignore them, or log them
-    # to a file if the file exists.
-    if ($ENV{SERVER_SOFTWARE} && $ENV{SERVER_SOFTWARE} =~ /microsoft-iis/i) {
-        $SIG{__WARN__} = sub {
-            my ($msg) = @_;
-            my $datadir = bz_locations()->{'datadir'};
-            if (-w "$datadir/errorlog") {
-                my $warning_log = new IO::File(">>$datadir/errorlog");
-                print $warning_log $msg;
-                $warning_log->close();
-            }
-        };
-    }
-
     my $script = basename($0);
 
     # Because of attachment_base, attachment.cgi handles this itself.
