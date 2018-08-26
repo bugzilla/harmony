@@ -704,7 +704,7 @@ sub send_cookie {
     }
 
     # Add the default path and the domain in.
-    state $uri = Bugzilla->urlbase;
+    state $uri = URI->new( Bugzilla->localconfig->{urlbase} );
     $paramhash{'-path'}   = $uri->path;
     # we don't set the domain.
     $paramhash{'-secure'} = 1
