@@ -18,7 +18,24 @@ use JSON::MaybeXS qw(decode_json);
 use LWP::UserAgent ();
 use Try::Tiny qw(catch try);
 
+use Types::Standard qw( :all );
+use Type::Utils;
+use Type::Params qw( compile );
+
+my $Invocant = class_type { class => __PACKAGE__ };
+
 sub main {
+    my ($self) = @_;
+    try {
+        $self->_main;
+    }
+    catch {
+        FATAL("Error in SES Handler: ", $_);
+        $self->_respond( 400 => 'Bad Request' );
+    };
+}
+
+sub _main {
     my ($self) = @_;
     Bugzilla->error_mode(ERROR_MODE_DIE);
     my $message = $self->_decode_json_wrapper( $self->req->body ) // return;
@@ -50,7 +67,8 @@ sub main {
 }
 
 sub _confirm_subscription {
-    my ($self, $message) = @_;
+    state $check = compile($Invocant, Dict[SubscribeURL => Str, slurpy Any]);
+    my ($self, $message) = $check->(@_);
 
     my $subscribe_url = $message->{SubscribeURL};
     if ( !$subscribe_url ) {
@@ -70,8 +88,17 @@ sub _confirm_subscription {
     $self->_respond( 200 => 'OK' );
 }
 
+my $NotificationType = Enum [qw( Bounce Complaint )];
+my $TypeField        = Enum [qw(eventType notificationType)];
+my $Notification = Dict [
+    eventType        => Optional [$NotificationType],
+    notificationType => Optional [$NotificationType],
+    slurpy Any,
+];
+
 sub _handle_notification {
-    my ( $self, $notification, $type_field ) = @_;
+    state $check = compile($Invocant, $Notification, $TypeField );
+    my ( $self, $notification, $type_field ) = $check->(@_);
 
     if ( !exists $notification->{$type_field} ) {
         return 0;
@@ -91,8 +118,28 @@ sub _handle_notification {
     return 1;
 }
 
+my $BouncedRecipients = ArrayRef[
+    Dict[
+       emailAddress   => Str,
+       action         => Str,
+       diagnosticCode => Str,
+       slurpy Any,
+    ],
+];
+my $BounceNotification = Dict [
+    bounce => Dict [
+        bouncedRecipients => $BouncedRecipients,
+        reportingMTA      => Str,
+        bounceSubType     => Str,
+        bounceType        => Str,
+        slurpy Any,
+    ],
+    slurpy Any,
+];
+
 sub _process_bounce {
-    my ($self, $notification) = @_;
+    state $check = compile($Invocant, $BounceNotification);
+    my ($self, $notification) = $check->(@_);
 
     # disable each account that is bouncing
     foreach my $recipient ( @{ $notification->{bounce}->{bouncedRecipients} } ) {
@@ -132,11 +179,19 @@ sub _process_bounce {
     $self->_respond( 200 => 'OK' );
 }
 
-sub _process_complaint {
-    my ($self) = @_;
+my $ComplainedRecipients = ArrayRef[Dict[ emailAddress => Str, slurpy Any ]];
+my $ComplaintNotification = Dict[
+    complaint => Dict [
+        complainedRecipients => $ComplainedRecipients,
+        complaintFeedbackType => Str,
+        slurpy Any,
+    ],
+    slurpy Any,
+];
 
-    # email notification to bugzilla admin
-    my ($notification) = @_;
+sub _process_complaint {
+    state $check = compile($Invocant, $ComplaintNotification);
+    my ($self, $notification) = $check->(@_);
     my $template       = Bugzilla->template_inner();
     my $json           = JSON::MaybeXS->new(
         pretty    => 1,
@@ -169,13 +224,9 @@ sub _respond {
 }
 
 sub _decode_json_wrapper {
-    my ($self, $json) = @_;
+    state $check = compile($Invocant, Str);
+    my ($self, $json) = $check->(@_);
     my $result;
-    if ( !defined $json ) {
-        WARN( 'Missing JSON from ' . $self->tx->remote_address );
-        $self->_respond( 400 => 'Bad Request' );
-        return undef;
-    }
     my $ok = try {
         $result = decode_json($json);
     }

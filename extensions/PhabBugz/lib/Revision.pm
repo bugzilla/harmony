@@ -15,10 +15,12 @@ use Types::Standard -all;
 use Type::Utils;
 
 use Bugzilla::Bug;
+use Bugzilla::Types qw(JSONBool);
 use Bugzilla::Error;
 use Bugzilla::Util qw(trim);
 use Bugzilla::Extension::PhabBugz::Project;
 use Bugzilla::Extension::PhabBugz::User;
+use Bugzilla::Extension::PhabBugz::Types qw(:types);
 use Bugzilla::Extension::PhabBugz::Util qw(request);
 
 #########################
@@ -39,16 +41,16 @@ has edit_policy      => ( is => 'ro',   isa => Str );
 has subscriber_count => ( is => 'ro',   isa => Int );
 has bug              => ( is => 'lazy', isa => Object );
 has author           => ( is => 'lazy', isa => Object );
-has reviewers        => ( is => 'lazy', isa => ArrayRef [Object] );
-has subscribers      => ( is => 'lazy', isa => ArrayRef [Object] );
-has projects         => ( is => 'lazy', isa => ArrayRef [Object] );
+has reviews          => ( is => 'lazy', isa => ArrayRef [ Dict [ user => PhabUser, status => Str ] ] );
+has subscribers      => ( is => 'lazy', isa => ArrayRef [PhabUser] );
+has projects         => ( is => 'lazy', isa => ArrayRef [Project] );
 has reviewers_raw => (
     is  => 'ro',
     isa => ArrayRef [
         Dict [
             reviewerPHID => Str,
             status       => Str,
-            isBlocking   => Bool,
+            isBlocking   => Bool | JSONBool,
             actorPHID    => Maybe [Str],
         ],
     ]
@@ -58,7 +60,7 @@ has subscribers_raw => (
     isa => Dict [
         subscriberPHIDs => ArrayRef [Str],
         subscriberCount => Int,
-        viewerIsSubscribed => Bool,
+        viewerIsSubscribed => Bool | JSONBool,
     ]
 );
 has projects_raw => (
@@ -109,7 +111,7 @@ sub BUILDARGS {
     $params->{bug_id}           = $params->{fields}->{'bugzilla.bug-id'};
     $params->{view_policy}      = $params->{fields}->{policy}->{view};
     $params->{edit_policy}      = $params->{fields}->{policy}->{edit};
-    $params->{reviewers_raw}    = $params->{attachments}->{reviewers}->{reviewers};
+    $params->{reviewers_raw}    = $params->{attachments}->{reviewers}->{reviewers} // [];
     $params->{subscribers_raw}  = $params->{attachments}->{subscribers};
     $params->{projects_raw}     = $params->{attachments}->{projects};
     $params->{subscriber_count} =
@@ -301,35 +303,24 @@ sub _build_author {
     }
 }
 
-sub _build_reviewers {
+sub _build_reviews {
     my ($self) = @_;
 
-    return $self->{reviewers} if $self->{reviewers};
-    return [] unless $self->reviewers_raw;
-
-    my @phids;
-    foreach my $reviewer ( @{ $self->reviewers_raw } ) {
-        push @phids, $reviewer->{reviewerPHID};
-    }
-
-    return [] unless @phids;
-
+    my %by_phid = map { $_->{reviewerPHID} => $_ } @{ $self->reviewers_raw };
     my $users = Bugzilla::Extension::PhabBugz::User->match(
-      {
-        phids => \@phids
-      }
+        {
+            phids => [keys %by_phid]
+        }
     );
 
-    foreach my $user (@$users) {
-        foreach my $reviewer_data ( @{ $self->reviewers_raw } ) {
-            if ( $reviewer_data->{reviewerPHID} eq $user->phid ) {
-                $user->{phab_review_status} = $reviewer_data->{status};
-                last;
+    return [
+        map {
+            {
+                user => $_,
+                status => $by_phid{ $_->phid }{status},
             }
-        }
-    }
-
-    return $self->{reviewers} = $users;
+        } @$users
+    ];
 }
 
 sub _build_subscribers {
@@ -478,8 +469,14 @@ sub make_private {
 sub make_public {
     my ( $self ) = @_;
 
-    $self->set_policy('view', 'public');
-    $self->set_policy('edit', 'users');
+    my $editbugs = Bugzilla::Extension::PhabBugz::Project->new_from_query(
+        {
+            name => 'bmo-editbugs-team'
+        }
+    );
+
+    $self->set_policy( 'view', 'public' );
+    $self->set_policy( 'edit', ( $editbugs ? $editbugs->phid : 'users' ) );
 
     my @current_group_projects = grep { $_->name =~ /^(bmo-.*|secure-revision)$/ } @{ $self->projects };
     foreach my $project (@current_group_projects) {

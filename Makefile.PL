@@ -74,16 +74,18 @@ my %requires = (
     'Mozilla::CA'              => '20160104',
     'Parse::CPAN::Meta'        => '1.44',
     'Role::Tiny'               => '2.000003',
+    'Scope::Guard'             => '0.21',
+    'Sereal'                   => '4.004',
     'Taint::Util'              => '0.08',
     'Template'                 => '2.24',
     'Text::CSV_XS'             => '1.26',
     'Throwable'                => '0.200013',
     'Sub::Quote'               => '2.005000',
-    'Type::Tiny'               => '1.000005',
+    'Type::Tiny'               => '1.004002',
     'URI'                      => '1.55',
     'URI::Escape::XS'          => '0.14',
     'version'                  => '0.87',
-    'EV'                       => 4.0 
+    'EV'                       => '4.0',
 );
 
 my %build_requires = ( 'ExtUtils::MakeMaker' => '7.22', );
@@ -94,6 +96,7 @@ my %test_requires = (
     'Test::Selenium::Firefox'         => 0,
     'Test::Perl::Critic::Progressive' => 0,
     'Perl::Critic::Freenode'          => 0,
+    'Capture::Tiny'                   => 0,
 );
 my %recommends = ( Safe => '2.30',);
 

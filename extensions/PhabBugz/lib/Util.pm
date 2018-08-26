@@ -15,24 +15,27 @@ use Bugzilla::Bug;
 use Bugzilla::Constants;
 use Bugzilla::Error;
 use Bugzilla::User;
+use Bugzilla::Types qw(:types);
 use Bugzilla::Util qw(trim);
 use Bugzilla::Extension::PhabBugz::Constants;
+use Bugzilla::Extension::PhabBugz::Types qw(:types);
 
 use JSON::XS qw(encode_json decode_json);
 use List::Util qw(first);
 use LWP::UserAgent;
 use Taint::Util qw(untaint);
 use Try::Tiny;
+use Type::Params qw( compile );
+use Type::Utils;
+use Types::Standard qw( :types );
 
 use base qw(Exporter);
 
 our @EXPORT = qw(
-    add_security_sync_comments
     create_revision_attachment
     get_attachment_revisions
     get_bug_role_phids
     get_needs_review
-    get_security_sync_groups
     intersect
     is_attachment_phab_revision
     request
@@ -40,7 +43,8 @@ our @EXPORT = qw(
 );
 
 sub create_revision_attachment {
-    my ( $bug, $revision, $timestamp, $submitter ) = @_;
+    state $check = compile(Bug, Revision, Str, User);
+    my ( $bug, $revision, $timestamp, $submitter ) = $check->(@_);
 
     my $phab_base_uri = Bugzilla->params->{phabricator_base_uri};
     ThrowUserError('invalid_phabricator_uri') unless $phab_base_uri;
@@ -61,37 +65,27 @@ sub create_revision_attachment {
     }
 
     # If submitter, then switch to that user when creating attachment
-    my ($old_user, $attachment);
-    try {
-        if ($submitter) {
-            $old_user = Bugzilla->user;
-            $submitter->{groups} = [ Bugzilla::Group->get_all ]; # We need to always be able to add attachment
-            Bugzilla->set_user($submitter);
+    local $submitter->{groups} = [ Bugzilla::Group->get_all ]; # We need to always be able to add attachment
+    my $restore_prev_user = Bugzilla->set_user($submitter, scope_guard => 1);
+
+    my $attachment = Bugzilla::Attachment->create(
+        {
+            bug         => $bug,
+            creation_ts => $timestamp,
+            data        => $revision_uri,
+            description => $revision->title,
+            filename    => 'phabricator-D' . $revision->id . '-url.txt',
+            ispatch     => 0,
+            isprivate   => 0,
+            mimetype    => PHAB_CONTENT_TYPE,
         }
+    );
 
-        $attachment = Bugzilla::Attachment->create(
-            {
-                bug         => $bug,
-                creation_ts => $timestamp,
-                data        => $revision_uri,
-                description => $revision->title,
-                filename    => 'phabricator-D' . $revision->id . '-url.txt',
-                ispatch     => 0,
-                isprivate   => 0,
-                mimetype    => PHAB_CONTENT_TYPE,
-            }
-        );
+    # Insert a comment about the new attachment into the database.
+    $bug->add_comment($revision->summary, { type       => CMT_ATTACHMENT_CREATED,
+                                            extra_data => $attachment->id });
 
-        # Insert a comment about the new attachment into the database.
-        $bug->add_comment($revision->summary, { type       => CMT_ATTACHMENT_CREATED,
-                                                extra_data => $attachment->id });
-    }
-    catch {
-        die $_;
-    }
-    finally {
-        Bugzilla->set_user($old_user) if $old_user;
-    };
+    delete $bug->{attachments};
 
     return $attachment;
 }
@@ -103,7 +97,8 @@ sub intersect {
 }
 
 sub get_bug_role_phids {
-    my ($bug) = @_;
+    state $check = compile(Bug);
+    my ($bug) = $check->(@_);
 
     my @bug_users = ( $bug->reporter );
     push(@bug_users, $bug->assigned_to)
@@ -122,12 +117,14 @@ sub get_bug_role_phids {
 }
 
 sub is_attachment_phab_revision {
-    my ($attachment) = @_;
+    state $check = compile(Attachment);
+    my ($attachment) = $check->(@_);
     return $attachment->contenttype eq PHAB_CONTENT_TYPE;
 }
 
 sub get_attachment_revisions {
-    my $bug = shift;
+    state $check = compile(Bug);
+    my ($bug) = $check->(@_);
 
     my @attachments =
       grep { is_attachment_phab_revision($_) } @{ $bug->attachments() };
@@ -156,7 +153,8 @@ sub get_attachment_revisions {
 }
 
 sub request {
-    my ($method, $data) = @_;
+    state $check = compile(Str, HashRef);
+    my ($method, $data) = $check->(@_);
     my $request_cache = Bugzilla->request_cache;
     my $params        = Bugzilla->params;
 
@@ -201,49 +199,11 @@ sub request {
     return $result;
 }
 
-sub get_security_sync_groups {
-    my $bug = shift;
-
-    my $sync_groups = Bugzilla::Group->match( { isactive => 1, isbuggroup => 1 } );
-    my $sync_group_names = [ map { $_->name } @$sync_groups ]; 
-
-    my $bug_groups = $bug->groups_in;
-    my $bug_group_names = [ map { $_->name } @$bug_groups ];
-
-    my @set_groups = intersect($bug_group_names, $sync_group_names);
-
-    return @set_groups;
-}
-
 sub set_phab_user {
-    my $old_user = Bugzilla->user;
     my $user = Bugzilla::User->new( { name => PHAB_AUTOMATION_USER } );
     $user->{groups} = [ Bugzilla::Group->get_all ];
-    Bugzilla->set_user($user);
-    return $old_user;
-}
 
-sub add_security_sync_comments {
-    my ($revisions, $bug) = @_;
-
-    my $phab_error_message = 'Revision is being made private due to unknown Bugzilla groups.';
-
-    foreach my $revision (@$revisions) {
-        $revision->add_comment($phab_error_message);
-    }
-
-    my $num_revisions = scalar @$revisions;
-    my $bmo_error_message =
-    ( $num_revisions > 1
-    ? $num_revisions.' revisions were'
-    : 'One revision was' )
-    . ' made private due to unknown Bugzilla groups.';
-
-    my $old_user = set_phab_user();
-
-    $bug->add_comment( $bmo_error_message, { isprivate => 0 } );
-
-    Bugzilla->set_user($old_user);
+    return Bugzilla->set_user($user, scope_guard => 1);
 }
 
 sub get_needs_review {

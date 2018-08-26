@@ -13,7 +13,7 @@ use warnings;
 
 use Bugzilla::Logging;
 
-our $VERSION = '5.13';
+our $VERSION = '5.15';
 
 use Bugzilla::Auth;
 use Bugzilla::Auth::Persist::Cookie;
@@ -47,6 +47,7 @@ use File::Spec::Functions;
 use Safe;
 use JSON::XS qw(decode_json);
 use URI;
+use Scope::Guard;
 
 use parent qw(Bugzilla::CPAN);
 
@@ -86,6 +87,9 @@ sub init_page {
     # request cache are very annoying (see bug 1347335)
     # and this is not an expensive operation.
     clear_request_cache();
+    if ($0 =~ /\.t/) {
+        return;
+    }
     if (Bugzilla->usage_mode == USAGE_MODE_CMDLINE) {
         init_console();
     }
@@ -285,8 +289,20 @@ sub user {
 }
 
 sub set_user {
-    my (undef, $user) = @_;
-    request_cache->{user} = $user;
+    my (undef, $new_user, %option) = @_;
+
+    if ($option{scope_guard}) {
+        my $old_user = request_cache->{user};
+        request_cache->{user} = $new_user;
+        return Scope::Guard->new(
+            sub {
+                request_cache->{user} = $old_user;
+            }
+        )
+    }
+    else {
+        request_cache->{user} = $new_user;
+    }
 }
 
 sub sudoer {
@@ -788,6 +804,27 @@ sub process_cache {
 # caching.
 sub memcached {
     return request_cache->{memcached} ||= Bugzilla::Memcached->_new();
+}
+
+# Connector to the Datadog metrics collection daemon.
+sub datadog {
+    my ($class, $namespace) = @_;
+    my $host      = $class->localconfig->{datadog_host};
+    my $port      = $class->localconfig->{datadog_port};
+
+    $namespace //= '';
+
+    if ($class->has_feature('datadog') && $host) {
+        require DataDog::DogStatsd;
+        return request_cache->{datadog}{$namespace} //= DataDog::DogStatsd->new(
+            host      => $host,
+            port      => $port,
+            namespace => $namespace ? "$namespace." : '',
+        );
+    }
+    else {
+        return undef;
+    }
 }
 
 sub elastic {

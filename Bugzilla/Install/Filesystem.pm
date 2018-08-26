@@ -67,55 +67,6 @@ use constant HTTPD_ENV => qw(
     NYTPROF_DIR
 );
 
-sub HTTPD_ENV_CONF {
-    my @env = (ENV_KEYS, HTTPD_ENV);
-    return join( "\n", map { "PerlPassEnv " . $_ } @env ) . "\n";
-}
-
-sub _error_page {
-    my ($code, $title, $description) = @_;
-
-    return <<EOT;
-<!DOCTYPE HTML>
-<html>
-    <head>
-        <title>$title</title>
-        <style>
-            body {
-                margin: 1em 2em;
-                background-color: #455372;
-                color: #ddd;
-                font-family: sans-serif;
-            }
-            h1, h3 {
-                color: #fff;
-            }
-            a {
-                color: #fff;
-                text-decoration: none;
-            }
-            #buggie {
-                float: left;
-            }
-            #content {
-                margin-left: 100px;
-                padding-top: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <img src="/images/buggie.png" id="buggie" alt="buggie" width="78" height="215">
-        <div id="content">
-            <h1>$title</h1>
-            <p>$description</p>
-            <h3>Error $code</h3>
-            <p><a href="/">this site</a></p>
-        </div>
-    </body>
-</html>
-EOT
-}
-
 ###############
 # Permissions #
 ###############
@@ -427,9 +378,6 @@ sub FILESYSTEM {
         "skins/yui3.css"          => { perms     => CGI_READ,
                                        overwrite => 1,
                                        contents  => $yui3_all_css },
-        "$confdir/env.conf"       => { perms     => CGI_READ,
-                                       overwrite => 1,
-                                       contents  => \&HTTPD_ENV_CONF },
     );
 
     # Create static error pages.
