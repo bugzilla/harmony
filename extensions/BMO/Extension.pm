@@ -1528,15 +1528,15 @@ sub install_update_db {
                 "www.mozilla.org"               => 'websites-security',
             );
             # 1. Set all to core-security by default
-            my $core_sec_group = Bugzilla::Group->new({ name => 'core-security' });
+            my $core_sec_group = Bugzilla::Group->new({ name => Bugzilla->params->{insidergroup} });
             $dbh->do("UPDATE products SET security_group_id = ?", undef, $core_sec_group->id);
             # 2. Update the ones that have explicit security groups
             foreach my $prod_name (keys %product_sec_groups) {
                 my $group_name = $product_sec_groups{$prod_name};
-                next if $group_name eq 'core-security'; # already done
+                next if $group_name eq Bugzilla->params->{insidergroup}; # already done
                 my $group = Bugzilla::Group->new({ name => $group_name, cache => 1 });
                 if (!$group) {
-                    warn "Security group $group_name not found. Using core-security instead.\n";
+                    warn "Security group $group_name not found. Using insider group instead.\n";
                     next;
                 }
                 $dbh->do("UPDATE products SET security_group_id = ? WHERE name = ?", undef, $group->id, $prod_name);
