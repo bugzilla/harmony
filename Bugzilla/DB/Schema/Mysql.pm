@@ -275,6 +275,9 @@ sub column_info_to_column {
     my $col_name = $column_info->{COLUMN_NAME};
 
     my $column = {};
+    if (defined $column_info->{REFERENCES}) {
+        $column->{REFERENCES} = $column_info->{REFERENCES};
+    }
 
     ($column->{NOTNULL} = 1) if $column_info->{NULLABLE} == 0;
 

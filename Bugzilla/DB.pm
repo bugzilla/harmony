@@ -675,8 +675,9 @@ sub bz_alter_column {
     my ($self, $table, $name, $new_def, $set_nulls_to) = @_;
 
     my $current_def = $self->bz_column_info($table, $name);
-
-    if (!$self->_bz_schema->columns_equal($current_def, $new_def)) {
+    if (!$current_def) {
+        $self->bz_add_column($table, $name, $new_def, $set_nulls_to);
+    } elsif (!$self->_bz_schema->columns_equal($current_def, $new_def)) {
         # You can't change a column to be NOT NULL if you have no DEFAULT
         # and no value for $set_nulls_to, if there are any NULL values
         # in that column.
