@@ -260,6 +260,16 @@ use constant SYSTEM_GROUPS => (
         name         => 'bz_can_disable_mfa',
         description  => 'Can disable MFA when editing users',
     },
+    {
+        use_for_bugs => 1,
+        name         => 'bz_private',
+        description  => 'Private Bug',
+        inherited_by => ['bz_insiders'],
+    },
+    {
+        name => 'bz_insiders',
+        description => 'Can see private attachments, comments, and bugs (for bugs in bz_private)',
+    },
 );
 
 use constant DEFAULT_CLASSIFICATION => {
@@ -315,7 +325,7 @@ sub update_system_groups {
     foreach my $definition (SYSTEM_GROUPS) {
         my $exists = new Bugzilla::Group({ name => $definition->{name} });
         if (!$exists) {
-            $definition->{isbuggroup} = 0;
+            $definition->{isbuggroup} = delete $definition->{use_for_bugs} // 0,
             $definition->{silently} = !$editbugs_exists;
             my $inherited_by = delete $definition->{inherited_by};
             my $created = Bugzilla::Group->create($definition);

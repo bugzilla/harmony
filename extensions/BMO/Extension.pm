@@ -29,6 +29,7 @@ use warnings;
 
 use base qw(Bugzilla::Extension);
 
+use Bugzilla::Logging;
 use Bugzilla::Bug;
 use Bugzilla::BugMail;
 use Bugzilla::Config::Common qw(check_group get_all_group_names);
@@ -2581,9 +2582,11 @@ sub _default_security_group {
 }
 
 sub _default_security_group_obj {
-    my $group_id = $_[0]->{security_group_id};
+    my ($self) = @_;
+    my $group_id = $self->{security_group_id};
     if (!$group_id) {
-        return Bugzilla::Group->new({ name => Bugzilla->params->{insidergroup}, cache => 1 });
+        WARN(sprintf "%s (%d) lacks a default security_group_id", $self->name, $self->id);
+        return Bugzilla::Group->check({ name => 'bz_private', cache => 1 });
     }
     return Bugzilla::Group->new({ id => $group_id, cache => 1 });
 }

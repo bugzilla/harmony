@@ -38,7 +38,7 @@ sub get_param_list {
             name    => 'insidergroup',
             type    => 's',
             choices => \&get_all_group_names,
-            default => '',
+            default => 'bz_insiders',
             checker => \&check_group
         },
 
