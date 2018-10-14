@@ -406,6 +406,11 @@ sub login {
         $class->user->update_last_seen_date();
     }
 
+    if ($type == LOGIN_REQUIRED && ! $class->user->id) {
+        FATAL("Detected failure to throw login_required when login was required and user is not logged in.");
+        ThrowUserError('login_required');
+    }
+
     return $class->user;
 }
 
