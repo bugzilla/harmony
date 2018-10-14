@@ -261,14 +261,14 @@ use constant SYSTEM_GROUPS => (
         description  => 'Can disable MFA when editing users',
     },
     {
+        name => 'bz_insiders',
+        description => 'Can see private attachments, comments, and bugs (for bugs in bz_private)',
+    },
+    {
         use_for_bugs => 1,
         name         => 'bz_private',
         description  => 'Private Bug',
         inherited_by => ['bz_insiders'],
-    },
-    {
-        name => 'bz_insiders',
-        description => 'Can see private attachments, comments, and bugs (for bugs in bz_private)',
     },
 );
 
