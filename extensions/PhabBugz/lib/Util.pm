@@ -20,14 +20,14 @@ use Bugzilla::Util qw(trim);
 use Bugzilla::Extension::PhabBugz::Constants;
 use Bugzilla::Extension::PhabBugz::Types qw(:types);
 
-use JSON::XS qw(encode_json decode_json);
 use List::Util qw(first);
-use LWP::UserAgent;
 use Taint::Util qw(untaint);
 use Try::Tiny;
 use Type::Params qw( compile );
 use Type::Utils;
 use Types::Standard qw( :types );
+use Mojo::UserAgent;
+use Mojo::JSON qw(encode_json);
 
 use base qw(Exporter);
 
@@ -35,7 +35,6 @@ our @EXPORT = qw(
     create_revision_attachment
     get_attachment_revisions
     get_bug_role_phids
-    get_needs_review
     intersect
     is_attachment_phab_revision
     request
@@ -160,11 +159,10 @@ sub request {
 
     my $ua = $request_cache->{phabricator_ua};
     unless ($ua) {
-        $ua = $request_cache->{phabricator_ua} = LWP::UserAgent->new(timeout => 10);
+        $ua = $request_cache->{phabricator_ua} = Mojo::UserAgent->new;
         if ($params->{proxy_url}) {
-            $ua->proxy('https', $params->{proxy_url});
+            $ua->proxy($params->{proxy_url});
         }
-        $ua->default_header('Content-Type' => 'application/x-www-form-urlencoded');
     }
 
     my $phab_api_key = $params->{phabricator_api_key};
@@ -176,25 +174,16 @@ sub request {
 
     $data->{__conduit__} = { token => $phab_api_key };
 
-    my $response = $ua->post($full_uri, { params => encode_json($data) });
-
+    my $response = $ua->post($full_uri => form => { params => encode_json($data) })->result;
     ThrowCodeError('phabricator_api_error', { reason => $response->message })
       if $response->is_error;
 
-    my $result;
-    my $result_ok = eval {
-        my $content = $response->content;
-        untaint($content);
-        $result = decode_json( $content );
-        1;
-    };
-    if (!$result_ok || $result->{error_code}) {
-        ThrowCodeError('phabricator_api_error',
-            { reason => 'JSON decode failure' }) if !$result_ok;
-        ThrowCodeError('phabricator_api_error',
-            { code   => $result->{error_code},
-              reason => $result->{error_info} }) if $result->{error_code};
-    }
+    my $result = $response->json;
+    ThrowCodeError('phabricator_api_error',
+        { reason => 'JSON decode failure' }) if !defined($result);
+    ThrowCodeError('phabricator_api_error',
+        { code   => $result->{error_code},
+          reason => $result->{error_info} }) if $result->{error_code};
 
     return $result;
 }
@@ -204,50 +193,6 @@ sub set_phab_user {
     $user->{groups} = [ Bugzilla::Group->get_all ];
 
     return Bugzilla->set_user($user, scope_guard => 1);
-}
-
-sub get_needs_review {
-    my ($user) = @_;
-    $user //= Bugzilla->user;
-    return unless $user->id;
-
-    my $phab_user = Bugzilla::Extension::PhabBugz::User->new_from_query(
-      {
-        ids => [ $user->id ]
-      }
-    );
-
-    return [] unless $phab_user;
-
-    my $diffs = request(
-        'differential.revision.search',
-        {
-            attachments => {
-                reviewers => 1,
-            },
-            constraints => {
-                reviewerPHIDs => [$phab_user->phid],
-                statuses      => ["open()"],
-            },
-            order => 'newest',
-        }
-    );
-    ThrowCodeError('phabricator_api_error', { reason => 'Malformed Response' })
-        unless exists $diffs->{result}{data};
-
-    my @revisions;
-    foreach my $revision ( @{ $diffs->{result}{data} } ) {
-        foreach my $reviewer ( @{ $revision->{attachments}->{reviewers}->{reviewers} } ) {
-            if (   $reviewer->{reviewerPHID} eq $phab_user->phid
-                && $reviewer->{status} =~ /^(?:added|blocking)$/ )
-            {
-                push @revisions, $revision;
-                last;
-            }
-        }
-    }
-
-    return \@revisions;
 }
 
 1;

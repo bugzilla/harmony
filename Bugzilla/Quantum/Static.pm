@@ -11,20 +11,20 @@ use Bugzilla::Constants qw(bz_locations);
 
 my $LEGACY_RE = qr{
     ^ (?:static/v[0-9]+\.[0-9]+/) ?
-    ( (?:extensions/[^/]+/web|(?:image|graph|skin|j)s)/.+)
+    ( (?:extensions/[^/]+/web|(?:image|skin|j|graph)s)/.+)
     $
 }xs;
 
 sub file {
-    my ( $self, $rel ) = @_;
+  my ($self, $rel) = @_;
 
-    if ( my ($legacy_rel) = $rel =~ $LEGACY_RE ) {
-        local $self->{paths} = [ bz_locations->{cgi_path} ];
-        return $self->SUPER::file($legacy_rel);
-    }
-    else {
-        return $self->SUPER::file($rel);
-    }
+  if (my ($legacy_rel) = $rel =~ $LEGACY_RE) {
+    local $self->{paths} = [bz_locations->{cgi_path}];
+    return $self->SUPER::file($legacy_rel);
+  }
+  else {
+    return $self->SUPER::file($rel);
+  }
 }
 
 1;

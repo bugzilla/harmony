@@ -89,12 +89,6 @@ sub SHOW_BUG_MODAL_CSP {
         push @{ $policy{img_src} }, $attach_base;
     }
 
-    # MozReview API calls
-    my $mozreview_url = Bugzilla->params->{mozreview_base_url};
-    if ($mozreview_url) {
-        push @{ $policy{connect_src} },  $mozreview_url . 'api/extensions/mozreview.extension.MozReviewExtension/summary/';
-    }
-
     return %policy;
 }
 
@@ -102,12 +96,6 @@ sub _init_bz_cgi_globals {
     my $invocant = shift;
     # We need to disable output buffering - see bug 179174
     $| = 1;
-
-    # Ignore SIGTERM and SIGPIPE - this prevents DB corruption. If the user closes
-    # their browser window while a script is running, the web server sends these
-    # signals, and we don't want to die half way through a write.
-    $SIG{TERM} = 'IGNORE';
-    $SIG{PIPE} = 'IGNORE';
 
     # We don't precompile any functions here, that's done specially in
     # mod_perl code.

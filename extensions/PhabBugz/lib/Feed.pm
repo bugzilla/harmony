@@ -11,10 +11,10 @@ use 5.10.1;
 
 use IO::Async::Timer::Periodic;
 use IO::Async::Loop;
+use IO::Async::Signal;
 use List::Util qw(first);
 use List::MoreUtils qw(any uniq);
 use Moo;
-use Scalar::Util qw(blessed);
 use Try::Tiny;
 use Type::Params qw( compile );
 use Type::Utils;
@@ -48,6 +48,13 @@ my $Invocant = class_type { class => __PACKAGE__ };
 sub start {
     my ($self) = @_;
 
+    my $sig_alarm =  IO::Async::Signal->new(
+        name => 'ALRM',
+        on_receipt => sub {
+            FATAL("Timeout reached");
+            exit;
+        },
+    );
     # Query for new revisions or changes
     my $feed_timer = IO::Async::Timer::Periodic->new(
         first_interval => 0,
@@ -56,13 +63,17 @@ sub start {
         on_tick        => sub {
             try {
                 with_writable_database {
+                    alarm(PHAB_TIMEOUT);
                     $self->feed_query();
                 };
             }
             catch {
                 FATAL($_);
+            }
+            finally {
+                alarm(0);
+                Bugzilla->_cleanup();
             };
-            Bugzilla->_cleanup();
         },
     );
 
@@ -74,13 +85,17 @@ sub start {
         on_tick        => sub {
             try {
                 with_writable_database {
+                    alarm(PHAB_TIMEOUT);
                     $self->user_query();
                 };
             }
             catch {
                 FATAL($_);
+            }
+            finally {
+                alarm(0);
+                Bugzilla->_cleanup();
             };
-            Bugzilla->_cleanup();
         },
     );
 
@@ -92,13 +107,18 @@ sub start {
         on_tick        => sub {
             try {
                 with_writable_database {
+                    alarm(PHAB_TIMEOUT);
                     $self->group_query();
                 };
             }
             catch {
                 FATAL($_);
+            }
+            finally {
+                alarm(0);
+                Bugzilla->_cleanup();
             };
-            Bugzilla->_cleanup();
+
         },
     );
 
@@ -106,6 +126,7 @@ sub start {
     $loop->add($feed_timer);
     $loop->add($user_timer);
     $loop->add($group_timer);
+    $loop->add($sig_alarm);
     $feed_timer->start;
     $user_timer->start;
     $group_timer->start;
@@ -221,6 +242,11 @@ sub feed_query {
 
         $delete_build_target->execute($target->{name}, $target->{value});
      }
+
+    if (Bugzilla->datadog) {
+      my $dd = Bugzilla->datadog();
+      $dd->increment('bugzilla.phabbugz.feed_query_count');
+    }
 }
 
 sub user_query {
@@ -260,6 +286,11 @@ sub user_query {
             $self->process_new_user($user_data);
         };
         $self->save_last_id($user_id, 'user');
+    }
+
+    if (Bugzilla->datadog) {
+      my $dd = Bugzilla->datadog();
+      $dd->increment('bugzilla.phabbugz.user_query_count');
     }
 }
 
@@ -358,6 +389,11 @@ sub group_query {
             local Bugzilla::Logging->fields->{api_result} = $result;
             INFO( "Project " . $project->name . " updated" );
         }
+    }
+
+    if (Bugzilla->datadog) {
+      my $dd = Bugzilla->datadog();
+      $dd->increment('bugzilla.phabbugz.group_query_count');
     }
 }
 
@@ -501,105 +537,6 @@ sub process_revision_change {
         $attachment->update($timestamp);
     }
 
-    # REVIEWER STATUSES
-
-    my (@accepted, @denied);
-    foreach my $review (@{ $revision->reviews }) {
-        push @accepted, $review->{user} if $review->{status} eq 'accepted';
-        push @denied,   $review->{user} if $review->{status} eq 'rejected';
-    }
-
-    my @accepted_user_ids = map { $_->bugzilla_user->id } grep { defined $_->bugzilla_user } @accepted;
-    my @denied_user_ids   = map { $_->bugzilla_user->id } grep { defined $_->bugzilla_user } @denied;
-    my %reviewers_hash    = map { $_->{user}->name => 1 } @{ $revision->reviews };
-
-    foreach my $attachment (@attachments) {
-        my ($attach_revision_id) = ($attachment->filename =~ PHAB_ATTACHMENT_PATTERN);
-        next if $revision->id != $attach_revision_id;
-
-        # Clear old accepted review flags if no longer accepted
-        my (@denied_flags, @new_flags, @removed_flags, %accepted_done, $flag_type);
-        foreach my $flag (@{ $attachment->flags }) {
-            next if $flag->type->name ne 'review';
-            $flag_type = $flag->type if $flag->type->is_active;
-            next if $flag->status ne '+';
-            if (any { $flag->setter->id == $_ } @denied_user_ids) {
-                INFO('Denying review flag set by ' . $flag->setter->name);
-                push(@denied_flags, { id => $flag->id, setter => $flag->setter, status => 'X' });
-            }
-            if (any { $flag->setter->id == $_ } @accepted_user_ids) {
-                INFO('Skipping as review+ already set by ' . $flag->setter->name);
-                $accepted_done{$flag->setter->id}++;
-            }
-            if (!any { $flag->setter->id == $_ } (@accepted_user_ids, @denied_user_ids)) {
-                INFO('Clearing review+ flag set by ' . $flag->setter->name);
-                push(@removed_flags, { id => $flag->id, setter => $flag->setter, status => 'X' });
-            }
-        }
-
-        $flag_type ||= first { $_->name eq 'review' && $_->is_active } @{ $attachment->flag_types };
-
-        die "Unable to find review flag!" unless $flag_type;
-
-        # Create new flags
-        foreach my $user_id (@accepted_user_ids) {
-            next if $accepted_done{$user_id};
-            my $user = Bugzilla::User->check({ id => $user_id, cache => 1 });
-            INFO('Setting new review+ flag for ' . $user->name);
-            push(@new_flags, { type_id => $flag_type->id, setter => $user, status => '+' });
-        }
-
-        # Process each flag change by updating the flag and adding a comment
-        foreach my $flag_data (@new_flags) {
-            my $comment = $flag_data->{setter}->name . " has approved the revision.";
-            $self->add_flag_comment(
-                {
-                    bug        => $bug,
-                    attachment => $attachment,
-                    comment    => $comment,
-                    user       => $flag_data->{setter},
-                    old_flags  => [],
-                    new_flags  => [$flag_data],
-                    timestamp  => $timestamp
-                }
-            );
-        }
-        foreach my $flag_data (@denied_flags) {
-            my $comment = $flag_data->{setter}->name . " has requested changes to the revision.\n";
-            $self->add_flag_comment(
-                {
-                    bug        => $bug,
-                    attachment => $attachment,
-                    comment    => $comment,
-                    user       => $flag_data->{setter},
-                    old_flags  => [$flag_data],
-                    new_flags  => [],
-                    timestamp  => $timestamp
-                }
-            );
-        }
-        foreach my $flag_data (@removed_flags) {
-            my $comment;
-            if ( exists $reviewers_hash{ $flag_data->{setter}->name } ) {
-                $comment = "Flag set by " . $flag_data->{setter}->name . " is no longer active.\n";
-            }
-            else {
-                $comment = $flag_data->{setter}->name . " has been removed from the revision.\n";
-            }
-            $self->add_flag_comment(
-                {
-                    bug        => $bug,
-                    attachment => $attachment,
-                    comment    => $comment,
-                    user       => $flag_data->{setter},
-                    old_flags  => [$flag_data],
-                    new_flags  => [],
-                    timestamp  => $timestamp
-                }
-            );
-        }
-    }
-
     # FINISH UP
 
     $bug->update($timestamp);
@@ -736,6 +673,11 @@ sub process_new_user {
         foreach my $attachment (@attachments) {
             my ($revision_id) = ($attachment->filename =~ PHAB_ATTACHMENT_PATTERN);
 
+            if (!$revision_id) {
+                WARN("Skipping " . $attachment->filename . " on bug $bug_id. Filename should be fixed.");
+                next;
+            }
+
             INFO("Processing revision D$revision_id");
 
             my $revision = Bugzilla::Extension::PhabBugz::Revision->new_from_query(
@@ -837,40 +779,6 @@ sub get_group_members {
         ids => $user_ids
       }
     );
-}
-
-sub add_flag_comment {
-    state $check = compile(
-        $Invocant,
-        Dict [
-            bug        => Bug,
-            attachment => Attachment,
-            comment    => Str,
-            user       => User,
-            old_flags  => ArrayRef,
-            new_flags  => ArrayRef,
-            timestamp  => Str,
-        ],
-    );
-    my ( $self, $params ) = $check->(@_);
-    my ( $bug, $attachment, $comment, $user, $old_flags, $new_flags, $timestamp )
-        = @$params{qw(bug attachment comment user old_flags new_flags timestamp)};
-
-    # when this function returns, Bugzilla->user will return to its previous value.
-    my $restore_prev_user = Bugzilla->set_user($user, scope_guard => 1);
-
-    INFO("Flag comment: $comment");
-    $bug->add_comment(
-        $comment,
-        {
-            isprivate  => $attachment->isprivate,
-            type       => CMT_ATTACHMENT_UPDATED,
-            extra_data => $attachment->id
-        }
-    );
-
-    $attachment->set_flags( $old_flags, $new_flags );
-    $attachment->update($timestamp);
 }
 
 1;

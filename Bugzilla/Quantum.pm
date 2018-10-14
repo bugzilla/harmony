@@ -10,6 +10,8 @@ use Mojo::Base 'Mojolicious';
 
 # Needed for its exit() overload, must happen early in execution.
 use CGI::Compile;
+use utf8;
+use Encode;
 
 use Bugzilla          ();
 use Bugzilla::BugMail ();
@@ -20,100 +22,125 @@ use Bugzilla::Install::Requirements ();
 use Bugzilla::Logging;
 use Bugzilla::Quantum::CGI;
 use Bugzilla::Quantum::SES;
+use Bugzilla::Quantum::Home;
 use Bugzilla::Quantum::Static;
 use Mojo::Loader qw( find_modules );
 use Module::Runtime qw( require_module );
 use Bugzilla::Util ();
 use Cwd qw(realpath);
 use MojoX::Log::Log4perl::Tiny;
+use Bugzilla::WebService::Server::REST;
 
 has 'static' => sub { Bugzilla::Quantum::Static->new };
 
 sub startup {
-    my ($self) = @_;
+  my ($self) = @_;
 
-    DEBUG('Starting up');
-    $self->plugin('Bugzilla::Quantum::Plugin::Glue');
-    $self->plugin('Bugzilla::Quantum::Plugin::Hostage');
-    $self->plugin('Bugzilla::Quantum::Plugin::BlockIP');
-    $self->plugin('Bugzilla::Quantum::Plugin::BasicAuth');
+  DEBUG('Starting up');
+  $self->plugin('Bugzilla::Quantum::Plugin::Glue');
+  $self->plugin('Bugzilla::Quantum::Plugin::Hostage')
+    unless $ENV{BUGZILLA_DISABLE_HOSTAGE};
+  $self->plugin('Bugzilla::Quantum::Plugin::BlockIP');
+  $self->plugin('Bugzilla::Quantum::Plugin::Helpers');
 
-    Bugzilla::Extension->load_all();
-    if ( $self->mode ne 'development' ) {
-        Bugzilla->preload_features();
-        DEBUG('preloading templates');
-        Bugzilla->preload_templates();
-        DEBUG('done preloading templates');
-        require_module($_) for find_modules('Bugzilla::User::Setting');
+  # hypnotoad is weird and doesn't look for MOJO_LISTEN itself.
+  $self->config(
+    hypnotoad => {
+      proxy              => $ENV{MOJO_REVERSE_PROXY} // 1,
+      heartbeat_interval => $ENV{MOJO_HEARTBEAT_INTERVAL} // 10,
+      heartbeat_timeout  => $ENV{MOJO_HEARTBEAT_TIMEOUT} // 120,
+      inactivity_timeout => $ENV{MOJO_INACTIVITY_TIMEOUT} // 120,
+      workers            => $ENV{MOJO_WORKERS} // 15,
+      clients            => $ENV{MOJO_CLIENTS} // 10,
+      spare              => $ENV{MOJO_SPARE} // 5,
+      listen             => [$ENV{MOJO_LISTEN} // 'http://*:3000'],
+    },
+  );
 
-        $self->hook(
-            after_static => sub {
-                my ($c) = @_;
-                $c->res->headers->cache_control('public, max-age=31536000');
-            }
-        );
+  # Make sure each httpd child receives a different random seed (bug 476622).
+  # Bugzilla::RNG has one srand that needs to be called for
+  # every process, and Perl has another. (Various Perl modules still use
+  # the built-in rand(), even though we never use it in Bugzilla itself,
+  # so we need to srand() both of them.)
+  # Also, ping the dbh to force a reconnection.
+  Mojo::IOLoop->next_tick(sub {
+    Bugzilla::RNG::srand();
+    srand();
+    eval { Bugzilla->dbh->ping };
+  });
+
+  Bugzilla::Extension->load_all();
+  if ($self->mode ne 'development') {
+    Bugzilla->preload_features();
+    DEBUG('preloading templates');
+    Bugzilla->preload_templates();
+    DEBUG('done preloading templates');
+    require_module($_) for find_modules('Bugzilla::User::Setting');
+
+    $self->hook(
+      after_static => sub {
+        my ($c) = @_;
+        $c->res->headers->cache_control('public, max-age=31536000');
+      }
+    );
+  }
+  Bugzilla::WebService::Server::REST->preload;
+
+  $self->setup_routes;
+
+  Bugzilla::Hook::process('app_startup', {app => $self});
+}
+
+sub setup_routes {
+  my ($self) = @_;
+
+  my $r = $self->routes;
+  Bugzilla::Quantum::CGI->load_all($r);
+  Bugzilla::Quantum::CGI->load_one('bzapi_cgi',
+    'extensions/BzAPI/bin/rest.cgi');
+
+  $r->get('/home')->to('Home#index');
+  $r->any('/')->to('CGI#index_cgi');
+  $r->any('/bug/<id:num>')->to('CGI#show_bug_cgi');
+  $r->any('/<id:num>')->to('CGI#show_bug_cgi');
+  $r->get(
+    '/testagent.cgi' => sub {
+      my $c = shift;
+      $c->render(text => "OK Mojolicious");
     }
+  );
 
-    my $r = $self->routes;
-    Bugzilla::Quantum::CGI->load_all($r);
-    Bugzilla::Quantum::CGI->load_one( 'bzapi_cgi', 'extensions/BzAPI/bin/rest.cgi' );
+  $r->any('/rest')->to('CGI#rest_cgi');
+  $r->any('/rest.cgi/*PATH_INFO')->to('CGI#rest_cgi' => {PATH_INFO => ''});
+  $r->any('/rest/*PATH_INFO')->to('CGI#rest_cgi' => {PATH_INFO => ''});
+  $r->any('/extensions/BzAPI/bin/rest.cgi/*PATH_INFO')->to('CGI#bzapi_cgi');
+  $r->any('/latest/*PATH_INFO')->to('CGI#bzapi_cgi');
+  $r->any('/bzapi/*PATH_INFO')->to('CGI#bzapi_cgi');
 
-    Bugzilla::WebService::Server::REST->preload;
+  $r->static_file('/__lbheartbeat__');
+  $r->static_file('/__version__' =>
+      {file => 'version.json', content_type => 'application/json'});
+  $r->static_file('/version.json', {content_type => 'application/json'});
 
-    $r->any('/')->to('CGI#index_cgi');
-    $r->any('/bug/<id:num>')->to('CGI#show_bug_cgi');
-    $r->any('/<id:num>')->to('CGI#show_bug_cgi');
+  $r->page('/review',        'splinter.html');
+  $r->page('/user_profile',  'user_profile.html');
+  $r->page('/userprofile',   'user_profile.html');
+  $r->page('/request_defer', 'request_defer.html');
 
-    $r->any('/rest')->to('CGI#rest_cgi');
-    $r->any('/rest.cgi/*PATH_INFO')->to( 'CGI#rest_cgi' => { PATH_INFO => '' } );
-    $r->any('/rest/*PATH_INFO')->to( 'CGI#rest_cgi' => { PATH_INFO => '' } );
-    $r->any('/bzapi')->to('CGI#bzapi_cgi');
-    $r->any('/bzapi/*PATH_INFO')->to('CGI#bzapi_cgi');
-    $r->any('/extensions/BzAPI/bin/rest.cgi/*PATH_INFO')->to('CGI#bzapi_cgi');
+  $r->get('/__heartbeat__')->to('CGI#heartbeat_cgi');
+  $r->get('/robots.txt')->to('CGI#robots_cgi');
+  $r->any('/login')->to('CGI#index_cgi' => {'GoAheadAndLogIn' => '1'});
+  $r->any('/:new_bug' => [new_bug => qr{new[-_]bug}])->to('CGI#new_bug_cgi');
 
-    $r->get(
-        '/__lbheartbeat__' => sub {
-            my $c = shift;
-            $c->reply->file( $c->app->home->child('__lbheartbeat__') );
-        },
-    );
+  my $ses_auth = $r->under(
+    '/ses' => sub {
+      my ($c) = @_;
+      my $lc = Bugzilla->localconfig;
 
-    $r->get(
-        '/__version__' => sub {
-            my $c = shift;
-            $c->reply->file( $c->app->home->child('version.json') );
-        },
-    );
-
-    $r->get(
-        '/version.json' => sub {
-            my $c = shift;
-            $c->reply->file( $c->app->home->child('version.json') );
-        },
-    );
-
-    $r->get('/__heartbeat__')->to('CGI#heartbeat_cgi');
-    $r->get('/robots.txt')->to('CGI#robots_cgi');
-
-    $r->any('/review')->to( 'CGI#page_cgi' => { 'id' => 'splinter.html' } );
-    $r->any('/user_profile')->to( 'CGI#page_cgi' => { 'id' => 'user_profile.html' } );
-    $r->any('/userprofile')->to( 'CGI#page_cgi' => { 'id' => 'user_profile.html' } );
-    $r->any('/request_defer')->to( 'CGI#page_cgi' => { 'id' => 'request_defer.html' } );
-    $r->any('/login')->to( 'CGI#index_cgi' => { 'GoAheadAndLogIn' => '1' } );
-
-    $r->any( '/:new_bug' => [ new_bug => qr{new[-_]bug} ] )->to('CGI#new_bug_cgi');
-
-    my $ses_auth = $r->under(
-        '/ses' => sub {
-            my ($c) = @_;
-            my $lc = Bugzilla->localconfig;
-
-            return $c->basic_auth( 'SES', $lc->{ses_username}, $lc->{ses_password} );
-        }
-    );
-    $ses_auth->any('/index.cgi')->to('SES#main');
-
-    Bugzilla::Hook::process( 'app_startup', { app => $self } );
+      return $c->basic_auth('SES', $lc->{ses_username}, $lc->{ses_password});
+    }
+  );
+  $ses_auth->any('/index.cgi')->to('SES#main');
 }
 
 1;

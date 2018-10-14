@@ -64,9 +64,12 @@ sub get_accessible_products {
 }
 
 # Get a list of actual products, based on list of ids or names
+our %FLAG_CACHE;
 sub get {
     my ($self, $params) = validate(@_, 'ids', 'names', 'type');
     my $user = Bugzilla->user;
+
+    Bugzilla->request_cache->{bz_etag_disable} = 1;
 
     defined $params->{ids} || defined $params->{names} || defined $params->{type}
         || ThrowCodeError("params_required", { function => "Product.get",
@@ -134,6 +137,7 @@ sub get {
     }
 
     # Now create a result entry for each.
+    local %FLAG_CACHE = ();
     my @products = map { $self->_product_to_hash($params, $_) }
                        @requested_products;
     return { products => \@products };
@@ -215,6 +219,8 @@ sub _component_to_hash {
             $self->type('email', $component->default_assignee->login),
         default_qa_contact =>
             $self->type('email', $component->default_qa_contact->login),
+        triage_owner =>
+            $self->type('email', $component->triage_owner->login),
         sort_key =>  # sort_key is returned to match Bug.fields
             0,
         is_active =>
@@ -225,11 +231,11 @@ sub _component_to_hash {
         $field_data->{flag_types} = {
             bug =>
                 [map {
-                    $self->_flag_type_to_hash($_)
+                    $FLAG_CACHE{ $_->id } //= $self->_flag_type_to_hash($_)
                 } @{$component->flag_types->{'bug'}}],
             attachment =>
                 [map {
-                    $self->_flag_type_to_hash($_)
+                    $FLAG_CACHE{ $_->id } //= $self->_flag_type_to_hash($_)
                 } @{$component->flag_types->{'attachment'}}],
         };
     }
@@ -238,8 +244,8 @@ sub _component_to_hash {
 }
 
 sub _flag_type_to_hash {
-    my ($self, $flag_type, $params) = @_;
-    return filter $params, {
+    my ($self, $flag_type) = @_;
+    return {
         id =>
             $self->type('int', $flag_type->id),
         name =>
@@ -262,7 +268,7 @@ sub _flag_type_to_hash {
             $self->type('int', $flag_type->grant_group_id),
         request_group =>
             $self->type('int', $flag_type->request_group_id),
-    }, undef, 'flag_types';
+    };
 }
 
 sub _version_to_hash {
@@ -547,6 +553,11 @@ default.
 
 C<string> The login name of the user who will be set as the QA Contact for
 new bugs by default.
+
+=item C<triage_owner>
+
+C<string> The login name of the user who is named as the Triage Owner of the
+component.
 
 =item C<sort_key>
 

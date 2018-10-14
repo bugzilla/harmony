@@ -666,7 +666,7 @@ sub possible_duplicates {
         include_fields     => Optional [ ArrayRef [Str] ],
         Bugzilla_api_token => Optional [Str]
     ];
-    
+
     ThrowCodeError( 'param_invalid', { function => 'Bug.possible_duplicates', param => 'A param' } )
         if !$params_type->check($params);
 
@@ -674,10 +674,10 @@ sub possible_duplicates {
     if ($params->{id}) {
         my $bug = Bugzilla::Bug->check({ id => $params->{id}, cache => 1 });
         $summary = $bug->short_desc;
-    } 
+    }
     elsif ($params->{summary}) {
         $summary = $params->{summary};
-    } 
+    }
     else {
         ThrowCodeError('param_required',
         { function => 'Bug.possible_duplicates', param => 'id or summary' });
@@ -701,7 +701,7 @@ sub possible_duplicates {
     if ($params->{id}) {
         @$possible_dupes = grep { $_->id != $params->{id} } @$possible_dupes;
     }
-    
+
     my @hashes = map { $self->_bug_to_hash($_, $params) } @$possible_dupes;
     $self->_add_update_tokens($params, $possible_dupes, \@hashes);
     return { bugs => \@hashes };
@@ -1412,6 +1412,9 @@ sub _bug_to_hash {
     if (filter_wants $params, 'dupe_of') {
         $item{'dupe_of'} = $self->type('int', $bug->dup_id);
     }
+    if (filter_wants $params, 'duplicates') {
+        $item{'duplicates'} = [ map { $self->type('int', $_->id) } @{ $bug->duplicates } ];
+    }
     if (filter_wants $params, 'groups') {
         my @groups = map { $self->type('string', $_->name) }
                      @{ $bug->groups_in };
@@ -1459,7 +1462,8 @@ sub _bug_to_hash {
         elsif ($field->type == FIELD_TYPE_DATETIME
                || $field->type == FIELD_TYPE_DATE)
         {
-            $item{$name} = $self->type('dateTime', $bug->$name);
+            my $value = $bug->$name;
+            $item{$name} = defined($value) ? $self->type('dateTime', $value) : undef;
         }
         elsif ($field->type == FIELD_TYPE_MULTI_SELECT) {
             my @values = map { $self->type('string', $_) } @{ $bug->$name };
@@ -2594,6 +2598,10 @@ C<array> of C<int>s. The ids of bugs that this bug "depends on".
 C<int> The bug ID of the bug that this bug is a duplicate of. If this bug
 isn't a duplicate of any bug, this will be null.
 
+=item C<duplicates>
+
+C<array> of C<int>s. The ids of bugs that are marked as duplicate of this bug.
+
 =item C<estimated_time>
 
 C<double> The number of hours that it was estimated that this bug would
@@ -2910,6 +2918,8 @@ and all custom fields.
 
 =item The C<actual_time> item was added to the C<bugs> return value
 in Bugzilla B<4.4>.
+
+=item The C<duplicates> array was added in Bugzilla B<6.0>.
 
 =back
 

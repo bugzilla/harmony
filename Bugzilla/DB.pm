@@ -12,19 +12,13 @@ use Moo;
 
 use DBI;
 use DBIx::Connector;
-our %Connector;
 
-has 'dbh' => (
+has 'connector' => (
     is      => 'lazy',
-    handles => [
-        qw[
-            begin_work column_info commit disconnect do errstr get_info last_insert_id ping prepare
-            primary_key quote_identifier rollback selectall_arrayref selectall_hashref
-            selectcol_arrayref selectrow_array selectrow_arrayref selectrow_hashref table_info
-        ]
-    ],
+    handles => [ qw( dbh ) ],
 );
 
+use Bugzilla::Logging;
 use Bugzilla::Constants;
 use Bugzilla::Install::Requirements;
 use Bugzilla::Install::Util qw(install_string);
@@ -37,12 +31,38 @@ use Bugzilla::DB::Schema;
 use Bugzilla::Version;
 
 use List::Util qw(max);
+use Scalar::Util qw(weaken);
 use Storable qw(dclone);
+use English qw(-no_match_vars);
+use Module::Runtime qw(require_module);
 
 has [qw(dsn user pass attrs)] => (
     is       => 'ro',
     required => 1,
 );
+
+
+# Install proxy methods to the DBI object.
+# We can't use handles() as DBIx::Connector->dbh has to be called each
+# time we need a DBI handle to ensure the connection is alive.
+{
+    my @DBI_METHODS = qw(
+        begin_work column_info commit do errstr get_info last_insert_id ping prepare
+        primary_key quote_identifier rollback selectall_arrayref selectall_hashref
+        selectcol_arrayref selectrow_array selectrow_arrayref selectrow_hashref table_info
+    );
+    my $stash = Package::Stash->new(__PACKAGE__);
+
+    foreach my $method (@DBI_METHODS) {
+        my $symbol = '&' . $method;
+        $stash->add_symbol(
+            $symbol => sub {
+                my $self = shift;
+                return $self->dbh->$method(@_);
+            }
+        );
+    }
+}
 
 #####################################################################
 # Constants
@@ -113,6 +133,12 @@ sub quote {
 #####################################################################
 
 sub connect_shadow {
+    state $shadow_dbh;
+    if ($shadow_dbh && $shadow_dbh->bz_in_transaction) {
+        FATAL("Somehow in a transaction at connection time");
+        $shadow_dbh->bz_rollback_transaction();
+    }
+    return $shadow_dbh if $shadow_dbh;
     my $params = Bugzilla->params;
     die "Tried to connect to non-existent shadowdb"
         unless Bugzilla->get_param_with_override('shadowdb');
@@ -130,13 +156,16 @@ sub connect_shadow {
         $connect_params->{db_user} = Bugzilla->localconfig->{'shadowdb_user'};
         $connect_params->{db_pass} = Bugzilla->localconfig->{'shadowdb_pass'};
     }
-
-    return _connect($connect_params);
+    return $shadow_dbh = _connect($connect_params);
 }
 
 sub connect_main {
-    my $lc = Bugzilla->localconfig;
-    return _connect(Bugzilla->localconfig);
+    state $main_dbh = _connect(Bugzilla->localconfig);
+    if ($main_dbh->bz_in_transaction) {
+        FATAL("Somehow in a transaction at connection time");
+        $main_dbh->bz_rollback_transaction();
+    }
+    return $main_dbh;
 }
 
 sub _connect {
@@ -146,15 +175,13 @@ sub _connect {
     my $pkg_module = DB_MODULE->{lc($driver)}->{db};
 
     # do the actual import
-    eval ("require $pkg_module")
+    eval { require_module($pkg_module) }
         || die ("'$driver' is not a valid choice for \$db_driver in "
                 . " localconfig: " . $@);
 
     # instantiate the correct DB specific module
 
-    my $dbh = $pkg_module->new($params);
-
-    return $dbh;
+    return $pkg_module->new($params);
 }
 
 sub _handle_error {
@@ -278,7 +305,6 @@ sub _get_no_db_connection {
     my $dbh;
     my %connect_params = %{ Bugzilla->localconfig };
     $connect_params{db_name} = '';
-    local %Connector = ();
     my $conn_success = eval {
         $dbh = _connect(\%connect_params);
     };
@@ -1263,7 +1289,7 @@ sub bz_rollback_transaction {
 # Subclass Helpers
 #####################################################################
 
-sub _build_dbh {
+sub _build_connector {
     my ($self) = @_;
     my ($dsn, $user, $pass, $override_attrs) =
         map { $self->$_ } qw(dsn user pass attrs);
@@ -1289,15 +1315,18 @@ sub _build_dbh {
         }
     }
     my $class = ref $self;
-    if ($class->can('on_dbi_connected')) {
-        $attributes->{Callbacks} = {
-            connected => sub { $class->on_dbi_connected(@_); return },
-        }
-    }
+    weaken($self);
+    $attributes->{Callbacks} = {
+        connected => sub {
+            my ($dbh, $dsn) = @_;
+            INFO("$PROGRAM_NAME connected mysql $dsn");
+            ThrowCodeError('not_in_transaction') if $self && $self->bz_in_transaction;
+            $class->on_dbi_connected(@_) if $class->can('on_dbi_connected');
+            return
+        },
+    };
 
-    my $connector = $Connector{"$user.$dsn"} //= DBIx::Connector->new($dsn, $user, $pass, $attributes);
-
-    return $connector->dbh;
+    return DBIx::Connector->new($dsn, $user, $pass, $attributes);
 }
 
 #####################################################################

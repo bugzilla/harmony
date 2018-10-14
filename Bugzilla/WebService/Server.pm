@@ -11,12 +11,15 @@ use 5.10.1;
 use strict;
 use warnings;
 
+use Bugzilla::Logging;
 use Bugzilla::Error;
 use Bugzilla::Util qw(datetime_from);
 
 use Digest::MD5 qw(md5_base64);
 use Scalar::Util qw(blessed);
 use Storable qw(freeze);
+use Module::Runtime qw(require_module);
+use Try::Tiny;
 
 sub handle_login {
     my ($self, $class, $method, $full_method) = @_;
@@ -30,8 +33,13 @@ sub handle_login {
         Bugzilla->request_cache->{dont_persist_session} = 1;
     }
 
-    eval "require $class";
-    ThrowCodeError('unknown_method', {method => $full_method}) if $@;
+    try {
+        require_module($class);
+    }
+    catch {
+        ThrowCodeError('unknown_method', {method => $full_method});
+        FATAL($_);
+    };
     return if ($class->login_exempt($method)
                and !defined Bugzilla->input_params->{Bugzilla_login});
     Bugzilla->login();
@@ -73,7 +81,11 @@ sub datetime_format_outbound {
 sub bz_etag {
     my ($self, $data) = @_;
     my $cache = Bugzilla->request_cache;
-    if (defined $data) {
+
+    if (Bugzilla->request_cache->{bz_etag_disable}) {
+      return undef;
+    }
+    elsif (defined $data) {
         # Serialize the data if passed a reference
         local $Storable::canonical = 1;
         $data = freeze($data) if ref $data;

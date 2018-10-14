@@ -1037,6 +1037,10 @@
     [% title = "Invalid Authentication Method" %]
     API key authentication is required.
 
+  [% ELSIF error == "invalid_params" %]
+    [% title = "Invalid Params" %]
+    API method received invalid params: [% type_error FILTER html %]
+
   [% ELSIF error == "bug_id_does_not_exist" %]
     [% title = BLOCK %]Invalid [% terms.Bug %] ID[% END %]
     [% terms.Bug %] [%= bug_id FILTER html %] does not exist.
@@ -1982,13 +1986,15 @@
 
 [%# We only want HTML error messages for ERROR_MODE_WEBPAGE %]
 [% USE Bugzilla %]
-[% IF Bugzilla.error_mode != constants.ERROR_MODE_WEBPAGE %]
-  [% IF Bugzilla.usage_mode == constants.USAGE_MODE_BROWSER %]
-    [% error_message FILTER none %]
-  [% ELSE %]
-    [% error_message FILTER txt %]
+[% IF Bugzilla.usage_mode != constants.USAGE_MODE_MOJO %]
+  [% IF Bugzilla.error_mode != constants.ERROR_MODE_WEBPAGE %]
+    [% IF Bugzilla.usage_mode == constants.USAGE_MODE_BROWSER %]
+      [% error_message FILTER none %]
+    [% ELSE %]
+      [% error_message FILTER txt %]
+    [% END %]
+    [% RETURN %]
   [% END %]
-  [% RETURN %]
 [% END %]
 
 [% UNLESS header_done %]

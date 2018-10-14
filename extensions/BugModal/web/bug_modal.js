@@ -448,7 +448,7 @@ $(function() {
     $('#action-history')
         .click(function(event) {
             event.preventDefault();
-            document.location.href = 'show_activity.cgi?id=' + BUGZILLA.bug_id;
+            window.open(`show_activity.cgi?id=${BUGZILLA.bug_id}`, '_blank');
         });
 
     // use scrollTo for in-page activity links
@@ -1323,7 +1323,6 @@ $(function() {
     // finally switch to edit mode if we navigate back to a page that was editing
     $(window).on('pageshow', restoreEditMode);
     $(window).on('pageshow', restoreSavedBugComment);
-    $(window).on('focus', restoreSavedBugComment);
     restoreEditMode();
     restoreSavedBugComment();
 });
