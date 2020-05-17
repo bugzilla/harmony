@@ -47,6 +47,9 @@ sub register {
       Bugzilla->clear_request_cache();
       # We also need to clear CGI's globals.
       CGI::initialize_globals();
+
+      state $better_xff = Bugzilla->has_feature('better_xff');
+      Bugzilla->request_cache->{remote_ip} = $better_xff ? $c->forwarded_for : $c->tx->remote_address;
       Bugzilla->usage_mode(USAGE_MODE_MOJO);
     }
   );

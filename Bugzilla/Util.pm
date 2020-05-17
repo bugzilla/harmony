@@ -329,15 +329,9 @@ sub do_ssl_redirect_if_required {
 
 # Returns the real remote address of the client,
 sub remote_ip {
-  if (($ENV{SERVER_SOFTWARE} // '') eq 'Bugzilla::App::CGI') {
-    my $c = $Bugzilla::App::CGI::C or LOGDIE("Cannot find controller!");
-    state $better_xff = Bugzilla->has_feature('better_xff');
-    return $better_xff ? $c->forwarded_for : $c->tx->remote_address;
-  }
-  else {
-    WARN("remote_ip() called outside CGI controller!");
-    return "";
-  }
+  my $ip = Bugzilla->request_cache->{remote_ip};
+  WARN("remote_ip() called and remote_ip is not set in request_cache") unless $ip;
+  return $ip;
 }
 
 sub validate_ip {
