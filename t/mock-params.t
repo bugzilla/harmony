@@ -12,14 +12,14 @@ use lib qw( . lib local/lib/perl5 );
 use Test::More;
 use Test2::Tools::Mock qw(mock);
 use Bugzilla::Test::MockParams (
-  phabricator_auth_callback_url => 'http://pants.gov/',);
+  announcehtml => 'http://pants.gov/',);
 
-is(Bugzilla->params->{phabricator_auth_callback_url},
+is(Bugzilla->params->{announcehtml},
   'http://pants.gov/', 'import default params');
 
-Bugzilla::Test::MockParams->import(phabricator_api_key => 'FAKE-KEY');
+Bugzilla::Test::MockParams->import(announcehtml => 'FAKE-KEY');
 
-is(Bugzilla->params->{phabricator_api_key}, 'FAKE-KEY', 'set key');
+is(Bugzilla->params->{announcehtml}, 'FAKE-KEY', 'set key');
 
 
 done_testing;
