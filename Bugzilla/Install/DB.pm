@@ -762,14 +762,6 @@ sub update_table_definitions {
   # 2019-05-08 imadueme@mozilla.com - Bug 1550145
   $dbh->bz_add_column('profiles', 'forget_after_date', {TYPE => 'DATETIME'});
 
-  $dbh->bz_add_column('profiles', 'nickname',
-    {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"});
-  $dbh->bz_add_index('profiles', 'profiles_nickname_idx', [qw(nickname)]);
-
-  $dbh->bz_add_index('profiles', 'profiles_realname_ft_idx',
-    {TYPE => 'FULLTEXT', FIELDS => ['realname']});
-  _migrate_nicknames();
-
   _migrate_group_owners();
 
   $dbh->bz_add_column('groups', 'idle_member_removal',
@@ -780,6 +772,13 @@ sub update_table_definitions {
   # 2016-09-01 dkl@mozilla.com - Bug 1268317
   $dbh->bz_add_column('components', 'triage_owner_id', {TYPE => 'INT3'});
 
+  $dbh->bz_add_column('profiles', 'nickname',
+    {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"});
+  $dbh->bz_add_index('profiles', 'profiles_nickname_idx', [qw(nickname)]);
+
+  $dbh->bz_add_index('profiles', 'profiles_realname_ft_idx',
+    {TYPE => 'FULLTEXT', FIELDS => ['realname']});
+  _migrate_nicknames();
 
   # Bug 1354589 - dkl@mozilla.com
   _populate_oauth2_scopes();
@@ -810,13 +809,18 @@ sub update_table_definitions {
   $dbh->bz_add_column('profiles', 'bounce_count', {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0});
 
   # Bug 1588221 - dkl@mozilla.com
+  # TODO: skip droping fks if attach_id did not change types.
+  $dbh->bz_drop_fk('bugs_activity', 'attach_id');
   $dbh->bz_alter_column('bugs_activity', 'attach_id', {TYPE => 'INT5'});
+  $dbh->bz_drop_fk('flags', 'attach_id');
+  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
+  $dbh->bz_drop_fk('user_request_log', 'attach_id');
+  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
+  $dbh->bz_drop_fk('attach_data', 'id');
   $dbh->bz_alter_column('attachments', 'attach_id',
     {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
   $dbh->bz_alter_column('attach_data', 'id',
     {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
   _populate_attachment_storage_class();
 
 
@@ -4228,8 +4232,6 @@ sub _migrate_group_owners {
   my $dbh = Bugzilla->dbh;
   return if $dbh->bz_column_info('groups', 'owner_user_id');
   $dbh->bz_add_column('groups', 'owner_user_id', {TYPE => 'INT3'});
-  my $nobody = Bugzilla::User->check('nobody@mozilla.org');
-  $dbh->do('UPDATE groups SET owner_user_id = ?', undef, $nobody->id);
 }
 
 sub _migrate_nicknames {
