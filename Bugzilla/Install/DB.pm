@@ -762,6 +762,14 @@ sub update_table_definitions {
   # 2019-05-08 imadueme@mozilla.com - Bug 1550145
   $dbh->bz_add_column('profiles', 'forget_after_date', {TYPE => 'DATETIME'});
 
+  $dbh->bz_add_column('profiles', 'nickname',
+    {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"});
+  $dbh->bz_add_index('profiles', 'profiles_nickname_idx', [qw(nickname)]);
+
+  $dbh->bz_add_index('profiles', 'profiles_realname_ft_idx',
+    {TYPE => 'FULLTEXT', FIELDS => ['realname']});
+  _migrate_nicknames();
+
   _migrate_group_owners();
 
   $dbh->bz_add_column('groups', 'idle_member_removal',
@@ -772,13 +780,6 @@ sub update_table_definitions {
   # 2016-09-01 dkl@mozilla.com - Bug 1268317
   $dbh->bz_add_column('components', 'triage_owner_id', {TYPE => 'INT3'});
 
-  $dbh->bz_add_column('profiles', 'nickname',
-    {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"});
-  $dbh->bz_add_index('profiles', 'profiles_nickname_idx', [qw(nickname)]);
-
-  $dbh->bz_add_index('profiles', 'profiles_realname_ft_idx',
-    {TYPE => 'FULLTEXT', FIELDS => ['realname']});
-  _migrate_nicknames();
 
   # Bug 1354589 - dkl@mozilla.com
   _populate_oauth2_scopes();
