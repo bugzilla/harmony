@@ -43,7 +43,7 @@ my $bug_ids
   undef, $from_os);
 my $field = Bugzilla::Field->check({name => 'op_sys', cache => 1});
 my $nobody = Bugzilla::User->check(
-  {name => Bugzilla->params->{'nobody_user'}, cache => 1});
+  {name => Bugzilla->localconfig->nobody_user, cache => 1});
 
 my $bug_count = @$bug_ids;
 if ($bug_count == 0) {

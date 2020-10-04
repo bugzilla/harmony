@@ -54,7 +54,7 @@ sub suggestions {
     my $user = Bugzilla->user;
     if (!$user->id) {
       Bugzilla->set_user(Bugzilla::User->check(
-        {name => Bugzilla->params->{'nobody_user'}}));
+        {name => Bugzilla->localconfig->nobody_user}));
       push @reviewers, @{$bug->mentors};
       Bugzilla->set_user($user);
     }

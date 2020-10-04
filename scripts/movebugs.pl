@@ -69,7 +69,7 @@ my $component_field_id
   = $dbh->selectrow_array("SELECT id FROM fielddefs WHERE name = 'component'");
 $component_field_id or die "Can't find field ID for 'component' field\n";
 
-my $nobody = Bugzilla->params->{'nobody_user'};
+my $nobody = Bugzilla->localconfig->nobody_user;
 my $user_id
   = $dbh->selectrow_array("SELECT userid FROM profiles WHERE login_name=?",
   undef, $nobody);

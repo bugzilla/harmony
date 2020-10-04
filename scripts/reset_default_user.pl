@@ -54,7 +54,7 @@ if (!$product
 }
 
 # We will need these for entering into bugs_activity
-my $who = Bugzilla::User->new({name => Bugzilla->params->{'nobody_user'}});
+my $who = Bugzilla::User->new({name => Bugzilla->localconfig->nobody_user});
 my $field = Bugzilla::Field->new({name => $field_name});
 
 my $product_id = $dbh->selectrow_array("SELECT id FROM products WHERE name = ?",

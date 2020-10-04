@@ -99,7 +99,7 @@ sub template_before_create {
 sub template_before_process {
   my ($self, $args) = @_;
   return unless $args->{file} eq 'admin/components/create.html.tmpl';
-  $args->{vars}{comp}{default_assignee}{login} = Bugzilla->params->{'nobody_user'};
+  $args->{vars}{comp}{default_assignee}{login} = Bugzilla->localconfig->nobody_user;
 }
 
 #

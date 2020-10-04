@@ -77,7 +77,7 @@ ORDER BY
   profiles.userid
 EOF
 
-my $nobody = Bugzilla->params->{'nobody_user'};
+my $nobody = Bugzilla->localconfig->nobody_user;
 if ($dump_sql) {
   $sql =~ s/[?]/"$nobody"/;
   $sql =~ s/[?]/$date/g;
