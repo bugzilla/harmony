@@ -24,7 +24,7 @@
   # then we are accessing the home page. %]
 
 <li id="mini_signup_container[% qs_suffix FILTER html %]">
-  <a id="signup_link[% qs_suffix FILTER html %]" href="#"
+  <a id="signup_link[% qs_suffix FILTER html %]" href="[% urlbase FILTER html %]createaccount.cgi"
      class='show_mini_signup_form' data-qs-suffix="[% qs_suffix FILTER html %]">Sign Up</a>
 
   <div id="mini_signup[% qs_suffix FILTER html %]" class="mini-popup mini_signup bz_default_hidden">
