@@ -484,8 +484,15 @@ sub update_table_definitions {
   $dbh->bz_drop_column('groups',   'last_changed');
 
   # 2006-08-06 LpSolit@gmail.com - Bug 347521
+  $dbh->bz_drop_related_fks('flagtypes', 'id');
   $dbh->bz_alter_column('flagtypes', 'id',
     {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
+  $dbh->bz_alter_column('flags', 'type_id',
+    {TYPE => 'INT3', NOTNULL => 1});
+  $dbh->bz_alter_column('flaginclusions', 'type_id',
+    {TYPE => 'INT3', NOTNULL => 1});
+  $dbh->bz_alter_column('flagexclusions', 'type_id',
+    {TYPE => 'INT3', NOTNULL => 1});
 
   $dbh->bz_alter_column('keyworddefs', 'id',
     {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
