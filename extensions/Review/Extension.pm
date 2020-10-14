@@ -837,7 +837,7 @@ sub db_schema_abstract_schema {
       },
       display_name => {TYPE => 'VARCHAR(64)',},
       component_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE',}
       },
@@ -856,7 +856,7 @@ sub db_schema_abstract_schema {
       flag_when => {TYPE => 'DATETIME', NOTNULL => 1,},
 
       type_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'flagtypes', COLUMN => 'id', DELETE => 'CASCADE'}
       },

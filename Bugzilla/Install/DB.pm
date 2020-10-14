@@ -484,8 +484,15 @@ sub update_table_definitions {
   $dbh->bz_drop_column('groups',   'last_changed');
 
   # 2006-08-06 LpSolit@gmail.com - Bug 347521
+  $dbh->bz_drop_related_fks('flagtypes', 'id');
   $dbh->bz_alter_column('flagtypes', 'id',
-    {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
+    {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
+  $dbh->bz_alter_column('flags', 'type_id',
+    {TYPE => 'INT3', NOTNULL => 1});
+  $dbh->bz_alter_column('flaginclusions', 'type_id',
+    {TYPE => 'INT3', NOTNULL => 1});
+  $dbh->bz_alter_column('flagexclusions', 'type_id',
+    {TYPE => 'INT3', NOTNULL => 1});
 
   $dbh->bz_alter_column('keyworddefs', 'id',
     {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
@@ -809,13 +816,18 @@ sub update_table_definitions {
   $dbh->bz_add_column('profiles', 'bounce_count', {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0});
 
   # Bug 1588221 - dkl@mozilla.com
+  # TODO: skip droping fks if attach_id did not change types.
+  $dbh->bz_drop_fk('bugs_activity', 'attach_id');
   $dbh->bz_alter_column('bugs_activity', 'attach_id', {TYPE => 'INT5'});
+  $dbh->bz_drop_fk('flags', 'attach_id');
+  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
+  $dbh->bz_drop_fk('user_request_log', 'attach_id');
+  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
+  $dbh->bz_drop_fk('attach_data', 'id');
   $dbh->bz_alter_column('attachments', 'attach_id',
     {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
   $dbh->bz_alter_column('attach_data', 'id',
     {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
   _populate_attachment_storage_class();
 
 
@@ -4227,8 +4239,6 @@ sub _migrate_group_owners {
   my $dbh = Bugzilla->dbh;
   return if $dbh->bz_column_info('groups', 'owner_user_id');
   $dbh->bz_add_column('groups', 'owner_user_id', {TYPE => 'INT3'});
-  my $nobody = Bugzilla::User->check('nobody@mozilla.org');
-  $dbh->do('UPDATE groups SET owner_user_id = ?', undef, $nobody->id);
 }
 
 sub _migrate_nicknames {
