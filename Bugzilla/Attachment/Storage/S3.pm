@@ -17,13 +17,9 @@ use Types::Standard qw(Int);
 
 with 'Bugzilla::Attachment::Storage::Base';
 
-has 's3'     => (is => 'lazy');
-has 'bucket' => (is => 'lazy');
-has 'datasize' => (
-  is       => 'ro',
-  required => 1,
-  isa      => Int
-);
+has 's3'       => (is => 'lazy');
+has 'bucket'   => (is => 'lazy');
+has 'datasize' => (is => 'ro', required => 1, isa => Int);
 
 sub _build_s3 {
   my $self = shift;
@@ -54,8 +50,8 @@ sub set_data {
     && $self->datasize < Bugzilla->params->{attachment_s3_minsize})
   {
     require Bugzilla::Attachment::Storage::Database;
-    return Bugzilla::Attachment::Storage::Database->new({attach_id => $self->attach_id})
-      ->set_data($data);
+    return Bugzilla::Attachment::Storage::Database->new(
+      {attach_id => $self->attach_id})->set_data($data);
   }
 
   unless ($self->bucket->add_key($attach_id, $data)) {

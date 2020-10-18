@@ -29,8 +29,7 @@ sub get_rest_client {
   my $rest_client = LWP::UserAgent->new(ssl_opts => {verify_hostname => 0});
   bless($rest_client, 'QA::REST');
   my $config = $rest_client->{bz_config} = get_config();
-  $rest_client->{bz_url}
-    = $config->{browser_url} . '/rest/';
+  $rest_client->{bz_url} = $config->{browser_url} . '/rest/';
   $rest_client->{bz_default_headers}
     = {'Accept' => 'application/json', 'Content-Type' => 'application/json'};
   return $rest_client;
@@ -45,7 +44,7 @@ sub call {
 
   my %args = %{$self->{bz_default_headers}};
 
-  # We do not pass the API key in the URL, so that it's not logged by the web server.
+# We do not pass the API key in the URL, so that it's not logged by the web server.
   if ($http_verb eq 'get' && $data->{api_key}) {
     $args{'X-BUGZILLA-API-KEY'} = $data->{api_key};
   }
@@ -54,7 +53,7 @@ sub call {
   }
 
   my $response = $self->$http_verb($self->{bz_url} . $method, %args);
-  my $res = decode_json($response->decoded_content);
+  my $res      = decode_json($response->decoded_content);
   if ($response->is_success xor $expect_to_fail) {
     return $res;
   }

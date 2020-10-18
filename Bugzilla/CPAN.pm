@@ -41,8 +41,8 @@ my (%FEATURE, %FEATURE_LOADED);
 
 sub cpan_meta {
   my ($class) = @_;
-  my $dir = bz_locations()->{libpath};
-  my $file = File::Spec->catfile($dir, 'MYMETA.json');
+  my $dir     = bz_locations()->{libpath};
+  my $file    = File::Spec->catfile($dir, 'MYMETA.json');
   state $CPAN_META;
 
   return $CPAN_META if $CPAN_META;
@@ -83,7 +83,7 @@ sub has_feature {
   return 0 unless _CAN_HAS_FEATURE;
   return $FEATURE{$feature_name} if exists $FEATURE{$feature_name};
 
-  my $meta = $class->cpan_meta;
+  my $meta    = $class->cpan_meta;
   my $feature = eval { $meta->feature($feature_name) };
   unless ($feature) {
     require Bugzilla::Error;

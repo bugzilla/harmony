@@ -17,7 +17,8 @@ use Bugzilla::Error;
 use Bugzilla::Constants;
 
 Bugzilla->login();
-$Bugzilla::App::CGI::C->res->headers->cache_control('public, max-age=86400, immutable');
+$Bugzilla::App::CGI::C->res->headers->cache_control(
+  'public, max-age=86400, immutable');
 
 my $cgi      = Bugzilla->cgi;
 my $template = Bugzilla->template;

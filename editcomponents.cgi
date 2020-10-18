@@ -123,14 +123,14 @@ if ($action eq 'new') {
   my $bug_desc_template  = $cgi->param('bug_description_template');
 
   my $component = Bugzilla::Component->create({
-    name             => $comp_name,
-    product          => $product,
-    description      => $description,
-    initialowner     => $default_assignee,
-    initialqacontact => $default_qa_contact,
-    initial_cc       => \@initial_cc,
-    triage_owner_id  => $triage_owner,
-    default_bug_type => $default_bug_type,
+    name                     => $comp_name,
+    product                  => $product,
+    description              => $description,
+    initialowner             => $default_assignee,
+    initialqacontact         => $default_qa_contact,
+    initial_cc               => \@initial_cc,
+    triage_owner_id          => $triage_owner,
+    default_bug_type         => $default_bug_type,
     bug_description_template => $bug_desc_template,
 
     # XXX We should not be creating series for products that we
@@ -234,7 +234,7 @@ if ($action eq 'update') {
   my $isactive           = $cgi->param('isactive');
   my $bug_desc_template  = $cgi->param('bug_description_template'),
 
-  my $component
+    my $component
     = Bugzilla::Component->check({product => $product, name => $comp_old_name});
 
   $component->set_name($comp_name);

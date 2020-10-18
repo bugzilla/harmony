@@ -45,7 +45,7 @@ sub suggest_users {
   ThrowUserError('user_access_by_match_denied') unless Bugzilla->user->id;
 
   my $results = Bugzilla->elastic->suggest_users($params->{match} . "");
-  my @users = map { {
+  my @users   = map { {
     real_name => $self->type(string => $_->{real_name}),
     name      => $self->type(email  => $_->{name}),
   } } @$results;

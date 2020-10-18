@@ -48,15 +48,15 @@ my $func = __PACKAGE__->can("cmd_$cmd") // sub {
 fix_path();
 check_user();
 check_env(qw(
-    LOCALCONFIG_ENV
-    BMO_db_host
-    BMO_db_name
-    BMO_db_user
-    BMO_db_pass
-    BMO_memcached_namespace
-    BMO_memcached_servers
-    BMO_urlbase
-    ));
+  LOCALCONFIG_ENV
+  BMO_db_host
+  BMO_db_name
+  BMO_db_user
+  BMO_db_pass
+  BMO_memcached_namespace
+  BMO_memcached_servers
+  BMO_urlbase
+));
 
 if ($ENV{BMO_urlbase} eq 'AUTOMATIC') {
   my $urlbase = sprintf 'http://%s:%d', hostname(), $ENV{PORT};
@@ -64,7 +64,7 @@ if ($ENV{BMO_urlbase} eq 'AUTOMATIC') {
   my $file = path($ENV{BZ_QA_CONF_FILE});
   my $data = $file->slurp_utf8;
   $data =~ s{http://bmo.test/?}{$urlbase}g;
-  $file->spew_utf8( $data );
+  $file->spew_utf8($data);
 }
 
 $func->($opts->());
@@ -73,13 +73,13 @@ sub cmd_demo {
   unless (-f '/app/data/params') {
     cmd_load_test_data();
     check_env(qw(
-        PHABRICATOR_BOT_LOGIN
-        PHABRICATOR_BOT_PASSWORD
-        PHABRICATOR_BOT_API_KEY
-        CONDUIT_USER_LOGIN
-        CONDUIT_USER_PASSWORD
-        CONDUIT_USER_API_KEY
-        ));
+      PHABRICATOR_BOT_LOGIN
+      PHABRICATOR_BOT_PASSWORD
+      PHABRICATOR_BOT_API_KEY
+      CONDUIT_USER_LOGIN
+      CONDUIT_USER_PASSWORD
+      CONDUIT_USER_API_KEY
+    ));
     run('perl', 'scripts/generate_conduit_data.pl');
   }
   cmd_httpd();
@@ -143,10 +143,7 @@ sub cmd_load_test_data {
   die 'BZ_QA_ANSWERS_FILE is not set' unless $ENV{BZ_QA_ANSWERS_FILE};
   run('perl', 'checksetup.pl', '--no-template', $ENV{BZ_QA_ANSWERS_FILE});
 
-  run(
-    'perl',        'scripts/generate_bmo_data.pl',
-    '--param',     'use_mailer_queue=0'
-  );
+  run('perl', 'scripts/generate_bmo_data.pl', '--param', 'use_mailer_queue=0');
 
   if ($ENV{BZ_QA_CONFIG}) {
     chdir '/app/qa/config';
@@ -185,8 +182,7 @@ sub cmd_test_qa {
   my $httpd_exit_f = run_cereal_and_httpd('-DHTTPD_IN_SUBDIR', '-DACCESS_LOGS');
   my $prove_exit_f = run_prove(
     prove_cmd => [
-      'prove', '-qf', '-I/app', '-I/app/local/lib/perl5',
-      sub { glob $test_files },
+      'prove', '-qf', '-I/app', '-I/app/local/lib/perl5', sub { glob $test_files },
     ],
     prove_dir => '/app/qa/t',
   );
@@ -224,8 +220,7 @@ sub cmd_test_bmo {
 
   my $httpd_exit_f = run_cereal_and_httpd('-DACCESS_LOGS');
   my $prove_exit_f = run_prove(
-    prove_cmd => ['prove', '-I/app', '-I/app/local/lib/perl5', @prove_args],
-  );
+    prove_cmd => ['prove', '-I/app', '-I/app/local/lib/perl5', @prove_args],);
 
   exit Future->wait_any($prove_exit_f, $httpd_exit_f)->get;
 }

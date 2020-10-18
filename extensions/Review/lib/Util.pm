@@ -71,7 +71,8 @@ sub _update_profile {
            SET review_request_count = ?,
                feedback_request_count = ?,
                needinfo_request_count = ?
-         WHERE userid = ?", undef, ($data->{review} || 0) + ($data->{'data-review'} || 0), $data->{feedback} || 0,
+         WHERE userid = ?", undef,
+    ($data->{review} || 0) + ($data->{'data-review'} || 0), $data->{feedback} || 0,
     $data->{needinfo} || 0, $data->{id});
   Bugzilla->memcached->clear({table => 'profiles', id => $data->{id}});
 }

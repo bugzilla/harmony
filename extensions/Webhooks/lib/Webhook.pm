@@ -34,9 +34,7 @@ use constant LIST_ORDER => 'id';
 
 use constant UPDATE_COLUMNS => ();
 
-use constant VALIDATORS => {
-  user_id    => \&_check_user,
-};
+use constant VALIDATORS             => {user_id      => \&_check_user,};
 use constant VALIDATOR_DEPENDENCIES => {component_id => ['product_id'],};
 
 use constant AUDIT_CREATES => 0;
@@ -77,24 +75,28 @@ sub component_id {
 
 sub product {
   my ($self) = @_;
-  return $self->{product} ||=
-    Bugzilla::Product->new({id => $self->{product_id}, cache => 1});
+  return $self->{product}
+    ||= Bugzilla::Product->new({id => $self->{product_id}, cache => 1});
 }
 
 sub product_name {
   my ($self) = @_;
-  return $self->{product_name} ||= $self->{product_id} ? $self->product->name : '';
+  return $self->{product_name}
+    ||= $self->{product_id} ? $self->product->name : '';
 }
 
 sub component {
   my ($self) = @_;
-  return $self->{component} ||= $self->{component_id}
-    ? Bugzilla::Component->new({id => $self->{component_id}, cache => 1}) : undef;
+  return $self->{component}
+    ||= $self->{component_id}
+    ? Bugzilla::Component->new({id => $self->{component_id}, cache => 1})
+    : undef;
 }
 
 sub component_name {
   my ($self) = @_;
-  return $self->{component_name} ||= $self->{component_id} ? $self->component->name : '';
+  return $self->{component_name}
+    ||= $self->{component_id} ? $self->component->name : '';
 }
 
 # validators

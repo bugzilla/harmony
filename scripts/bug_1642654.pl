@@ -50,10 +50,11 @@ EOF
 
 say STDERR 'looking for users previous disabled as inactive';
 my $userids = Bugzilla->dbh->selectcol_arrayref($sql);
-my $total = scalar @{$userids};
+my $total   = scalar @{$userids};
 die "no matching users found.\n" unless $total;
 
-say STDERR "found $total previously disabled inactive user" . ($total == 1 ? '' : 's');
+say STDERR "found $total previously disabled inactive user"
+  . ($total == 1 ? '' : 's');
 say STDERR 'press <ctrl-c> to abort, or <enter> to start';
 getc;
 

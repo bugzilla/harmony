@@ -183,13 +183,13 @@ sub _remo_form_payment {
 }
 
 my %CSV_COLUMNS = (
-  "Date Required"   => {pos => 1,  value => '%cf_due_date'},
-  "Requester"       => {pos => 2,  value => 'Rizki Kelimutu'},
-  "Email 1"         => {pos => 3,  value => 'rkelimutu@mozilla.com'},
-  "Mozilla Space"   => {pos => 4,  value => 'Remote'},
-  "Team"            => {pos => 5,  value => 'Participation'},
-  "Department Code" => {pos => 6,  value => '1002'},
-  "Purpose"         => {pos => 7,  value => 'Rep event: %eventpage'},
+  "Date Required"   => {pos => 1, value => '%cf_due_date'},
+  "Requester"       => {pos => 2, value => 'Rizki Kelimutu'},
+  "Email 1"         => {pos => 3, value => 'rkelimutu@mozilla.com'},
+  "Mozilla Space"   => {pos => 4, value => 'Remote'},
+  "Team"            => {pos => 5, value => 'Participation'},
+  "Department Code" => {pos => 6, value => '1002'},
+  "Purpose"         => {pos => 7, value => 'Rep event: %eventpage'},
   "Item 1"          => {pos => 8},
   "Item 2"          => {pos => 9},
   "Item 3"          => {pos => 10},
@@ -204,8 +204,8 @@ my %CSV_COLUMNS = (
   "Item 12"         => {pos => 19},
   "Item 13"         => {pos => 20},
   "Item 14"         => {pos => 21},
-  "Recipient Name"  => {pos => 22, value => '%shiptofirstname %shiptolastname'},
-  "Email 2"         => {
+  "Recipient Name" => {pos => 22, value => '%shiptofirstname %shiptolastname'},
+  "Email 2"        => {
     pos   => 23,
     value => sub { Bugzilla->user->email }
   },
@@ -282,9 +282,9 @@ sub post_bug_after_creation {
 
       my @columns_raw
         = sort { $CSV_COLUMNS{$a}{pos} <=> $CSV_COLUMNS{$b}{pos} } keys %CSV_COLUMNS;
-      my @data = map { _expand_value($CSV_COLUMNS{$_}{value}) } @columns_raw;
+      my @data    = map { _expand_value($CSV_COLUMNS{$_}{value}) } @columns_raw;
       my @columns = map { s/^(Item|Email) \d+$/$1/g; $_ } @columns_raw;
-      my $csv = _csv_encode(\@columns, \@data);
+      my $csv     = _csv_encode(\@columns, \@data);
 
       push @attachments,
         Bugzilla::Attachment->create({

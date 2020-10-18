@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::App::Command::move_flag_types;   ## no critic (Capitalization)
+package Bugzilla::App::Command::move_flag_types;    ## no critic (Capitalization)
 use Mojo::Base 'Mojolicious::Command';
 
 use Bugzilla::Constants;
@@ -44,8 +44,9 @@ sub run {
   my $count = $flags->count;
 
   if ($debug) {
-    my $query = ${ $flags->as_query };
-    say STDERR "SQL query:\n", JSON::MaybeXS->new(pretty => 1, canonical => 1)->encode($query);
+    my $query = ${$flags->as_query};
+    say STDERR "SQL query:\n",
+      JSON::MaybeXS->new(pretty => 1, canonical => 1)->encode($query);
   }
   if ($count) {
     my $old_name = $old_flagtype->name;

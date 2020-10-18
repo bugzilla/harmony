@@ -171,7 +171,7 @@ sub collect_stats {
   # product name in the query
   my $file_product = $product;
   $file_product =~ s/\//-/gs;
-  my $file = join '/', $dir, $file_product;
+  my $file   = join '/', $dir, $file_product;
   my $exists = -f $file;
 
   # if the file exists, get the old status and resolution list for that product.
@@ -277,9 +277,9 @@ sub get_old_data {
       }
     }
     next unless $recreate;
-    next if (/^#/);  # Ignore comments.
-                     # If we have to recreate the file, we have to load all existing
-                     # data first.
+    next if (/^#/);    # Ignore comments.
+                       # If we have to recreate the file, we have to load all existing
+                       # data first.
     my @line = split /\|/;
     my %data;
     foreach my $column (@columns) {
@@ -468,7 +468,7 @@ sub CollectSeriesData {
   # (days_since_epoch + series_id) % frequency = 0. So they'll run every
   # <frequency> days, but the start date depends on the series_id.
   my $days_since_epoch = int(time() / (60 * 60 * 24));
-  my $today = today_dash();
+  my $today            = today_dash();
 
   # We save a copy of the main $dbh and then switch to the shadow and get
   # that one too. Remember, these may be the same.

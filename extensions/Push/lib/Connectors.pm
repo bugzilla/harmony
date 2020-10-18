@@ -56,7 +56,7 @@ sub _load {
     Bugzilla->error_mode(ERROR_MODE_DIE);
     if ($name eq 'Webhook' && Bugzilla->params->{webhooks_enabled}) {
       my @webhooks = Bugzilla::Extension::Webhooks::Webhook->get_all;
-      if (@webhooks){
+      if (@webhooks) {
         foreach my $webhook (@webhooks) {
           my $webhook_name = $name . '_' . $webhook->{id};
           next if exists $self->{objects}->{$webhook_name};
@@ -72,7 +72,8 @@ sub _load {
           Bugzilla->error_mode($old_error_mode);
         }
       }
-    }elsif ($name ne 'Webhook') {
+    }
+    elsif ($name ne 'Webhook') {
       try {
         my $connector = $package->new();
         $connector->load_config();

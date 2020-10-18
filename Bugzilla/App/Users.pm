@@ -91,7 +91,7 @@ sub signup_email_finish {
         $v->required('password_confirm')->size(8, 100);
         if ($v->is_valid && $v->param('password') ne $v->param('password_confirm')) {
           $v->error('password_confirm', ['password_mismatch']);
-          $v->error('password', ['password_mismatch']);
+          $v->error('password',         ['password_mismatch']);
         }
         if ($v->is_valid) {
           my $new_user = Bugzilla::User->create({
@@ -111,7 +111,7 @@ sub signup_email_finish {
         Bugzilla::Token::Cancel($token, $vars->{'message'});
       }
     }
-    ThrowUserError('validation', { v => $v });
+    ThrowUserError('validation', {v => $v});
   }
   catch {
     $c->bugzilla->error_page($_);

@@ -119,7 +119,7 @@ sub _set_ftc_states {
       'active_or_has_flags' => $bug->id,
     });
 
-    my $types = join(',', map { $_->id } @$flag_types);
+    my $types  = join(',', map { $_->id } @$flag_types);
     my $states = "'" . join("','", FLAGTYPE_COMMENT_STATES) . "'";
     $db_result = $dbh->selectall_arrayref(
       "SELECT type_id AS flagtype, on_status AS state, comment AS text

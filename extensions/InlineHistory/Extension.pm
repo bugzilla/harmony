@@ -50,7 +50,7 @@ sub template_before_process {
     unless $user->id && $user->settings->{'inline_history'}->{'value'} eq 'on';
 
   # note: bug/edit.html.tmpl doesn't support multiple bugs
-  my $bug = exists $vars->{'bugs'} ? $vars->{'bugs'}[0] : $vars->{'bug'};
+  my $bug    = exists $vars->{'bugs'} ? $vars->{'bugs'}[0] : $vars->{'bug'};
   my $bug_id = $bug->id;
 
   # build bug activity
@@ -108,7 +108,7 @@ sub template_before_process {
       my $column = $dbh->bz_column_info($table, $field);
       if ($column && $column->{TYPE} eq 'BOOLEAN') {
         $change->{removed} = '';
-        $change->{added} = $change->{added} ? 'true' : 'false';
+        $change->{added}   = $change->{added} ? 'true' : 'false';
       }
 
       my $field_obj;

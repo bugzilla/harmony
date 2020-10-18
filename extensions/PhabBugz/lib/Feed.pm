@@ -44,7 +44,7 @@ use Bugzilla::Extension::PhabBugz::Util qw(
 
 has 'is_daemon' => (is => 'rw', default => 0);
 
-my $Invocant = class_type {class => __PACKAGE__};
+my $Invocant      = class_type {class => __PACKAGE__};
 my $CURRENT_QUERY = 'none';
 
 sub run_query {
@@ -323,8 +323,9 @@ sub group_query {
     # Make sure phab-bot also a member of the new project group so that it can
     # make policy changes to the private revisions
     INFO("Checking project members for " . $project->name);
-    my $set_members          = $self->get_group_members($group);
-    my @set_member_phids     = uniq map { $_->phid } (@$set_members, $phab_user, $lando_user);
+    my $set_members = $self->get_group_members($group);
+    my @set_member_phids
+      = uniq map { $_->phid } (@$set_members, $phab_user, $lando_user);
     my @current_member_phids = uniq map { $_->phid } @{$project->members};
     my ($removed, $added) = diff_arrays(\@current_member_phids, \@set_member_phids);
 
@@ -384,7 +385,7 @@ sub process_revision_change {
   );
   INFO($log_message);
 
-  # change to the phabricator user, which returns a guard that restores the previous user.
+# change to the phabricator user, which returns a guard that restores the previous user.
   my $restore_prev_user = set_phab_user();
   my $bug               = $revision->bug;
 
@@ -447,7 +448,7 @@ sub process_revision_change {
       $revision->make_private($set_project_names);
     }
 
-    # Always make sure secure-revison and proper bmo-<group> project tags are on the revision.
+# Always make sure secure-revison and proper bmo-<group> project tags are on the revision.
     $revision->set_private_project_tags($set_project_names);
 
     # Subscriber list of the private revision should always match
@@ -460,7 +461,7 @@ sub process_revision_change {
 
   INFO('Checking for revision attachment');
   my $rev_attachment = create_revision_attachment($bug, $revision, $timestamp,
-  $revision->author->bugzilla_user);
+    $revision->author->bugzilla_user);
   INFO('Attachment ' . $rev_attachment->id . ' created or already exists.');
 
   # ATTACHMENT OBSOLETES
@@ -521,11 +522,11 @@ sub process_revision_change {
 
   # Set status to request-review if revision is new and
   # in draft state and not changes-planned, closed, or abandoned.
-  if ($is_new
-      && $revision->status ne 'changes-planned'
-      && $revision->status ne 'closed'
-      && $revision->status ne 'abandoned'
-      && ($revision->is_draft && !$revision->hold_as_draft))
+  if ( $is_new
+    && $revision->status ne 'changes-planned'
+    && $revision->status ne 'closed'
+    && $revision->status ne 'abandoned'
+    && ($revision->is_draft && !$revision->hold_as_draft))
   {
     INFO('Moving from draft to needs-review');
     $revision->set_status('request-review');

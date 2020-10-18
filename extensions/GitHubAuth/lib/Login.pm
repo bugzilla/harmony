@@ -99,7 +99,7 @@ sub _get_login_info_from_github {
 
   my @emails
     = map { $_->{email} }
-    grep { $_->{verified} && $_->{email} !~ /\@users\.noreply\.github\.com$/ }
+    grep  { $_->{verified} && $_->{email} !~ /\@users\.noreply\.github\.com$/ }
     @$emails;
 
   my @bugzilla_users;

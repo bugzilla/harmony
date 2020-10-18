@@ -159,7 +159,8 @@ sub match {
 sub _build_bugzilla_user {
   my ($self) = @_;
   return undef unless $self->bugzilla_id;
-  my $user = $self->{user} ||= Bugzilla::User->new({id => $self->bugzilla_id, cache => 1});
+  my $user = $self->{user}
+    ||= Bugzilla::User->new({id => $self->bugzilla_id, cache => 1});
   weaken($self->{user});
   return $user;
 }

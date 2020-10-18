@@ -40,7 +40,7 @@ sub reporter    { return Bugzilla->user; }
 sub choices {
   my $self = shift;
   return $self->{'choices'} if exists $self->{'choices'};
-  return {} if $self->{'error'};
+  return {}                 if $self->{'error'};
   my $user = Bugzilla->user;
 
   my @products = @{$user->get_enterable_products};

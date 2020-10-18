@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::App::Command::report_ping;   ## no critic (Capitalization)
+package Bugzilla::App::Command::report_ping;    ## no critic (Capitalization)
 use Mojo::Base 'Mojolicious::Command';
 
 use Bugzilla::Constants;
@@ -74,13 +74,17 @@ sub run {
   }
 
   my $report = $class->new(
-    model           => $dbh->model,
-    base_url        => $base_url,
-    maybe rows      => $rows,
-    maybe page      => $page,
-    maybe namespace => $namespace,
-    maybe doctype   => $doctype,
-    maybe since     => $since,
+    model    => $dbh->model,
+    base_url => $base_url,
+    maybe
+      rows => $rows,
+    maybe
+      page => $page,
+    maybe
+      namespace => $namespace,
+    maybe
+      doctype => $doctype,
+    maybe since => $since,
   );
 
   if ($dump_schema) {

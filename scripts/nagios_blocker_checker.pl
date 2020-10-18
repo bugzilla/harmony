@@ -195,7 +195,7 @@ EOF
 
   foreach my $bug (@{$dbh->selectall_arrayref($sql, {Slice => {}}, @values)}) {
     my $severity = $any_severity ? 'any' : $bug->{bug_severity};
-    my $age = ($current_time - $bug->{ts}) / 3600;
+    my $age      = ($current_time - $bug->{ts}) / 3600;
 
     if ($age > $config->{"${severity}_alarm"}) {
       $current_state = NAGIOS_CRITICAL;

@@ -76,7 +76,7 @@ sub bug_end_of_create {
   return unless $params->{needinfo_from};
 
   # Add extra params
-  $params->{needinfo} = 1;
+  $params->{needinfo}      = 1;
   $params->{needinfo_role} = 'other';
 
   # Do the rest

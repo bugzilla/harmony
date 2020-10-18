@@ -73,7 +73,7 @@ sub page_before_template {
     {group => $group, action => 'edit', object => 'tables'});
 
   # load columns
-  my $dbh = Bugzilla->dbh;
+  my $dbh    = Bugzilla->dbh;
   my @fields = sort grep { $_ ne $id_field && $_ ne $order_by; }
     $dbh->bz_table_columns($table_name);
   if ($order_by ne $id_field) {

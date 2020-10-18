@@ -109,8 +109,9 @@ sub _comment_edit_count { return $_[0]->{'edit_count'}; }
 
 sub _comment_is_editable_by {
   my ($self, $user) = @_;
-  # Note: Does not verify that the bug is visible or editable by the user; the calling
-  # code needs to perform this validation at the bug level.
+
+# Note: Does not verify that the bug is visible or editable by the user; the calling
+# code needs to perform this validation at the bug level.
 
   # Need to be able to edit comments via group membership
   return 0 unless $user->can_edit_comments;
@@ -122,7 +123,8 @@ sub _comment_is_editable_by {
   return 1 if $self->author->id == $user->id;
 
   # Can edit comment 0 (description) on any bug, if enabled
-  return 1 if Bugzilla->params->{allow_global_initial_comment_editing}
+  return 1
+    if Bugzilla->params->{allow_global_initial_comment_editing}
     && $self->count == 0;
 
   # Otherwise not editable
@@ -201,25 +203,26 @@ sub _comment_get_activity {
 
 sub _user_can_edit_comments {
   my ($self) = @_;
+
   # Checks that edit-comments is enabled, and if the user is a member of a group
   # controlling it, or if the user is an edit-comments-admin.
 
   my $edit_comments_group = Bugzilla->params->{edit_comments_group};
 
-  return $self->{can_edit_comments} //=
-    $self->is_edit_comments_admin()
+  return $self->{can_edit_comments} //= $self->is_edit_comments_admin()
     || ($edit_comments_group && $self->in_group($edit_comments_group));
 }
 
 sub _user_is_edit_comments_admin {
   my ($self) = @_;
-  # Checks that edit-all-comments is enabled, and if the user is a member of a group
-  # controlling it.
+
+# Checks that edit-all-comments is enabled, and if the user is a member of a group
+# controlling it.
 
   my $edit_comments_admins_group = Bugzilla->params->{edit_comments_admins_group};
 
-  return $self->{is_edit_comments_admin} //=
-    $edit_comments_admins_group && $self->in_group($edit_comments_admins_group);
+  return $self->{is_edit_comments_admin} //= $edit_comments_admins_group
+    && $self->in_group($edit_comments_admins_group);
 }
 
 #########
@@ -312,11 +315,7 @@ sub config_modify_panels {
     checker => \&check_group
     };
   push @{$args->{panels}->{groupsecurity}->{params}},
-    {
-    name    => 'allow_global_initial_comment_editing',
-    type    => 'b',
-    default => 1
-    };
+    {name => 'allow_global_initial_comment_editing', type => 'b', default => 1};
 }
 
 sub get_bug_activity {
@@ -348,18 +347,22 @@ sub get_bug_activity {
     my $prev_rev = {};
 
     foreach my $revision (@{Bugzilla::Comment->new($comment_id)->activity}) {
+
       # Exclude original comment, because we are interested only in revisions
       if ($revision->{old}) {
-        push(@$list, [
-          'comment_revision',
-          undef,
-          undef,
-          $revision->{created_time},
-          $prev_rev->{is_hidden} && !$is_insider ? $hidden_placeholder : $revision->{old},
-          $revision->{is_hidden} && !$is_insider ? $hidden_placeholder : $revision->{new},
-          $revision->{author}->{login_name},
-          $comment_id
-        ]);
+        push(
+          @$list,
+          [
+            'comment_revision',
+            undef,
+            undef,
+            $revision->{created_time},
+            $prev_rev->{is_hidden} && !$is_insider ? $hidden_placeholder : $revision->{old},
+            $revision->{is_hidden} && !$is_insider ? $hidden_placeholder : $revision->{new},
+            $revision->{author}->{login_name},
+            $comment_id
+          ]
+        );
       }
 
       $prev_rev = $revision;

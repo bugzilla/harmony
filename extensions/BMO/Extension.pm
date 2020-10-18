@@ -65,7 +65,7 @@ use Bugzilla::Extension::BMO::Constants;
 use Bugzilla::Extension::BMO::FakeBug;
 use Bugzilla::Extension::BMO::Data;
 
-use constant PD_ENDPOINT => 'https://product-details.mozilla.org/1.0/';
+use constant PD_ENDPOINT      => 'https://product-details.mozilla.org/1.0/';
 use constant PRODUCT_CHANNELS => {
   'firefox' => {
     'nightly' => {label => 'Nightly', json_key => 'FIREFOX_NIGHTLY'},
@@ -74,8 +74,9 @@ use constant PRODUCT_CHANNELS => {
     'esr'     => {label => 'ESR',     json_key => 'FIREFOX_ESR'},
   },
   'thunderbird' => {
-    'nightly' => {label => 'Daily',   json_key => 'LATEST_THUNDERBIRD_NIGHTLY_VERSION'},
-    'beta'    => {label => 'Beta',    json_key => 'LATEST_THUNDERBIRD_DEVEL_VERSION'},
+    'nightly' =>
+      {label => 'Daily', json_key => 'LATEST_THUNDERBIRD_NIGHTLY_VERSION'},
+    'beta' => {label => 'Beta', json_key => 'LATEST_THUNDERBIRD_DEVEL_VERSION'},
     'release' => {label => 'Release', json_key => 'LATEST_THUNDERBIRD_VERSION'},
   },
 };
@@ -174,7 +175,7 @@ sub template_before_process {
     }
   }
   elsif ($file eq 'bug/edit.html.tmpl' || $file eq 'bug_modal/edit.html.tmpl') {
-    $vars->{firefox_versions} = _fetch_product_version_file('firefox', 1);
+    $vars->{firefox_versions}         = _fetch_product_version_file('firefox', 1);
     $vars->{split_cf_crash_signature} = $self->_split_crash_signature($vars);
   }
 
@@ -194,7 +195,7 @@ sub template_before_process {
   }
 
   if ($file =~ /^admin\/products\/(create|edit)\./) {
-    my $product = $vars->{product};
+    my $product         = $vars->{product};
     my $security_groups = Bugzilla::Group->match({isbuggroup => 1, isactive => 1});
     if ($product) {
 
@@ -344,6 +345,7 @@ sub bounty_attachment {
 }
 
 sub _attachment_is_bounty_attachment {
+
   # Keep this in sync with Bugzilla/Attachment.pm
   my ($attachment) = @_;
 
@@ -382,7 +384,7 @@ sub format_bounty_attachment_description {
 sub parse_bounty_attachment_description {
   my ($desc) = @_;
 
-  my %map = (true => 1, false => 0);
+  my %map  = (true => 1, false => 0);
   my $date = qr/\d{4}-\d{2}-\d{2}/;
   $desc =~ m!
         ^
@@ -398,10 +400,10 @@ sub parse_bounty_attachment_description {
 
   return {
     reporter_email => $+{reporter_email} // '',
-    amount_paid    => $+{amount_paid} // '',
-    reported_date  => $+{reported_date} // '',
-    fixed_date     => $+{fixed_date} // '',
-    awarded_date   => $+{awarded_date} // '',
+    amount_paid    => $+{amount_paid}    // '',
+    reported_date  => $+{reported_date}  // '',
+    fixed_date     => $+{fixed_date}     // '',
+    awarded_date   => $+{awarded_date}   // '',
     publish        => $map{$+{publish} // 'false'},
     credit         => [grep {$_} split(/\s*,\s*/, $+{credits})]
   };
@@ -890,8 +892,8 @@ sub quicksearch_map {
 }
 
 sub quicksearch_run {
-  my ($self, $args) = @_;
-  my ($cgi, $bug_product_set) = @$args{qw(cgi bug_product_set)};
+  my ($self, $args)            = @_;
+  my ($cgi,  $bug_product_set) = @$args{qw(cgi bug_product_set)};
 
   # Exclude Graveyard products by default
   unless ($bug_product_set) {
@@ -973,7 +975,7 @@ sub object_end_of_create {
     my $dbh = Bugzilla->dbh;
 
     my $sharer = Bugzilla::User->new({name => 'nobody@mozilla.org'}) or return;
-    my $group = Bugzilla::Group->new({name => 'everyone'}) or return;
+    my $group  = Bugzilla::Group->new({name => 'everyone'})          or return;
 
     foreach my $definition (@default_named_queries) {
       my ($namedquery_id) = _get_named_query($sharer->id, $group->id, $definition);
@@ -988,7 +990,9 @@ sub object_end_of_create {
     # Log real IP addresses for auditing
     Bugzilla->audit(sprintf(
       '%s <%s> created bug %s',
-      Bugzilla->user->login, remote_ip() // '[undef]', $args->{object}->id
+      Bugzilla->user->login,
+      remote_ip() // '[undef]',
+      $args->{object}->id
     ));
   }
 }
@@ -997,7 +1001,7 @@ sub _bug_reporters_hw_os {
   my ($self) = @_;
   return $self->{ua_hw_os} if exists $self->{ua_hw_os};
   my $memcached = Bugzilla->memcached;
-  my $hw_os = $memcached->get({key => 'bug.ua.' . $self->id});
+  my $hw_os     = $memcached->get({key => 'bug.ua.' . $self->id});
   if (!$hw_os) {
     (my $ua)
       = Bugzilla->dbh->selectrow_array(
@@ -1012,13 +1016,14 @@ sub _bug_reporters_hw_os {
 sub _bug_is_unassigned {
   my ($self) = @_;
   my $assignee = $self->assigned_to->login;
-  return $assignee eq 'nobody@mozilla.org' || $assignee =~ /@(?!invalid).+\.bugs$/;
+  return $assignee eq 'nobody@mozilla.org'
+    || $assignee =~ /@(?!invalid).+\.bugs$/;
 }
 
 sub _bug_has_current_patch {
   my ($self) = @_;
   foreach my $attachment (@{$self->attachments}) {
-    next if $attachment->isobsolete;
+    next     if $attachment->isobsolete;
     return 1 if $attachment->can_review;
   }
   return 0;
@@ -1027,7 +1032,7 @@ sub _bug_has_current_patch {
 sub _bug_missing_sec_approval {
   my ($self) = @_;
 
-  # see https://firefox-source-docs.mozilla.org/bug-mgmt/processes/security-approval.html for the rules
+# see https://firefox-source-docs.mozilla.org/bug-mgmt/processes/security-approval.html for the rules
 
   # no need to alert once a bug is closed
   return 0 if $self->resolution;
@@ -1061,7 +1066,7 @@ sub _bug_missing_sec_approval {
   return 0 unless @$flags;
 
   my $nightly = last_value { $_->name !~ /_esr\d+$/ } @$flags;
-  my $set = 0;
+  my $set     = 0;
   foreach my $flag (@$flags) {
     my $value = $flag->bug_flag($self->id)->value;
     next if $value eq '---';
@@ -1645,9 +1650,8 @@ sub search_operator_field_override {
     $operators->{'content'}->{notmatches} = $search_content_matches;
   }
 
-  $operators->{'attachments.ispatch'} = {
-    _non_changed => \&_attachments_ispatch_nonchanged,
-  };
+  $operators->{'attachments.ispatch'}
+    = {_non_changed => \&_attachments_ispatch_nonchanged,};
 }
 
 # Treat external review requests as patches
@@ -1660,15 +1664,15 @@ sub _attachments_ispatch_nonchanged {
     if $args->{operator} =~ /^is(not)?empty$/;
 
   $args->{_extra_where} = ' AND isprivate = 0' unless $self->_user->is_insider;
-  $args->{full_field} = '(ispatch OR mimetype LIKE "text/x-%-request")';
+  $args->{full_field}   = '(ispatch OR mimetype LIKE "text/x-%-request")';
 
   my $table = 'attachments';
   $self->_do_operator_function($args);
   my $term = $args->{term};
   $term .= $args->{_extra_where} || '';
   my $select = $args->{_select_field} || 'bug_id';
-  $args->{term} = Bugzilla::Search::build_subselect(
-    "$args->{bugs_table}.bug_id", $select, $table, $term, $not);
+  $args->{term} = Bugzilla::Search::build_subselect("$args->{bugs_table}.bug_id",
+    $select, $table, $term, $not);
 }
 
 sub _short_desc_matches {
@@ -1870,7 +1874,7 @@ sub _fix_encoding {
   return if $part->parts > 1;
 
   # nothing to do if the part already has a charset
-  my $ct = parse_content_type($part->content_type);
+  my $ct      = parse_content_type($part->content_type);
   my $charset = $ct->{attributes}{charset} ? $ct->{attributes}{charset} : '';
   return unless !$charset || $charset eq 'us-ascii';
 
@@ -2221,7 +2225,7 @@ sub _file_child_bug {
 
   if ($@ || !($new_bug && $new_bug->{'bug_id'})) {
     push(@$dep_comment, "Error creating $template_suffix review bug");
-    push(@$dep_errors, "$template_suffix : $@") if $@;
+    push(@$dep_errors,  "$template_suffix : $@") if $@;
 
     # Since we performed Bugzilla::Bug::create in an eval block, we
     # need to manually rollback the commit as this is not done
@@ -2300,11 +2304,12 @@ sub buglist_columns {
   my $columns = $args->{columns};
 
   $columns->{'attachments.ispatch'} = {
+
     # Return `1` if the bug has any regular patch or external review request,
     # `0` otherwise
-    name  => 'COALESCE(MAX(attachments.ispatch OR ' .
-      'attachments.mimetype LIKE "text/x-%-request"), 0)',
-  }
+    name => 'COALESCE(MAX(attachments.ispatch OR '
+      . 'attachments.mimetype LIKE "text/x-%-request"), 0)',
+  };
 }
 
 sub buglist_column_joins {
@@ -2331,7 +2336,9 @@ sub enter_bug_start {
       $cgi->param('format_forced', 1);
     }
   }
-  elsif (my $format = forced_format($cgi->param('product'), $cgi->param('component'))) {
+  elsif (my $format
+    = forced_format($cgi->param('product'), $cgi->param('component')))
+  {
     $cgi->param('format', $format);
   }
 
@@ -2599,7 +2606,7 @@ sub bug_comments {
   my $can_delete
     = Bugzilla->user->in_group(Bugzilla->params->{delete_comments_group});
   my $comments = $args->{comments};
-  my @deleted = grep { $_->has_tag('deleted') } @$comments;
+  my @deleted  = grep { $_->has_tag('deleted') } @$comments;
   while (my $comment = pop @deleted) {
     for (my $i = scalar(@$comments) - 1; $i >= 0; $i--) {
       if ($comment == $comments->[$i]) {
@@ -2621,7 +2628,7 @@ sub bug_comments {
 
 sub _split_crash_signature {
   my ($self, $vars) = @_;
-  my $bug             = $vars->{bug} // return;
+  my $bug             = $vars->{bug}             // return;
   my $crash_signature = $bug->cf_crash_signature // return;
   return [grep {/\S/}
       extract_multiple($crash_signature, [sub { extract_bracketed($_[0], '[]') }])];
@@ -2647,6 +2654,7 @@ sub _fetch_product_version_file {
     Bugzilla->memcached->set_data({
       key   => $key,
       value => $versions,
+
       # Cache for 30 minutes if the data is available, otherwise retry in 5 min
       expires_in => $response->is_success ? 1800 : 300,
     });
@@ -2673,7 +2681,7 @@ sub _get_search_param_name {
   return () unless $version;
 
   # Return canonical name and its alias
-  $version = '_' . $version if $product eq 'thunderbird';
+  $version = '_' . $version    if $product eq 'thunderbird';
   $version = '_esr' . $version if $channel eq 'esr';
   return ("cf_${type}_${product}${version}", "cf_${type}_${product}_${channel}");
 }
@@ -2685,12 +2693,13 @@ sub search_params_to_data_structure {
   # Get the Firefox channel list and put it a regex pattern
   # Thunderbird doesn't have ESR now but it won't be practically a problem
   my $channels_re = join('|', keys %{PRODUCT_CHANNELS->{'firefox'}});
-  my $flag_re     = qr/^cf_(status|tracking)_(firefox|thunderbird)_($channels_re)$/;
+  my $flag_re = qr/^cf_(status|tracking)_(firefox|thunderbird)_($channels_re)$/;
 
   # Replace pronouns for Firefox/Thunderbird Status/Tracking Flags, for example,
   # cf_tracking_firefox_nightly -> cf_tracking_firefox68
   # cf_tracking_firefox_esr     -> cf_tracking_firefox_esr60
   for my $key (keys %$params) {
+
     # Replace keys
     if ($key =~ $flag_re) {
       my ($canonical, $alias) = _get_search_param_name($1, $2, $3);
@@ -2712,8 +2721,8 @@ sub search_params_to_data_structure {
 sub search_date_pronoun {
   my ($self, $args) = @_;
   my $pronoun = $args->{pronoun};
-  my $key = $pronoun->{name};
-  my $keys = ['LAST_MERGE_DATE', 'LAST_RELEASE_DATE', 'LAST_SOFTFREEZE_DATE'];
+  my $key     = $pronoun->{name};
+  my $keys    = ['LAST_MERGE_DATE', 'LAST_RELEASE_DATE', 'LAST_SOFTFREEZE_DATE'];
   return unless grep(/^$key$/, @$keys);
 
   my $date = _fetch_product_version_file('firefox')->{$key};
@@ -2733,7 +2742,8 @@ sub tf_buglist_columns {
 
         if ($columns->{$canonical} && $canonical) {
           $columns->{$alias}->{name} = $columns->{$canonical}->{name};
-        } else {
+        }
+        else {
           delete $columns->{$alias};
         }
       }
@@ -2753,7 +2763,8 @@ sub tf_buglist_column_joins {
 
         if ($column_joins->{$canonical} && $canonical) {
           $column_joins->{$alias} = $column_joins->{$canonical};
-        } else {
+        }
+        else {
           delete $column_joins->{$alias};
         }
       }
@@ -2773,7 +2784,8 @@ sub tf_search_operator_field_override {
 
         if ($operators->{$canonical} && $canonical) {
           $operators->{$alias} = $operators->{$canonical};
-        } else {
+        }
+        else {
           delete $operators->{$alias};
         }
       }
@@ -2935,11 +2947,14 @@ sub app_startup {
     'CGI#enter_bug_cgi' => {'product' => 'Firefox', 'format' => 'client-bounty'});
 
   # Redirects to external forms
-  $r->any( '/:REWRITE_dev_engagement_event' =>
-    [ REWRITE_dev_engagement_event => qr{form[\.:]dev[\.\-:]engagement[\.\-\:]event} ]
-    => sub { my $c = shift; $c->redirect_to('https://mzl.la/devevents'); });
-  $r->any( '/:REWRITE_ipc' => [ REWRITE_ipc => qr{form[\.:](?:ipc|IPC)} ]
-    => sub { my $c = shift; $c->redirect_to('https://mzl.la/snippet-submit-form'); });
+  $r->any(
+    '/:REWRITE_dev_engagement_event' => [
+      REWRITE_dev_engagement_event => qr{form[\.:]dev[\.\-:]engagement[\.\-\:]event}
+    ] => sub { my $c = shift; $c->redirect_to('https://mzl.la/devevents'); }
+  );
+  $r->any('/:REWRITE_ipc' => [REWRITE_ipc => qr{form[\.:](?:ipc|IPC)}] =>
+      sub { my $c = shift; $c->redirect_to('https://mzl.la/snippet-submit-form'); }
+  );
 }
 
 __PACKAGE__->NAME;

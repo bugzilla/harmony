@@ -202,8 +202,8 @@ sub bug_end_of_update {
   my $user = Bugzilla->user;
 
   # Anyone added to the CC list of a bug is now interested in that bug.
-  my %old_cc = map { $_->id => $_ } grep {defined} @{$old_bug->cc_users};
-  my @added = grep { not $old_cc{$_->id} } grep {defined} @{$bug->cc_users};
+  my %old_cc = map  { $_->id => $_ } grep        {defined} @{$old_bug->cc_users};
+  my @added  = grep { not $old_cc{$_->id} } grep {defined} @{$bug->cc_users};
   foreach my $cc_user (@added) {
     next if $user->id == $cc_user->id;
     Bugzilla::Extension::MyDashboard::BugInterest->mark($cc_user->id, $bug->id,
@@ -224,7 +224,7 @@ sub bug_end_of_update {
     my ($old_status, $new_status) = @{$changes->{bug_status}};
     if (is_open_state($old_status) && !is_open_state($new_status)) {
       my @related_bugs = map { @{$bug->{$_} || []} }
-          qw(blocks_obj depends_on_obj regresses_obj regressed_by_obj);
+        qw(blocks_obj depends_on_obj regresses_obj regressed_by_obj);
       my %involved;
 
       foreach my $related_bug (@related_bugs) {

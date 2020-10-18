@@ -56,7 +56,7 @@ foreach my $attachment (@$attachments) {
 
   # check payload
   my $url = trim($attachment->{thedata});
-  next if $url =~ /\s/;
+  next if $url     =~ /\s/;
   next unless $url =~ m#^https://github\.com/[^/]+/[^/]+/pull/\d+\/?$#i;
 
   $dbh->bz_start_transaction;

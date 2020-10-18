@@ -68,7 +68,7 @@ sub PrefillForm {
   my ($buf) = @_;
   my $cgi = Bugzilla->cgi;
   $buf = new Bugzilla::CGI($buf);
-  my $foundone = 0;
+  my $foundone      = 0;
   my $custom_fields = {};
 
   # If there are old-style boolean charts in the URL (from an old saved
@@ -128,10 +128,13 @@ sub PrefillForm {
     }
 
     while (my ($name, $values) = each(%$custom_fields)) {
+
       # Join multiple values with a comma, and use the `anyexact` operator
       # because values may contain spaces.
-      push(@{$default{'custom_search'}},
-        {f => $name, o => 'anyexact', v => join(', ', @$values)});
+      push(
+        @{$default{'custom_search'}},
+        {f => $name, o => 'anyexact', v => join(', ', @$values)}
+      );
     }
   }
 
@@ -171,7 +174,7 @@ foreach my $product (@selectable_products) {
 }
 
 my @components = sort { lc($a) cmp lc($b) } keys %components;
-my @versions = sort { vers_cmp(lc($a), lc($b)) } keys %versions;
+my @versions   = sort { vers_cmp(lc($a), lc($b)) } keys %versions;
 my @milestones = sort(keys %milestones);
 
 $vars->{'product'} = \@selectable_products;
@@ -191,16 +194,18 @@ if (Bugzilla->params->{'usetargetmilestone'}) {
 }
 
 my @chfields;
-my $search_fields = Bugzilla::Search::search_fields({obsolete => 0});
-my $uneditable_fields_re = join('|', qw(
-  attachments\.submitter
-  bug_id
-  commenter
-  creation_ts
-  delta_ts
-  lastdiffed
-  reporter
-));
+my $search_fields        = Bugzilla::Search::search_fields({obsolete => 0});
+my $uneditable_fields_re = join(
+  '|', qw(
+    attachments\.submitter
+    bug_id
+    commenter
+    creation_ts
+    delta_ts
+    lastdiffed
+    reporter
+    )
+);
 
 push @chfields, "[Bug creation]";
 
@@ -230,8 +235,8 @@ else {
   @chfields = grep($_ ne "estimated_time", @chfields);
   @chfields = grep($_ ne "remaining_time", @chfields);
 }
-@chfields = (sort(@chfields));
-$vars->{'chfield'} = \@chfields;
+@chfields           = (sort(@chfields));
+$vars->{'chfield'}  = \@chfields;
 $vars->{'bug_type'} = Bugzilla::Field->new({name => 'bug_type'})->legal_values;
 $vars->{'bug_status'}
   = Bugzilla::Field->new({name => 'bug_status'})->legal_values;
@@ -245,8 +250,8 @@ $vars->{'resolution'}
   = Bugzilla::Field->new({name => 'resolution'})->legal_values;
 
 # Boolean charts
-my @fields = sort { lc($a->description) cmp lc($b->description) }
-  values %$search_fields;
+my @fields
+  = sort { lc($a->description) cmp lc($b->description) } values %$search_fields;
 unshift(@fields, {name => "noop", description => "---"});
 $vars->{'fields'} = \@fields;
 
@@ -274,7 +279,7 @@ if ($cgi->param('order')) { $deforder = $cgi->param('order') }
 
 $vars->{'userdefaultquery'} = $userdefaultquery;
 $vars->{'orders'}           = \@orders;
-$default{'order'} = [$deforder || 'Importance'];
+$default{'order'}           = [$deforder || 'Importance'];
 
 if (
   ($cgi->param('query_format') || $cgi->param('format') || "") eq "create-series")

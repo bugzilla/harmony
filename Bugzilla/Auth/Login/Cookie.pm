@@ -90,10 +90,10 @@ sub get_login_info {
     # we're going to verify against the db
     detaint_natural($user_id);
 
-    my $db_cookie = $dbh->selectrow_array(
+    my $db_cookie
+      = $dbh->selectrow_array(
       'SELECT cookie FROM logincookies WHERE cookie = ? AND userid = ?',
-      undef, ($login_cookie, $user_id)
-    );
+      undef, ($login_cookie, $user_id));
 
     # If the cookie is valid, return a valid username.
     if (defined $db_cookie && $login_cookie eq $db_cookie) {

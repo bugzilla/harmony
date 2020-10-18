@@ -154,7 +154,7 @@ END
     else {
       print "Please edit $dest_file to configure the daemon.\n";
     }
-    }
+  }
 }
 
 sub gd_can_uninstall {
@@ -168,7 +168,7 @@ sub gd_can_uninstall {
       }
       system $chkconfig, '--del', $initscript;
       print "$initscript disabled.", " To stop it, run: $initd/$initscript stop\n";
-      }
+    }
   }
 
   return $self->SUPER::gd_can_install(@_);
@@ -228,7 +228,7 @@ sub gd_run {
 sub run_worker {
   my ($self) = @_;
 
-  my $script = catfile(bz_locations->{cgi_path}, 'jobqueue-worker.pl');
+  my $script  = catfile(bz_locations->{cgi_path}, 'jobqueue-worker.pl');
   my @command = ($EXECUTABLE_NAME, $script);
   if ($self->{gd_args}{progname}) {
     push @command, '--name' => "$self->{gd_args}{progname} [worker]";

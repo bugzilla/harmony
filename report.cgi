@@ -31,7 +31,8 @@ $C->content_security_policy(report_only => 0);
 if (grep(/^cmd-/, $cgi->param())) {
   my $params = $cgi->canonicalize_query("format", "ctype");
   $cgi->base_redirect('query.cgi?format='
-      . $cgi->param('query_format') . ($params ? "&$params" : ''));
+      . $cgi->param('query_format')
+      . ($params ? "&$params" : ''));
 }
 
 Bugzilla->login();
@@ -62,7 +63,7 @@ my $height = $cgi->param('height');
 
 if (defined($width)) {
   (detaint_natural($width) && $width > 0) || ThrowCodeError("invalid_dimensions");
-  $width <= 2000 || ThrowUserError("chart_too_large");
+  $width <= 2000                          || ThrowUserError("chart_too_large");
 }
 
 if (defined($height)) {

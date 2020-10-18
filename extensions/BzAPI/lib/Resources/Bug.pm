@@ -376,7 +376,7 @@ sub search_bugs_request {
   }
 
   # Other convenience search variables used by BzAPI
-  my @field_ids = grep(/^f(\d+)$/, keys %$params);
+  my @field_ids     = grep(/^f(\d+)$/, keys %$params);
   my $last_field_id = @field_ids ? max @field_ids + 1 : 1;
   foreach my $field (qw(setters.login_name requestees.login_name)) {
     if (my $value = delete $params->{$field}) {
@@ -428,7 +428,7 @@ sub update_bug_request {
   my ($params) = @_;
 
   my $bug_id = ref $params->{ids} ? $params->{ids}->[0] : $params->{ids};
-  my $bug = Bugzilla::Bug->check($bug_id);
+  my $bug    = Bugzilla::Bug->check($bug_id);
 
   # Convert groups to proper add/remove lists
   if (exists $params->{groups}) {
@@ -449,7 +449,9 @@ sub update_bug_request {
   # Other fields such as dependencies, regressions and keywords
   # support 'set' which will make the list exactly what
   # the user passes in.
-  foreach my $field (qw(blocks depends_on dependson regresses regressed_by keywords)) {
+  foreach
+    my $field (qw(blocks depends_on dependson regresses regressed_by keywords))
+  {
     if (exists $params->{$field}) {
       $params->{$field} = {set => $params->{$field}};
     }
@@ -584,10 +586,8 @@ sub update_attachment_request {
   }
 
   # Immutable values
-  foreach my $key (
-    qw(attacher bug_id bug_ref creation_time
-    encoding id ref size update_token)
-    )
+  foreach my $key (qw(attacher bug_id bug_ref creation_time
+  encoding id ref size update_token))
   {
     delete $params->{$key};
   }
@@ -626,7 +626,7 @@ sub search_bugs_response {
   my $stash = {};
   foreach my $bug_data (@{$$result->{bugs}}) {
     my $bug_obj = shift @$bug_objs;
-    my $fixed = fix_bug($bug_data, $bug_obj, $stash);
+    my $fixed   = fix_bug($bug_data, $bug_obj, $stash);
 
     # CC count and Dupe count
     if (filter_wants_nocache($params, 'cc_count')) {
@@ -699,7 +699,7 @@ sub get_comments_response {
   my @fixed_comments;
   foreach my $comment_data (@$comments_data) {
     my $comment_obj = shift @filtered_comment_objs;
-    my $fixed = fix_comment($comment_data, $comment_obj);
+    my $fixed       = fix_comment($comment_data, $comment_obj);
 
     if (exists $fixed->{creator}) {
 
@@ -764,7 +764,7 @@ sub get_attachments_response {
   my @fixed_attachments;
   foreach my $attachment (@$attachments_data) {
     my $attachment_obj = shift @$attachment_objs;
-    my $fixed = fix_attachment($attachment, $attachment_obj);
+    my $fixed          = fix_attachment($attachment, $attachment_obj);
 
     if ((
          filter_wants_nocache($params, 'data', 'extra')

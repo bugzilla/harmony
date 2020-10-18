@@ -55,7 +55,7 @@ sub get_login_info {
     # The second part checks the correct capitalization. Silly MySQL
     ThrowUserError("api_key_not_valid");
   }
-  elsif ( $api_key->sticky
+  elsif ($api_key->sticky
     && $api_key->last_used_ip
     && $api_key->last_used_ip ne $remote_ip)
   {

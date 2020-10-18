@@ -103,8 +103,7 @@ sub check_bug_type {
   my ($value) = (@_);
   my $legal_types = get_legal_field_values('bug_type');
   if (!grep($_ eq $value, @$legal_types)) {
-    return "Must be a legal type value: one of "
-      . join(", ", @$legal_types);
+    return "Must be a legal type value: one of " . join(", ", @$legal_types);
   }
   return "";
 }
@@ -150,7 +149,7 @@ sub check_opsys {
 }
 
 sub check_bug_status {
-  my $bug_status = shift;
+  my $bug_status          = shift;
   my @closed_bug_statuses = map { $_->name } closed_bug_statuses();
   if (!grep($_ eq $bug_status, @closed_bug_statuses)) {
     return "Must be a valid closed status: one of "

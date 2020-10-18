@@ -39,7 +39,7 @@ use constant VERSION => BUGZILLA_VERSION;
 use constant CMT_MOVED_TO => 4;
 
 sub install_update_db {
-  my $reso_type = Bugzilla::Field::Choice->type('resolution');
+  my $reso_type  = Bugzilla::Field::Choice->type('resolution');
   my $moved_reso = $reso_type->new({name => 'MOVED'});
 
   # We make the MOVED resolution inactive, so that it doesn't show up
@@ -193,7 +193,7 @@ sub _move_bug {
   my @fieldlist = (Bugzilla::Bug->fields, 'group', 'long_desc', 'attachment',
     'attachmentdata');
   my %displayfields = map { $_ => 1 } @fieldlist;
-  my $vars = {bugs => [$export_me], displayfields => \%displayfields};
+  my $vars          = {bugs => [$export_me], displayfields => \%displayfields};
   $template->process("bug/show.xml.tmpl", $vars, \$msg)
     || ThrowTemplateError($template->error());
   $msg .= "\n";

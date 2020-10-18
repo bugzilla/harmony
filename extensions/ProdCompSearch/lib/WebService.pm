@@ -161,7 +161,8 @@ sub list_frequent_components {
 
   # Select the date of 2 years ago today
   my $now = localtime;
-  my $date = sprintf('%4d-%02d-%02d', $now->year + 1900 - 2, $now->mon + 1, $now->mday);
+  my $date
+    = sprintf('%4d-%02d-%02d', $now->year + 1900 - 2, $now->mon + 1, $now->mday);
 
   my $dbh = Bugzilla->switch_to_shadow_db();
   my $sql = q{

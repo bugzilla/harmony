@@ -358,7 +358,7 @@ sub FILESYSTEM {
   );
 
   my %all_files = (%create_files, %files);
-  my %all_dirs = (%create_dirs, %non_recurse_dirs);
+  my %all_dirs  = (%create_dirs,  %non_recurse_dirs);
 
   return {
     create_dirs  => \%create_dirs,

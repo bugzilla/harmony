@@ -21,8 +21,7 @@ Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
 my $dbh = Bugzilla->dbh;
 
 $dbh->bz_start_transaction();
-my $attachment_sizes = $dbh->selectall_arrayref(
-  q{
+my $attachment_sizes = $dbh->selectall_arrayref(q{
         SELECT attachments.attach_id, length(thedata)
         FROM attach_data
         INNER JOIN attachments ON attachments.attach_id = attach_data.id

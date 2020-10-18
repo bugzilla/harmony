@@ -22,7 +22,7 @@ my ($login, $action, $param, $value) = @ARGV;
 ($login && $action && $action =~ /^(get|set)$/)
   or die "syntax: $0 <bugzilla-login> <get|set> [param] [value]\n";
 
-my $user = Bugzilla::User->check({name => $login});
+my $user     = Bugzilla::User->check({name => $login});
 my $settings = $user->settings;
 
 if ($action eq 'get') {

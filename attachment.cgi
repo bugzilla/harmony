@@ -237,7 +237,7 @@ sub get_attachment {
       }
       $attachments{$field_name} = $attachment;
     }
-    my @args = map { $_ . '=' . $attachments{$_}->id } @field_names;
+    my @args       = map { $_ . '=' . $attachments{$_}->id } @field_names;
     my $cgi_params = $cgi->canonicalize_query(@field_names, 't', 'Bugzilla_login',
       'Bugzilla_password');
     push(@args, $cgi_params) if $cgi_params;
@@ -390,7 +390,7 @@ sub view {
 
   if ($do_redirect) {
     my $uri = URI->new('attachment.cgi');
-    $uri->query_param(id => $attachment->id);
+    $uri->query_param(id           => $attachment->id);
     $uri->query_param(content_type => $contenttype) if $contenttype_override;
     $cgi->base_redirect($uri->as_string);
   }
@@ -448,9 +448,9 @@ sub interdiff {
 sub diff {
 
   # Retrieve and validate parameters
-  my $format = validateFormat('html', 'raw');
+  my $format     = validateFormat('html', 'raw');
   my $attachment = $format eq 'raw' ? get_attachment() : validateID();
-  my $context = validateContext();
+  my $context    = validateContext();
 
   # If it is not a patch, view normally.
   if (!$attachment->ispatch) {
@@ -577,7 +577,7 @@ sub insert {
     $filename = "file_$bugid.txt";
   }
   elsif ($data_base64) {
-    $data = decode_base64($data_base64);
+    $data     = decode_base64($data_base64);
     $filename = $cgi->param('filename') || "file_$bugid";
   }
   else {
@@ -654,24 +654,26 @@ sub insert {
   $dbh->bz_commit_transaction;
 
   # Persist details of what changed and redirect to show_bug page.
-  my $recipients = {'changer' => $user, 'owner' => $owner};
-  my $sent_bugmail = Bugzilla::BugMail::Send($bugid, $recipients);
+  my $recipients          = {'changer' => $user, 'owner' => $owner};
+  my $sent_bugmail        = Bugzilla::BugMail::Send($bugid, $recipients);
   my $content_type_method = $cgi->param('contenttypemethod');
 
   my $last_sent_attachment_change = {
     attachment => {
-      id => $attachment->id,
-      bug_id => $attachment->bug_id,
+      id          => $attachment->id,
+      bug_id      => $attachment->bug_id,
       contenttype => $attachment->contenttype,
       description => $attachment->description,
     },
-    type => 'created',
-    recipient_count => scalar @{$sent_bugmail->{sent}},
+    type                => 'created',
+    recipient_count     => scalar @{$sent_bugmail->{sent}},
     content_type_method => $content_type_method,
   };
-  $Bugzilla::App::CGI::C->flash(last_sent_attachment_changes => [$last_sent_attachment_change]);
+  $Bugzilla::App::CGI::C->flash(
+    last_sent_attachment_changes => [$last_sent_attachment_change]);
 
-  my $redirect_url = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bugid);
+  my $redirect_url
+    = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bugid);
   $Bugzilla::App::CGI::C->redirect_to($redirect_url);
 }
 
@@ -767,7 +769,7 @@ sub update {
 
   # If the user submitted a comment while editing the attachment,
   # add the comment to the bug. Do this after having validated isprivate!
-  my $comment = $cgi->param('comment');
+  my $comment     = $cgi->param('comment');
   my $is_markdown = Bugzilla->params->{use_markdown} ? 1 : 0;
   if ($cgi->param('markdown_off')) {
     $is_markdown = 0;
@@ -840,17 +842,19 @@ sub update {
 
   my $last_sent_attachment_change = {
     attachment => {
-      id => $attachment->id,
-      bug_id => $attachment->bug_id,
+      id          => $attachment->id,
+      bug_id      => $attachment->bug_id,
       contenttype => $attachment->contenttype,
       description => $attachment->description,
     },
-    type => 'updated',
+    type            => 'updated',
     recipient_count => scalar @{$sent_bugmail->{sent}},
   };
-  $Bugzilla::App::CGI::C->flash(last_sent_attachment_changes => [$last_sent_attachment_change]);
+  $Bugzilla::App::CGI::C->flash(
+    last_sent_attachment_changes => [$last_sent_attachment_change]);
 
-  my $redirect_url = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bug->id);
+  my $redirect_url
+    = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bug->id);
   $Bugzilla::App::CGI::C->redirect_to($redirect_url);
 }
 
@@ -889,7 +893,7 @@ sub delete_attachment {
     # The token is valid. Delete the content of the attachment.
     my $msg;
     $vars->{'attachment'} = $attachment;
-    $vars->{'reason'} = clean_text($cgi->param('reason') || '');
+    $vars->{'reason'}     = clean_text($cgi->param('reason') || '');
 
     $template->process("attachment/delete_reason.txt.tmpl", $vars, \$msg)
       || ThrowTemplateError($template->error());
@@ -911,17 +915,19 @@ sub delete_attachment {
 
     my $last_sent_attachment_change = {
       attachment => {
-        id => $attachment->id,
-        bug_id => $attachment->bug_id,
+        id          => $attachment->id,
+        bug_id      => $attachment->bug_id,
         contenttype => $attachment->contenttype,
         description => $attachment->description,
       },
-      type => 'deleted',
+      type            => 'deleted',
       recipient_count => scalar @{$sent_bugmail->{sent}},
     };
-    $Bugzilla::App::CGI::C->flash(last_sent_attachment_changes => [$last_sent_attachment_change]);
+    $Bugzilla::App::CGI::C->flash(
+      last_sent_attachment_changes => [$last_sent_attachment_change]);
 
-    my $redirect_url = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bug->id);
+    my $redirect_url
+      = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bug->id);
     $Bugzilla::App::CGI::C->redirect_to($redirect_url);
   }
   else {

@@ -96,8 +96,8 @@ sub _build_output_fh {
 }
 
 sub _read_header {
-  my ($self) = @_;
-  my $header = '' x HEADER_SIZE;
+  my ($self)     = @_;
+  my $header     = '' x HEADER_SIZE;
   my $header_len = $self->input_fh->read($header, HEADER_SIZE);
   if (!$header_len || $header_len != HEADER_SIZE) {
     die "bad header\n";
@@ -108,7 +108,7 @@ sub _read_header {
 sub _read_data {
   my ($self, $data_len, $hash) = @_;
 
-  my $data = '' x $data_len;
+  my $data          = '' x $data_len;
   my $read_data_len = $self->input_fh->read($data, $data_len);
 
   unless ($read_data_len == $data_len) {

@@ -68,7 +68,7 @@ sub mailer_before_send {
     my $email_suffix = Bugzilla->params->{'emailsuffix'};
     if ($email_suffix ne '') {
       $recipient =~ s/\Q$email_suffix\E$//;
-      $author =~ s/\Q$email_suffix\E$//;
+      $author    =~ s/\Q$email_suffix\E$//;
     }
 
     $author = new Bugzilla::User({name => $author});
@@ -125,7 +125,7 @@ sub _fix_encoding {
   return if $part->parts > 1;
 
   # nothing to do if the part already has a charset
-  my $ct = parse_content_type($part->content_type);
+  my $ct      = parse_content_type($part->content_type);
   my $charset = $ct->{attributes}{charset} ? $ct->{attributes}{charset} : '';
   return unless !$charset || $charset eq 'us-ascii';
 
@@ -153,7 +153,7 @@ sub _filter_html {
   my $comments_div = $tree->look_down(_tag => 'div', id => 'comments');
   return $html if !$comments_div;
   my @comments = $comments_div->look_down(_tag => 'pre');
-  my $dirty = 0;
+  my $dirty    = 0;
   foreach my $comment (@comments) {
     _filter_html_node($comment, \$dirty);
   }

@@ -44,7 +44,7 @@ if (my $filename = shift @ARGV) {
 }
 
 my $db_date = Bugzilla->dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
-my $date = format_time($db_date, '%a, %d %b %Y %T %z', 'UTC');
+my $date    = format_time($db_date, '%a, %d %b %Y %T %z', 'UTC');
 
 # delete expired defers
 Bugzilla->dbh->do("DELETE FROM nag_defer WHERE defer_until <= CURRENT_DATE()");
@@ -176,7 +176,7 @@ sub _include_request {
   }
 
   # exclude weekends and re-check nag-interval
-  my $date = datetime_from($request->{modification_date}, 'UTC');
+  my $date  = datetime_from($request->{modification_date}, 'UTC');
   my $hours = 0;
   $hours += 24 - $date->hour if $date->day_of_week <= 5;
   $date->add(days => 1)->truncate(to => 'day');

@@ -57,7 +57,7 @@ sub stop {
 sub should_send {
   my ($self, $message) = @_;
 
-  my $data = $message->payload_decoded;
+  my $data     = $message->payload_decoded;
   my $bug_data = $self->_get_bug_data($data) || return 0;
 
   # Send if bug has cisco-spark keyword

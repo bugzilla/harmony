@@ -159,7 +159,7 @@ sub object_end_of_update {
 sub _check_default_requestee {
   my ($self, $value, $field) = @_;
   $value = trim($value // '');
-  return undef if $value eq '';
+  return undef                                    if $value eq '';
   ThrowUserError("flag_default_requestee_review") if $self->name eq 'review';
   return Bugzilla::User->check($value)->id;
 }

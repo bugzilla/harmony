@@ -319,13 +319,14 @@ sub report {
   $vars->{ranges}        = DATE_RANGES;
   $vars->{default_query} = $input->{q};
   $vars->{is_custom}     = $input->{is_custom};
+
   foreach my $field (qw(product flags range)) {
     $vars->{$field} = $input->{$field};
   }
 }
 
 sub _parse_query {
-  my $q = shift;
+  my $q     = shift;
   my @query = split(/:/, $q);
   my $query;
 

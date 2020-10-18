@@ -48,7 +48,7 @@ sub render {
     allow_blessed   => 1,    # encode null on blessed ref that can't be converted
   );
 
-  my $mdc = Log::Log4perl::MDC->get_context;
+  my $mdc    = Log::Log4perl::MDC->get_context;
   my $fields = $mdc->{fields} // {};
   if ($mdc->{request_id}) {
     $fields->{request_id} = $mdc->{request_id};

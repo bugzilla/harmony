@@ -121,7 +121,7 @@ sub options {
 
 sub options_validate {
   my ($self, $config) = @_;
-  my $host = $config->{ldap_host};
+  my $host   = $config->{ldap_host};
   my $scheme = lc($config->{ldap_scheme});
   eval {
     my $ldap
@@ -151,7 +151,7 @@ sub load_config {
 sub should_send {
   my ($self, $message) = @_;
 
-  my $data = $message->payload_decoded;
+  my $data     = $message->payload_decoded;
   my $bug_data = $self->_get_bug_data($data) || return 0;
 
   # we don't want to send the initial comment in a separate message
@@ -398,7 +398,7 @@ sub _ldap_cache {
 
     my $cache = {};
 
-    my $host = $config->{ldap_host};
+    my $host   = $config->{ldap_host};
     my $scheme = lc($config->{ldap_scheme});
     my $ldap = Net::LDAP->new($host, scheme => $scheme, onerror => 'die') or die $!;
     $ldap->bind($config->{ldap_user}, password => $config->{ldap_pass});

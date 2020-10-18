@@ -43,7 +43,7 @@ sub object_to_hash {
   (my $name = $method) =~ s/^_//;
 
   # check for a cached hash
-  my $cache = Bugzilla->request_cache;
+  my $cache    = Bugzilla->request_cache;
   my $cache_id = "push." . ($is_shallow ? 'shallow.' : 'deep.') . $object;
   if (exists($cache->{$cache_id})) {
     return wantarray ? ($cache->{$cache_id}, $name) : $cache->{$cache_id};

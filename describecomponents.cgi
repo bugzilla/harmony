@@ -63,7 +63,7 @@ unless ($product && $user->can_access_product($product->name)) {
   # product they didn't request.
   elsif (scalar(@products) > 1 || $product_name) {
     $vars->{'classifications'} = [{object => undef, products => \@products}];
-    $vars->{'target'} = "describecomponents.cgi";
+    $vars->{'target'}          = "describecomponents.cgi";
 
     # If an invalid product name is given, or the user is not
     # allowed to access that product, a message is displayed

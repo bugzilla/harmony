@@ -21,9 +21,9 @@ use Bugzilla::Mailer;
 use Getopt::Long;
 use Pod::Usage;
 
-my $verbose = 0;    # Return all comments if true, else errors only.
-my $login = '';  # Login name of the user which is used to call sanitycheck.cgi.
-my $help  = 0;   # Has user asked for help on this script?
+my $verbose = 0;     # Return all comments if true, else errors only.
+my $login   = '';    # Login name of the user which is used to call sanitycheck.cgi.
+my $help    = 0;     # Has user asked for help on this script?
 
 my $result = GetOptions(
   'verbose'  => \$verbose,

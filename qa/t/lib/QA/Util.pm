@@ -73,8 +73,9 @@ use constant CHROME_MODE => 1;
 
 sub random_string {
   my $size = shift || 30;    # default to 30 chars if nothing specified
-  return
-    join("", map { ('0' .. '9', 'a' .. 'z', 'A' .. 'Z')[Bugzilla::RNG::rand 62] } (1 .. $size));
+  return join("",
+    map { ('0' .. '9', 'a' .. 'z', 'A' .. 'Z')[Bugzilla::RNG::rand 62] }
+      (1 .. $size));
 }
 
 # Remove consecutive as well as leading and trailing whitespaces.
@@ -128,19 +129,17 @@ sub get_selenium {
       version    => '',
       javascript => 1
     }
-    });
+  });
 
-  $sel->driver->set_timeout('implicit', 600);
+  $sel->driver->set_timeout('implicit',  600);
   $sel->driver->set_timeout('page load', 60000);
 
   return ($sel, $config);
 }
 
 sub get_xmlrpc_client {
-  my $config = get_config();
-  my $xmlrpc_url
-    = $config->{browser_url}
-    . "/xmlrpc.cgi";
+  my $config     = get_config();
+  my $xmlrpc_url = $config->{browser_url} . "/xmlrpc.cgi";
 
   require QA::RPC::XMLRPC;
   my $rpc = new QA::RPC::XMLRPC(proxy => $xmlrpc_url);
@@ -230,7 +229,8 @@ sub file_bug_in_product {
 
   # Use normal bug form instead of helper
   if ($sel->is_text_present('Switch to the standard bug entry form')) {
-    $sel->click_ok('//a[@id="advanced_link"]', undef, 'Switch to the standard bug entry form');
+    $sel->click_ok('//a[@id="advanced_link"]', undef,
+      'Switch to the standard bug entry form');
   }
 
   my $title = $sel->get_title();
@@ -243,16 +243,15 @@ sub file_bug_in_product {
   }
   if ($sel->is_text_present("Which product is affected by the problem")) {
     ok(1, "Which product is affected by the problem");
-    $sel->click_ok('//a/span[contains(text(),"Other Products")]', undef, "Choose full product list");
+    $sel->click_ok('//a/span[contains(text(),"Other Products")]',
+      undef, "Choose full product list");
     $sel->wait_for_page_to_load(WAIT_TIME);
     $title = $sel->get_title();
   }
   if ($sel->is_text_present($product)) {
     ok(1, "Display the list of enterable products");
     $sel->open_ok("/enter_bug.cgi?product=$product&format=__default__",
-      undef,
-      "Choose product $product"
-    );
+      undef, "Choose product $product");
     $sel->wait_for_page_to_load(WAIT_TIME);
   }
   else {
@@ -261,7 +260,7 @@ sub file_bug_in_product {
     );
   }
   $sel->title_is("Enter Bug: $product", "Display form to enter bug data");
-  sleep(1); # FIXME: Delay for slow page performance
+  sleep(1);    # FIXME: Delay for slow page performance
 
   # Select the defect type by default
   # `check_ok()` doesn't work here because the checkbox is invisible
@@ -274,11 +273,10 @@ sub create_bug {
   my ($sel, $bug_summary) = @_;
   $sel->click_ok('commit');
   $sel->wait_for_page_to_load_ok(WAIT_TIME);
-  my $bug_id = $sel->find_element('//input[@name="id" and @type="hidden"]')->get_value();
-  $sel->title_like(
-    qr/$bug_id -( \(.*\))? $bug_summary/,
-    "Bug $bug_id created with summary '$bug_summary'"
-  );
+  my $bug_id
+    = $sel->find_element('//input[@name="id" and @type="hidden"]')->get_value();
+  $sel->title_like(qr/$bug_id -( \(.*\))? $bug_summary/,
+    "Bug $bug_id created with summary '$bug_summary'");
   return $bug_id;
 }
 
@@ -303,14 +301,13 @@ sub go_to_bug {
   $sel->type_ok("quicksearch_top", $bug_id);
   $sel->driver->find_element('//*[@id="quicksearch_top"]')->submit;
   $sel->wait_for_page_to_load_ok(WAIT_TIME);
-  check_page_load($sel,
-    qq{http://HOSTNAME/show_bug.cgi?id=$bug_id});
+  check_page_load($sel, qq{http://HOSTNAME/show_bug.cgi?id=$bug_id});
   my $bug_title = $sel->get_title();
   utf8::encode($bug_title) if utf8::is_utf8($bug_title);
   $sel->title_like(qr/^$bug_id /, $bug_title);
-  sleep(1); # FIXME: Sometimes we try to click edit bug before it is ready so wait a second
+  sleep(1);    # FIXME: Sometimes we try to click edit bug before it is ready so wait a second
   $sel->click_ok('mode-btn-readonly', 'Click Edit Bug') if !$no_edit;
-  $sel->click_ok('action-menu-btn', 'Expand action menu');
+  $sel->click_ok('action-menu-btn',   'Expand action menu');
   $sel->click_ok('action-expand-all', 'Expand all modal panels');
 }
 
@@ -386,7 +383,7 @@ sub open_advanced_search_page {
     $sel->wait_for_page_to_load(WAIT_TIME);
   }
   $sel->remove_all_selections('classification');
-  sleep(1); # FIXME: Delay for slow page performance
+  sleep(1);    # FIXME: Delay for slow page performance
 }
 
 # $params is a hashref of the form:
@@ -451,14 +448,16 @@ my @ANY_KEYS = qw( t token list_id );
 
 sub check_page_load {
   my ($sel, $expected) = @_;
+
   # FIXME: For some reason in some cases I need this otherwise
   # it thinks it is still on the previous page
   sleep(2);
   my $expected_uri = URI->new($expected);
-  my $uri = URI->new($sel->get_location);
+  my $uri          = URI->new($sel->get_location);
 
   foreach my $u ($expected_uri, $uri) {
     $u->host('HOSTNAME:8000');
+
     # Remove list id from newquery param
     if ($u->query_param('newquery')) {
       my $newquery = $u->query_param('newquery');
@@ -472,11 +471,15 @@ sub check_page_load {
     }
   }
 
-  if ($expected_uri->query_param('id') and $expected_uri->query_param('id') eq '__BUG_ID__') {
+  if (  $expected_uri->query_param('id')
+    and $expected_uri->query_param('id') eq '__BUG_ID__')
+  {
     $uri->query_param('id' => '__BUG_ID__');
   }
 
-  if ($expected_uri->query_param('list_id') and $expected_uri->query_param('list_id') eq '__LIST_ID__') {
+  if (  $expected_uri->query_param('list_id')
+    and $expected_uri->query_param('list_id') eq '__LIST_ID__')
+  {
     $uri->query_param('list_id' => '__LIST_ID__');
   }
 
@@ -490,7 +493,7 @@ sub check_page_load {
 }
 
 sub fix_query_order {
-  my ($uri) = @_;
+  my ($uri)      = @_;
   my $query_hash = $uri->query_form_hash();
   my @out        = ();
   for my $key (sort keys %{$query_hash}) {

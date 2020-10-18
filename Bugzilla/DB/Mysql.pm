@@ -103,7 +103,7 @@ sub bz_last_key {
 sub sql_group_concat {
   my ($self, $column, $separator, $sort) = @_;
   $separator = $self->quote(', ') if !defined $separator;
-  $sort = 1 if !defined $sort;
+  $sort      = 1                  if !defined $sort;
   if ($sort) {
     my $sort_order = $column;
     $sort_order =~ s/^DISTINCT\s+//i;
@@ -266,7 +266,7 @@ sub bz_explain {
     $i++;
   }
 
-  my $first_row = sprintf($format_string, @$columns);
+  my $first_row    = sprintf($format_string, @$columns);
   my @explain_rows = ($first_row, '-' x length($first_row));
   while (my $row = $sth->fetchrow_arrayref) {
     my @fixed = map { defined $_ ? $_ : 'NULL' } @$row;
@@ -311,7 +311,7 @@ sub bz_setup_database {
   # This parameter is not yet defined when the DB is being built for
   # the very first time. The code below still works properly, however,
   # because the default maxattachmentsize is smaller than $min_max_allowed.
-  my $max_attachment = (Bugzilla->params->{'maxattachmentsize'} || 0) * 1024;
+  my $max_attachment     = (Bugzilla->params->{'maxattachmentsize'} || 0) * 1024;
   my $needed_max_allowed = max($min_max_allowed, $max_attachment);
   if ($current_max_allowed < $needed_max_allowed) {
     warn install_string('max_allowed_packet',
@@ -665,7 +665,7 @@ sub bz_setup_database {
           my ($binary, $utf8) = ($sql_def, $sql_def);
           my $type = $self->_bz_schema->convert_type($col_info->{TYPE});
           $binary =~ s/(\Q$type\E)/$1 CHARACTER SET binary/;
-          $utf8 =~ s/(\Q$type\E)/$1 CHARACTER SET $charset COLLATE $collate/;
+          $utf8   =~ s/(\Q$type\E)/$1 CHARACTER SET $charset COLLATE $collate/;
           push(@binary_sql, "MODIFY COLUMN $name $binary");
           push(@utf8_sql,   "MODIFY COLUMN $name $utf8");
         }
@@ -737,13 +737,13 @@ sub bz_setup_database {
 # looks like. So we remove defaults from columns that aren't supposed
 # to have them
 sub _fix_defaults {
-  my $self = shift;
+  my $self        = shift;
   my $maj_version = substr($self->bz_server_version, 0, 1);
   return if $maj_version < 5;
 
   # The oldest column that could have this problem is bugs.assigned_to,
   # so if it doesn't have the problem, we just skip doing this entirely.
-  my $assi_def = $self->_bz_raw_column_info('bugs', 'assigned_to');
+  my $assi_def     = $self->_bz_raw_column_info('bugs', 'assigned_to');
   my $assi_default = $assi_def->{COLUMN_DEF};
 
   # This "ne ''" thing is necessary because _raw_column_info seems to
@@ -762,7 +762,7 @@ sub _fix_defaults {
 
         # Get the exact default from the database without any
         # "fixing" by bz_column_info_real.
-        my $raw_info = $self->_bz_raw_column_info($table, $column);
+        my $raw_info    = $self->_bz_raw_column_info($table, $column);
         my $raw_default = $raw_info->{COLUMN_DEF};
         if (defined $raw_default) {
           if ($raw_default eq '') {
@@ -784,7 +784,7 @@ sub _fix_defaults {
   print "Fixing defaults...\n";
   foreach my $table (reverse sort keys %fix_columns) {
     my @alters = map("ALTER COLUMN $_ DROP DEFAULT", @{$fix_columns{$table}});
-    my $sql = "ALTER TABLE $table " . join(',', @alters);
+    my $sql    = "ALTER TABLE $table " . join(',', @alters);
     $self->do($sql);
   }
 }
@@ -965,7 +965,7 @@ sub bz_index_info_real {
 
       # No index can be both UNIQUE and FULLTEXT, that's why
       # this is written this way.
-      $index_type = $raw_def->[1] ? '' : 'UNIQUE';
+      $index_type = $raw_def->[1]                ? ''         : 'UNIQUE';
       $index_type = $raw_def->[10] eq 'FULLTEXT' ? 'FULLTEXT' : $index_type;
     }
   }

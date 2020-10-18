@@ -34,8 +34,8 @@ sub get_param_list {
       checker => \&check_storage
     },
     {
-      name => 'attachment_s3_minsize',
-      type => 't',
+      name    => 'attachment_s3_minsize',
+      type    => 't',
       default => '20000',
       checker => \&check_numeric
     },

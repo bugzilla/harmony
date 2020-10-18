@@ -52,13 +52,15 @@ sub register {
       # regardless of routing or Bugzilla::App wrapping.
       # This is not an expensive operation.
       Bugzilla->clear_request_cache();
+
       # We also need to clear CGI's globals.
       CGI::initialize_globals();
       Bugzilla->usage_mode(USAGE_MODE_MOJO);
 
       # This is used by Bugzilla::Util::remote_ip().
       state $better_xff = Bugzilla->has_feature('better_xff');
-      Bugzilla->request_cache->{remote_ip} = $better_xff ? $c->forwarded_for : $c->tx->remote_address;
+      Bugzilla->request_cache->{remote_ip}
+        = $better_xff ? $c->forwarded_for : $c->tx->remote_address;
 
       $next->();
     }
@@ -83,10 +85,11 @@ sub register {
 
       $params{self} = $params{c} = $c;
 
-      my $name = sprintf '%s.%s.tmpl', $options->{template}, $options->{format};
+      my $name     = sprintf '%s.%s.tmpl', $options->{template}, $options->{format};
       my $template = Bugzilla->template;
       if ($options->{variant}) {
-        my $name_variant = sprintf '%s.%s+%s.tmpl', $options->{template}, $options->{format}, $options->{variant};
+        my $name_variant = sprintf '%s.%s+%s.tmpl', $options->{template},
+          $options->{format}, $options->{variant};
         WARN("loading $name_variant");
         my $rendered = $template->process($name_variant, \%params, $output);
         return if $rendered;
@@ -133,10 +136,10 @@ sub register {
       return $c->bugzilla->login_redirect_if_required($type)
         unless ($login_cookie && $user_id);
 
-      my $db_cookie = Bugzilla->dbh->selectrow_array(
+      my $db_cookie
+        = Bugzilla->dbh->selectrow_array(
         'SELECT cookie FROM logincookies WHERE cookie = ? AND userid = ?',
-        undef, ($login_cookie, $user_id)
-      );
+        undef, ($login_cookie, $user_id));
 
       if (defined $db_cookie && secure_compare($login_cookie, $db_cookie)) {
         my $user = Bugzilla::User->check({id => $user_id, cache => 1});
@@ -234,9 +237,8 @@ sub register {
     'bz_include' => sub {
       my ($self, $file, %vars) = @_;
       my $template = Bugzilla->template;
-      my $buffer = "";
-      $template->process($file, \%vars, \$buffer)
-        or die $template->error;
+      my $buffer   = "";
+      $template->process($file, \%vars, \$buffer) or die $template->error;
       return Mojo::ByteStream->new($buffer);
     }
   );

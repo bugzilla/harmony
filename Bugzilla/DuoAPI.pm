@@ -70,7 +70,7 @@ use POSIX qw(strftime);
 sub new {
   my ($proto, $ikey, $skey, $host) = @_;
   my $class = ref($proto) || $proto;
-  my $self = {'ikey' => $ikey, 'skey' => $skey, 'host' => $host,};
+  my $self  = {'ikey' => $ikey, 'skey' => $skey, 'host' => $host,};
   bless($self, $class);
   return $self;
 }
@@ -89,7 +89,7 @@ sub sign {
   my ($self, $method, $path, $canon_params, $date) = @_;
   my $canon
     = join("\n", $date, uc($method), lc($self->{'host'}), $path, $canon_params);
-  my $sig = hmac_sha1_hex($canon, $self->{'skey'});
+  my $sig  = hmac_sha1_hex($canon, $self->{'skey'});
   my $auth = join(':', $self->{'ikey'}, $sig);
   $auth = 'Basic ' . encode_base64($auth, '');
   return $auth;

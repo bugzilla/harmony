@@ -44,7 +44,7 @@ sub has_translated_conditions {
     if grep { $_->isa('Bugzilla::Search::Condition') && $_->translated }
     @$children;
   foreach my $child (@$children) {
-    next if $child->isa('Bugzilla::Search::Condition');
+    next     if $child->isa('Bugzilla::Search::Condition');
     return 1 if $child->has_translated_conditions;
   }
   return 0;

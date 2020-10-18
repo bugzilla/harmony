@@ -52,7 +52,7 @@ sub add_indirect_dups {
   my ($counts, $dups) = @_;
 
   foreach my $add_from (keys %$dups) {
-    my $add_to = walk_dup_chain($dups, $add_from);
+    my $add_to     = walk_dup_chain($dups, $add_from);
     my $add_amount = delete $counts->{$add_from} || 0;
     $counts->{$add_to} += $add_amount;
   }

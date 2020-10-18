@@ -253,7 +253,7 @@ sub get_next_event {
           my $sth = $dbh->prepare("SELECT name FROM groups " . "WHERE id=?");
           $sth->execute($mailto);
           my $groupname = $sth->fetch->[0];
-          my $group_id = Bugzilla::Group::ValidateGroupName($groupname, $owner);
+          my $group_id  = Bugzilla::Group::ValidateGroupName($groupname, $owner);
           if ($group_id) {
             my $glist = join(',', @{Bugzilla::Group->flatten_group_membership($group_id)});
             $sth = $dbh->prepare(
@@ -365,7 +365,7 @@ sub mail {
   return if $addressee->email_disabled;
 
   my $template = Bugzilla->template_inner($addressee->setting('lang'));
-  my $msg = '';    # it's a temporary variable to hold the template output
+  my $msg      = '';                                                      # it's a temporary variable to hold the template output
   $args->{'alternatives'} ||= [];
 
   # put together the different multipart mime segments
@@ -648,7 +648,7 @@ sub get_next_date {
     # if it's today
     if ($daysinmonth[$now_month] == $now_day) {
       my $month = $now_month + 1;
-      $month = 1 if $month > 12;
+      $month    = 1 if $month > 12;
       $add_days = $daysinmonth[$month] + 1;
     }
     else {
@@ -667,8 +667,8 @@ sub get_next_date {
     }
   }
   elsif ($day !~ /^\d+$/) {        # A specific day of the week
-        # The default is used if there is a bad value in the database, in
-        # which case we mark it to a less-popular day (Sunday)
+                                   # The default is used if there is a bad value in the database, in
+                                   # which case we mark it to a less-popular day (Sunday)
     my $day_num = 0;
 
     if (length($day) == 3) {
@@ -676,11 +676,11 @@ sub get_next_date {
     }
 
     $add_days = $day_num - $now_weekday;
-    if ($add_days <= 0) {    # it's next week
+    if ($add_days <= 0) {          # it's next week
       $add_days += 7;
     }
   }
-  else {                     # it's a number, so we set it for that calendar day
+  else {                           # it's a number, so we set it for that calendar day
     $add_days = $day - $now_day;
 
     # If it's already beyond that day this month, set it to the next one

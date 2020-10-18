@@ -180,8 +180,7 @@
 
   'bug/create/create.html.tmpl' => ['cloned_bug_id',],
 
-  'bug/create/create-guided.html.tmpl' =>
-    ['tablecolor', 'sel', 'productstring',],
+  'bug/create/create-guided.html.tmpl' => ['tablecolor', 'sel', 'productstring',],
 
   'bug/activity/table.html.tmpl' => ['change.attachid',],
 

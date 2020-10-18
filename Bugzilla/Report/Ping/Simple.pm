@@ -57,12 +57,10 @@ sub _build_resultset {
   my ($self)  = @_;
   my $bugs    = $self->model->resultset('Bug');
   my $query   = {};
-  my $options = {
-    order_by => 'me.bug_id',
-  };
+  my $options = {order_by => 'me.bug_id',};
 
   if ($self->has_since) {
-    $query->{'me.delta_ts'} = { '>' => $self->since };
+    $query->{'me.delta_ts'} = {'>' => $self->since};
   }
   return $bugs->search($query, $options);
 }

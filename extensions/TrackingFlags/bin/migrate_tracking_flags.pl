@@ -240,7 +240,7 @@ sub do_migration {
         . "Migrating custom tracking field "
         . $field->name . "...\n";
 
-      my $new_flag_name = $field->name . "_new"; # Temporary name til we delete the old
+      my $new_flag_name = $field->name . "_new";    # Temporary name til we delete the old
 
       my $type
         = grep($field->name =~ $_, @$bmo_project_flags) ? 'project' : 'tracking';
@@ -315,5 +315,5 @@ eval {
 };
 if ($@) {
   $dbh->bz_rollback_transaction() if $dry_run;
-  die "$@" if $@;
+  die "$@"                        if $@;
 }

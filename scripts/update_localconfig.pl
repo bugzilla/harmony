@@ -29,7 +29,7 @@ die "Invalid param name: $param_name\n"
   unless exists $localconfig->{$param_name};
 
 if ($localconfig->{$param_name} ne $param_value) {
-  my @file = split(/\n/, path('localconfig')->slurp);
+  my @file    = split(/\n/, path('localconfig')->slurp);
   my $updated = 0;
   foreach my $line (@file) {
     next unless $line =~ /^\s*\$([\w_]+)\s*=\s*'([^']*)'/;

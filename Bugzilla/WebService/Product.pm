@@ -222,8 +222,8 @@ sub _component_to_hash {
     triage_owner => $self->type('email', $component->triage_owner->login),
     sort_key =>    # sort_key is returned to match Bug.fields
       0,
-    is_active => $self->type('boolean', $component->is_active),
-    default_bug_type => $self->type('string', $component->default_bug_type),
+    is_active        => $self->type('boolean', $component->is_active),
+    default_bug_type => $self->type('string',  $component->default_bug_type),
     },
     undef, 'components';
 

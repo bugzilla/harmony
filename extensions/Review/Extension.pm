@@ -55,9 +55,9 @@ BEGIN {
 # monkey-patched methods
 #
 
-sub _product_reviewers { _reviewers($_[0], 'product', $_[1]) }
-sub _product_reviewers_objs { _reviewers_objs($_[0], 'product', $_[1]) }
-sub _component_reviewers { _reviewers($_[0], 'component', $_[1]) }
+sub _product_reviewers        { _reviewers($_[0], 'product', $_[1]) }
+sub _product_reviewers_objs   { _reviewers_objs($_[0], 'product', $_[1]) }
+sub _component_reviewers      { _reviewers($_[0], 'component', $_[1]) }
 sub _component_reviewers_objs { _reviewers_objs($_[0], 'component', $_[1]) }
 
 sub _reviewers {
@@ -117,8 +117,8 @@ sub _user_review_count {
                     INNER JOIN flagtypes ON flagtypes.id = flags.type_id
               WHERE flags.requestee_id = ?
                     AND "
-        . $dbh->sql_in('flagtypes.name', ["'review'", "'feedback'", "'data-review'"]), undef,
-      $self->id,
+        . $dbh->sql_in('flagtypes.name', ["'review'", "'feedback'", "'data-review'"]),
+      undef, $self->id,
     );
   }
   return $self->{review_count};
@@ -306,7 +306,7 @@ sub _new_users_from_input {
   my ($field) = @_;
   my $input_params = Bugzilla->input_params;
   return undef unless exists $input_params->{$field};
-  return [] unless $input_params->{$field};
+  return []    unless $input_params->{$field};
   Bugzilla::User::match_field({$field => {'type' => 'multi'}});
   my $value = $input_params->{$field};
   my %seen;
@@ -1004,7 +1004,7 @@ sub webservice_user_get {
   my %user_map = map { $_->id => $_ } @{Bugzilla::User->new_from_list($ids)};
 
   foreach my $user (@$users) {
-    my $id = blessed($user->{id}) ? $user->{id}->value : $user->{id};
+    my $id       = blessed($user->{id}) ? $user->{id}->value : $user->{id};
     my $user_obj = $user_map{$id};
 
     $user->{requests} = {

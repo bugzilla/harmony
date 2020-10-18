@@ -123,10 +123,18 @@ has 'results' => (
     Dict [
       date         => $DateTime,
       bugs_by_team => HashRef [
-        Dict [open => ArrayRef [Int], closed => ArrayRef [Int], very_old_bugs => ArrayRef [Int]]
+        Dict [
+          open          => ArrayRef [Int],
+          closed        => ArrayRef [Int],
+          very_old_bugs => ArrayRef [Int]
+        ]
       ],
       bugs_by_sec_keyword => HashRef [
-        Dict [open => ArrayRef [Int], closed => ArrayRef [Int], very_old_bugs => ArrayRef [Int]]
+        Dict [
+          open          => ArrayRef [Int],
+          closed        => ArrayRef [Int],
+          very_old_bugs => ArrayRef [Int]
+        ]
       ],
     ],
   ],
@@ -163,10 +171,10 @@ sub _build_products {
 }
 
 sub _build_missing_products {
-  my ($self) = @_;
-  my $dbh = Bugzilla->dbh;
+  my ($self)   = @_;
+  my $dbh      = Bugzilla->dbh;
   my @products = map { $dbh->quote($_) } @{$self->products};
-  my $query = qq{
+  my $query    = qq{
         SELECT
             name
         FROM
@@ -195,7 +203,7 @@ sub _build_missing_components {
   }
 
   my @components = map { $dbh->quote($_->[1]) } @named_components;
-  my $query = qq{
+  my $query      = qq{
       SELECT
           product.name,
           component.name
@@ -300,6 +308,7 @@ sub _build_events {
             AND bug_when >= '$start_date'
         GROUP BY bug_id , bug_when , field.name
     };
+
   # Don't use selectall_hashref as it only gets the latest event each bug.
   my $result = Bugzilla->dbh->selectall_arrayref($query);
   my $type   = ArrayRef [Tuple [Int, Str, Str, Str, Str]];
@@ -348,7 +357,7 @@ sub _build_results {
 
       # Undo bug status changes
       if ($event->{field_name} eq 'bug_status') {
-        $bug->{status} = $event->{removed};
+        $bug->{status}  = $event->{removed};
         $bug->{is_open} = $self->_is_bug_open($bug->{status}, $bug->{is_stalled});
       }
 
@@ -452,9 +461,8 @@ sub _build_graphs {
             name   => $_,
             keys   => [map { $_->{date}->epoch } @{$self->results}],
             values => [
-              map {
-                scalar @{$_->{bugs_by_sec_keyword}->{$keyword}->{very_old_bugs}}
-              } @{$self->results}
+              map { scalar @{$_->{bugs_by_sec_keyword}->{$keyword}->{very_old_bugs}} }
+                @{$self->results}
             ],
           }
         } @{$self->sec_keywords}
@@ -473,12 +481,10 @@ sub _build_graphs {
         map {
           my $team = $_;
           {
-            name => $_,
-            keys => [map { $_->{date}->epoch } @{$self->results}],
+            name   => $_,
+            keys   => [map { $_->{date}->epoch } @{$self->results}],
             values => [
-              map {
-                scalar @{$_->{bugs_by_team}->{$team}->{very_old_bugs}}
-              }@{$self->results}
+              map { scalar @{$_->{bugs_by_team}->{$team}->{very_old_bugs}} } @{$self->results}
             ],
           }
         } keys %{$self->teams}
@@ -519,9 +525,9 @@ sub _build_graphs {
 
 sub _build_deltas {
   my ($self) = @_;
-  my @teams = keys %{$self->teams};
+  my @teams  = keys %{$self->teams};
   my $deltas = {by_team => {}, by_sec_keyword => {}};
-  my $data = [
+  my $data   = [
     {domain => \@teams, results_key => 'bugs_by_team', deltas_key => 'by_team',},
     {
       domain      => $self->sec_keywords,
@@ -568,13 +574,14 @@ sub _bugs_by_team {
   foreach my $team (keys %{$self->teams}) {
     my @open   = map { $_->{id} } grep { ($_->{is_open}) } @{$groups->{$team}};
     my @closed = map { $_->{id} } grep { !($_->{is_open}) } @{$groups->{$team}};
-    my @very_old_bugs   = map { $_->{id} } grep {
-      $_->{created_at}->subtract_datetime_absolute($report_date)->seconds / 86_400 >= $self->very_old_days;
+    my @very_old_bugs = map { $_->{id} } grep {
+      $_->{created_at}->subtract_datetime_absolute($report_date)->seconds / 86_400
+        >= $self->very_old_days;
     } grep { ($_->{is_open}) } @{$groups->{$team}};
     $result->{$team} = {
-      open            => [ sort @open ],
-      closed          => [ sort @closed ],
-      very_old_bugs   => [ sort @very_old_bugs ],
+      open          => [sort @open],
+      closed        => [sort @closed],
+      very_old_bugs => [sort @very_old_bugs],
     };
   }
 
@@ -599,13 +606,14 @@ sub _bugs_by_sec_keyword {
     my @open = map { $_->{id} } grep { ($_->{is_open}) } @{$groups->{$sec_keyword}};
     my @closed
       = map { $_->{id} } grep { !($_->{is_open}) } @{$groups->{$sec_keyword}};
-    my @very_old_bugs   = map { $_->{id} } grep {
-      $_->{created_at}->subtract_datetime_absolute($report_date)->seconds / 86_400 >= $self->very_old_days;
+    my @very_old_bugs = map { $_->{id} } grep {
+      $_->{created_at}->subtract_datetime_absolute($report_date)->seconds / 86_400
+        >= $self->very_old_days;
     } grep { ($_->{is_open}) } @{$groups->{$sec_keyword}};
     $result->{$sec_keyword} = {
-      open            => [ sort @open ],
-      closed          => [ sort @closed ],
-      very_old_bugs   => [ sort @very_old_bugs ],
+      open          => [sort @open],
+      closed        => [sort @closed],
+      very_old_bugs => [sort @very_old_bugs],
     };
   }
 

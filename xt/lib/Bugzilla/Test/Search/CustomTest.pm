@@ -69,7 +69,7 @@ sub debug_value {
 }
 
 # The tests we know are broken for this operator/field combination.
-sub _known_broken { return {} }
+sub _known_broken                      { return {} }
 sub contains_known_broken              { return undef }
 sub search_known_broken                { return undef }
 sub field_not_yet_implemented          { return undef }
@@ -84,7 +84,7 @@ sub invalid_field_operator_combination { return undef }
 sub search_params {
   my ($self) = @_;
 
-  my %params = %{$self->test->{top_params} || {}};
+  my %params  = %{$self->test->{top_params} || {}};
   my $counter = 0;
   foreach my $row (@{$self->test->{params}}) {
     $row->{v} = $self->translate_value($row) if exists $row->{v};

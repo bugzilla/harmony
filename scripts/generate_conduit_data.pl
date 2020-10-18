@@ -136,7 +136,7 @@ my @users_groups = (
 print "adding users to groups...\n";
 foreach my $user_group (@users_groups) {
   my $group = Bugzilla::Group->new({name => $user_group->{group}});
-  my $user = Bugzilla::User->new({name => $user_group->{user}});
+  my $user  = Bugzilla::User->new({name => $user_group->{user}});
   my $sth_add_mapping
     = $dbh->prepare(
         'INSERT INTO user_group_map (user_id, group_id, isbless, grant_type)'

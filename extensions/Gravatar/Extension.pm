@@ -67,17 +67,14 @@ sub webservice_user_get {
 
   return unless filter_wants($params, 'gravatar');
 
-  my $ids = [
-    map { blessed($_->{id}) ? $_->{id}->value : $_->{id} }
-    grep { exists $_->{id} }
-    @$users
-  ];
+  my $ids = [map { blessed($_->{id}) ? $_->{id}->value : $_->{id} }
+      grep { exists $_->{id} } @$users];
 
   return unless @$ids;
 
-  my %user_map = map { $_->id => $_ } @{ Bugzilla::User->new_from_list($ids) };
+  my %user_map = map { $_->id => $_ } @{Bugzilla::User->new_from_list($ids)};
   foreach my $user (@$users) {
-    my $id = blessed($user->{id}) ? $user->{id}->value : $user->{id};
+    my $id       = blessed($user->{id}) ? $user->{id}->value : $user->{id};
     my $user_obj = $user_map{$id};
     $user->{gravatar} = $user_obj->gravatar;
   }

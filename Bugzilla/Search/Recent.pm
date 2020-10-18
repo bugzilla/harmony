@@ -119,7 +119,7 @@ sub new_from_cookie {
 # Simple Accessors #
 ####################
 
-sub bug_list { return [split(',', $_[0]->{'bug_list'})]; }
+sub bug_list   { return [split(',', $_[0]->{'bug_list'})]; }
 sub list_order { return $_[0]->{'list_order'}; }
 sub user_id    { return $_[0]->{'user_id'}; }
 

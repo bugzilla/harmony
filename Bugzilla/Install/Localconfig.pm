@@ -96,7 +96,7 @@ use constant LOCALCONFIG_VARS => (
   {name => 'memcached_servers',   default => '',},
   {name => 'memcached_namespace', default => "bugzilla:",},
   {name => 'urlbase',             default => '',},
-  {name => 'canonical_urlbase',   lazy => 1},
+  {name => 'canonical_urlbase',   lazy    => 1},
   {name => 'attachment_base',     default => '',},
   {name => 'ses_username',        default => '',},
   {name => 'ses_password',        default => '',},
@@ -137,7 +137,7 @@ sub _read_localconfig_from_file {
 
   my %localconfig;
   if (-e $filename) {
-    my $s = Safe->new;
+    my $s     = Safe->new;
     my $stash = Package::Stash->new($s->root);
 
     # Some people like to store their database password in another file.
@@ -154,6 +154,7 @@ sub _read_localconfig_from_file {
 
     my @read_symbols;
     if ($include_deprecated) {
+
       # And now we read the contents of every var in the symbol table.
       # However:
       # * We only include symbols that start with an alphanumeric
@@ -169,8 +170,9 @@ sub _read_localconfig_from_file {
       @read_symbols = map($_->{name}, LOCALCONFIG_VARS);
     }
     foreach my $var (@read_symbols) {
-      # We don't know the type of any setting.
-      # So we figure out its type by trying first a scalar, then an array, then a hash.
+
+     # We don't know the type of any setting.
+     # So we figure out its type by trying first a scalar, then an array, then a hash.
 
       foreach my $sigil (qw( $ @ % )) {
         my $symbol = $sigil . $var;

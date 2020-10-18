@@ -9,7 +9,7 @@ use FFI::Platypus::Buffer qw( scalar_to_buffer buffer_to_scalar );
 sub new {
   my ($class, $options) = @_;
   my $extensions = delete $options->{extensions} // [];
-  my $parser = $class->_new($options);
+  my $parser     = $class->_new($options);
   $parser->{_options} = $options;
 
   eval {

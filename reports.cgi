@@ -53,7 +53,7 @@ if (!$product_name) {
 
   foreach my $dataset (@data) {
     my $datasets = {};
-    $datasets->{'value'} = $dataset;
+    $datasets->{'value'}    = $dataset;
     $datasets->{'selected'} = $default_sel{$dataset} ? 1 : 0;
     push(@datasets, $datasets);
   }
@@ -93,9 +93,9 @@ else {
   # Filenames must not be guessable as they can point to products
   # you are not allowed to see. Also, different projects can have
   # the same product names.
-  my $project = bz_locations()->{'project'} || '';
+  my $project    = bz_locations()->{'project'} || '';
   my $image_file = join(':', ($project, $prod_id, @datasets));
-  my $key = Bugzilla->localconfig->site_wide_secret;
+  my $key        = Bugzilla->localconfig->site_wide_secret;
   $image_file = hmac_sha256_base64($image_file, $key) . '.png';
   $image_file =~ s/\+/-/g;
   $image_file =~ s/\//_/g;
@@ -149,7 +149,7 @@ sub generate_chart {
   }
 
   my @fields;
-  my @labels = qw(DATE);
+  my @labels   = qw(DATE);
   my %datasets = map { $_ => 1 } @$datasets;
 
   my %data = ();
@@ -201,7 +201,7 @@ sub generate_chart {
   }
 
   my $img = Chart::Lines->new(800, 600);
-  my $i = 0;
+  my $i   = 0;
 
   my $MAXTICKS = 20;    # Try not to show any more x ticks than this.
   my $skip     = 1;

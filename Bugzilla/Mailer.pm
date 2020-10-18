@@ -12,7 +12,7 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = qw(MessageToMTA build_thread_marker); ## no critic (Modules::ProhibitAutomaticExportation)
+our @EXPORT = qw(MessageToMTA build_thread_marker);    ## no critic (Modules::ProhibitAutomaticExportation)
 
 use Bugzilla::Logging;
 use Bugzilla::Constants;
@@ -98,8 +98,7 @@ sub MessageToMTA {
   $email->header_set('Auto-Submitted', 'auto-generated');
 
   # MIME-Version must be set otherwise some mailsystems ignore the charset
-  $email->header_set('MIME-Version', '1.0')
-    if !$email->header('MIME-Version');
+  $email->header_set('MIME-Version', '1.0') if !$email->header('MIME-Version');
 
   # Encode the headers correctly in quoted-printable
   foreach my $header ($email->header_names) {
@@ -257,10 +256,10 @@ sub build_thread_marker {
   }
 
   my $sitespec = '@' . Bugzilla->localconfig->urlbase;
-  $sitespec =~ s/:\/\//\./;    # Make the protocol look like part of the domain
+  $sitespec =~ s/:\/\//\./;               # Make the protocol look like part of the domain
   $sitespec =~ s/^([^:\/]+):(\d+)/$1/;    # Remove a port number, to relocate
   if ($2) {
-    $sitespec = "-$2$sitespec";    # Put the port number back in, before the '@'
+    $sitespec = "-$2$sitespec";           # Put the port number back in, before the '@'
   }
 
   my $threadingmarker = "References: <bug-$bug_id-$user_id$sitespec>";

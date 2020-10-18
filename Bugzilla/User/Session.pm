@@ -40,10 +40,10 @@ use constant {
 };
 
 # Accessors
-sub id              { return $_[0]->{id} }
-sub userid          { return $_[0]->{userid} }
-sub cookie          { return $_[0]->{cookie} }
-sub lastused        { return $_[0]->{lastused} }
-sub ipaddr          { return $_[0]->{ipaddr} }
+sub id       { return $_[0]->{id} }
+sub userid   { return $_[0]->{userid} }
+sub cookie   { return $_[0]->{cookie} }
+sub lastused { return $_[0]->{lastused} }
+sub ipaddr   { return $_[0]->{ipaddr} }
 
 1;

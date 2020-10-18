@@ -21,17 +21,17 @@ has 'driver_args' => (is => 'ro', required => 1,);
 has 'driver'      => (
   is      => 'lazy',
   handles => [qw(
-      add_cookie
-      alert_text_like
-      get_all_cookies
-      get_ok
-      get_title
-      go_back_ok
-      refresh
-      title_is
-      title_isnt
-      title_like
-      )],
+    add_cookie
+    alert_text_like
+    get_all_cookies
+    get_ok
+    get_title
+    go_back_ok
+    refresh
+    title_is
+    title_isnt
+    title_like
+  )],
 );
 
 sub click_ok {
@@ -91,6 +91,7 @@ sub is_text_present {
   my ($self, $text) = @_;
   TRACE("is_text_present: $text");
   return 0 unless $text;
+
   # Execute script directly because `get_body()` doesn't contain hidden text
   my $body = $self->driver->execute_script(
     "return document.body.textContent.replace(/\\s+/g, ' ')");
@@ -252,7 +253,7 @@ sub remove_all_selections {
   if ($self->find_element($locator)) {
     $self->driver->execute_script(
       'document.getElementById(arguments[0]).selectedIndex = -1;', $id);
-    sleep(1); # FIXME: timing issue when running under CircleCI
+    sleep(1);    # FIXME: timing issue when running under CircleCI
     return 1;
   }
   return 0;

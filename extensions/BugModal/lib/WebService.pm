@@ -86,8 +86,8 @@ sub rest_resources {
 sub initial_field_values {
   my $user = Bugzilla->user;
   return {
-    products => _name($user->get_enterable_products),
-    keywords => _name([Bugzilla::Keyword->get_all()]),
+    products          => _name($user->get_enterable_products),
+    keywords          => _name([Bugzilla::Keyword->get_all()]),
     default_bug_types => get_legal_field_values('bug_type'),
   };
 }
@@ -104,8 +104,8 @@ sub product_info {
     = Bugzilla::Product->check({name => $params->{product_name}, cache => 1});
   $product = Bugzilla->user->can_enter_product($product, 1);
   my @components = map { {
-    name => $_->name,
-    description => $_->description,
+    name             => $_->name,
+    description      => $_->description,
     default_bug_type => $_->default_bug_type,
   } } @{$product->components};
   return {components => \@components, versions => _name($product->versions),};
@@ -116,7 +116,7 @@ sub product_info {
 sub edit {
   my ($self, $params) = @_;
   my $user = Bugzilla->user;
-  my $bug = Bugzilla::Bug->check({id => $params->{id}});
+  my $bug  = Bugzilla::Bug->check({id => $params->{id}});
 
   # the keys of the options hash must match the field id in the ui
   my %options;
@@ -145,7 +145,7 @@ sub edit {
     {product => $bug->product_obj, component => $bug->component_obj});
   foreach my $field (@custom_fields) {
     my $field_name = $field->name;
-    my @values = map { {name => $_->name} } grep {
+    my @values     = map { {name => $_->name} } grep {
       $bug->$field_name eq $_->name
         || ($_->is_active
         && $bug->check_can_change_field($field_name, $bug->$field_name, $_->name))

@@ -39,7 +39,7 @@ GetOptions('help|h' => \$help, 'file|f=s' => \$file,);
 pod2usage(1) if $help || !$file;
 
 my $archive = Bugzilla::Attachment::Archive->new(file => $file);
-my $cmd = shift @ARGV;
+my $cmd     = shift @ARGV;
 
 if ($cmd eq 'export') {
   while (my $attach_id = <ARGV>) {

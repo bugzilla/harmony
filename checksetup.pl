@@ -70,14 +70,14 @@ pod2usage({-verbose => 1, -exitval => 1}) if $switch{'help'};
 # Read in the "answers" file if it exists, for running in
 # non-interactive mode.
 my $answers_file = $ARGV[0];
-my $silent = $answers_file && !$switch{'verbose'};
+my $silent       = $answers_file && !$switch{'verbose'};
 print(install_string('header', get_version_and_os()) . "\n") unless $silent;
 exit 0 if $switch{'version'};
 
 if (defined $switch{cpanm}) {
   my $default
     = 'all notest -oracle -mysql -pg -mod_perl -old_charts -new_charts -graphical_reports -detect_charset';
-  my @features = split(/\s+/, $switch{cpanm} || $default);
+  my @features   = split(/\s+/, $switch{cpanm} || $default);
   my @cpanm_args = ('-l', 'local', '--installdeps');
   while (my $feature = shift @features) {
     if ($feature eq 'all') {
@@ -175,12 +175,12 @@ if ($EUID == 0 && $lc_hash->{webservergroup} && !ON_WINDOWS) {
   # Let's assume the user wants us to make files that are writable
   # by the webserver group.
 
-  $EGID = getgrnam $lc_hash->{webservergroup}; ## no critic (Variables::RequireLocalizedPunctuationVars)
+  $EGID = getgrnam $lc_hash->{webservergroup};    ## no critic (Variables::RequireLocalizedPunctuationVars)
   umask 002 or die "failed to set umask 002: $!";
 }
 
 unless ($switch{'no-database'}) {
-  die "urlbase is not set\n" unless $lc_hash->{urlbase};
+  die "urlbase is not set\n"          unless $lc_hash->{urlbase};
   die "urlbase must end with slash\n" unless $lc_hash->{urlbase} =~ m{/$}ms;
   if ($lc_hash->{attachment_base}) {
     die "attachment_base must end with slash\n"

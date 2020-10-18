@@ -84,7 +84,7 @@ else {
   @revisions = reverse @revisions;
 }
 
-my $first_revision = @revisions ? $revisions[0]->{hash} : $prod_tag;
+my $first_revision = @revisions ? $revisions[0]->{hash}  : $prod_tag;
 my $last_revision  = @revisions ? $revisions[-1]->{hash} : 'HEAD';
 
 say "write tag.txt";
@@ -155,18 +155,16 @@ sub html_escape {
   return $s;
 }
 
-use constant BUG_FIELDS => [
-  qw(
-    id
-    product
-    version
-    target_milestone
-    summary
-    status
-    resolution
-    assigned_to
-    )
-];
+use constant BUG_FIELDS => [qw(
+  id
+  product
+  version
+  target_milestone
+  summary
+  status
+  resolution
+  assigned_to
+)];
 
 sub fetch_bug {
   my ($bug_id) = @_;

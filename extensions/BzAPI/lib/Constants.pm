@@ -26,15 +26,13 @@ our @EXPORT = qw(
 # These are fields that are normally exported as a single value such
 # as the user's email. BzAPI needs to convert them to user objects
 # where possible.
-use constant USER_FIELDS => (
-  qw(
-    assigned_to
-    cc
-    creator
-    qa_contact
-    reporter
-    )
-);
+use constant USER_FIELDS => (qw(
+  assigned_to
+  cc
+  creator
+  qa_contact
+  reporter
+));
 
 # Convert old field names from old to new
 use constant BUG_FIELD_MAP => {

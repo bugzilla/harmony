@@ -601,10 +601,10 @@ sub process_bug {
     format_time($bug_fields{'delta_ts'}, "%Y-%m-%d %T") || $timestamp);
 
   # Bug Access
-  push(@query, "cclist_accessible");
+  push(@query,  "cclist_accessible");
   push(@values, $bug_fields{'cclist_accessible'} ? 1 : 0);
 
-  push(@query, "reporter_accessible");
+  push(@query,  "reporter_accessible");
   push(@values, $bug_fields{'reporter_accessible'} ? 1 : 0);
 
   my $product = new Bugzilla::Product({name => $bug_fields{'product'} || ''});
@@ -629,7 +629,7 @@ sub process_bug {
     $err .= "   Using default product and component set ";
     $err .= "at the command line.\n";
 
-    $product = new Bugzilla::Product({name => $default_product_name});
+    $product   = new Bugzilla::Product({name => $default_product_name});
     $component = new Bugzilla::Component(
       {name => $default_component_name, product => $product});
     if (!$component) {
@@ -709,7 +709,8 @@ sub process_bug {
     push(@values, $params->{'default_bug_type'});
     $err .= "Unknown type ";
     $err .= (defined $bug_fields{'bug_type'}) ? $bug_fields{'bug_type'} : "unknown";
-    $err .= ". Setting to default type \"" . $params->{'default_bug_type'} . "\".\n";
+    $err
+      .= ". Setting to default type \"" . $params->{'default_bug_type'} . "\".\n";
   }
   push(@query, "bug_type");
 
@@ -717,7 +718,7 @@ sub process_bug {
     defined($bug_fields{'bug_severity'})
     && check_field(
       'bug_severity', scalar $bug_fields{'bug_severity'},
-      undef, ERR_LEVEL
+      undef,          ERR_LEVEL
     )
     )
   {
@@ -753,7 +754,7 @@ sub process_bug {
     defined($bug_fields{'rep_platform'})
     && check_field(
       'rep_platform', scalar $bug_fields{'rep_platform'},
-      undef, ERR_LEVEL
+      undef,          ERR_LEVEL
     )
     )
   {

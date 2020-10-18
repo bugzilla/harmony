@@ -271,7 +271,7 @@ sub user_preferences {
 
       # load product and verify access
       my $productName = $input->{'add_product'};
-      my $product = Bugzilla::Product->new({name => $productName, cache => 1});
+      my $product     = Bugzilla::Product->new({name => $productName, cache => 1});
       unless ($product && $user->can_access_product($product)) {
         ThrowUserError('product_access_denied', {product => $productName});
       }
@@ -351,7 +351,7 @@ sub bugmail_recipients {
     foreach my $ra (@$diffs) {
       next if !(exists $ra->{'old'} && exists $ra->{'field_name'});
       if ($ra->{'field_name'} eq 'product') {
-        $product = Bugzilla::Product->new({name => $ra->{'old'}, cache => 1});
+        $product      = Bugzilla::Product->new({name => $ra->{'old'}, cache => 1});
         $oldProductId = $product->id;
       }
     }

@@ -15,7 +15,7 @@ use Mojo::Util qw(trim);
 use HTML::Escape qw(escape_html);
 use List::MoreUtils qw(any);
 
-has 'markdown_parser' => (is => 'lazy');
+has 'markdown_parser'    => (is => 'lazy');
 has 'bugzilla_shorthand' => (
   is      => 'ro',
   default => sub {
@@ -41,6 +41,7 @@ sub _build_markdown_parser {
 }
 
 my $MARKDOWN_OFF = quotemeta '#[markdown(off)]';
+
 sub render_html {
   my ($self, $markdown, $bug, $comment, $user) = @_;
   my $parser = $self->markdown_parser;
@@ -51,7 +52,7 @@ sub render_html {
 
   if ($markdown =~ /^\s*$MARKDOWN_OFF\n/s) {
     my $text = $self->bugzilla_shorthand->(trim($markdown), $bug);
-    my $dom = Mojo::DOM->new($text);
+    my $dom  = Mojo::DOM->new($text);
     $dom->find('*')->each(sub {
       my ($e) = @_;
       my $attr = $e->attr;
@@ -60,8 +61,8 @@ sub render_html {
       }
     });
     $text = $dom->to_string;
-    my @p = split(/\n{2,}/, $text);
-    my $html = join("\n", map { s/\n/<br>\n/gs; "<p>$_</p>\n" } @p );
+    my @p    = split(/\n{2,}/, $text);
+    my $html = join("\n", map { s/\n/<br>\n/gs; "<p>$_</p>\n" } @p);
     return $html;
   }
 
@@ -70,16 +71,18 @@ sub render_html {
   $markdown =~ tr/\x{FFFD}//d;
   $markdown =~ s{<(?!https?://)}{\x{FFFD}}gs;
 
-  my @valid_text_parent_tags = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'li', 'td');
-  my @bad_tags               = qw( img );
-  my $bugzilla_shorthand     = $self->bugzilla_shorthand;
-  my $html                   = decode('UTF-8', $parser->render_html($markdown));
+  my @valid_text_parent_tags
+    = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'li', 'td');
+  my @bad_tags           = qw( img );
+  my $bugzilla_shorthand = $self->bugzilla_shorthand;
+  my $html               = decode('UTF-8', $parser->render_html($markdown));
 
   $html =~ s/\x{FFFD}/&lt;/g;
   my $dom = Mojo::DOM->new($html);
   $dom->find(join(', ', @bad_tags))->map('remove');
 
-  $dom->find("a[href]")->grep(\&_is_external_link)->map(attr => rel => 'nofollow');
+  $dom->find("a[href]")->grep(\&_is_external_link)
+    ->map(attr => rel => 'nofollow');
   $dom->find(join ', ', @valid_text_parent_tags)->map(sub {
     my $node = shift;
     $node->descendant_nodes->map(sub {
@@ -100,6 +103,7 @@ sub render_html {
 }
 
 sub _is_external_link {
+
   # the urlbase, without the trailing /
   state $urlbase = substr(Bugzilla->localconfig->urlbase, 0, -1);
 

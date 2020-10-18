@@ -88,7 +88,7 @@ sub object_end_of_set_all {
   # Check for a mid-air collision. Currently this only works when updating
   # an individual attachment and if last_changed_time is provided. Otherwise it
   # allows the changes.
-  my $stash = Bugzilla->request_cache->{bzapi_stash} ||= {};
+  my $stash    = Bugzilla->request_cache->{bzapi_stash} ||= {};
   my $delta_ts = $stash->{last_change_time};
 
   _midair_check($delta_ts, $object->modification_time) if $delta_ts;
@@ -277,8 +277,6 @@ sub _preload_handlers {
     }
     $cache->{rest_handlers} = $all_handlers;
   }
-
-
 
 
   return $cache->{rest_handlers};

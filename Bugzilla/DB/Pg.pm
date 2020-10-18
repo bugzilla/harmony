@@ -70,7 +70,7 @@ sub bz_last_key {
 
 sub sql_group_concat {
   my ($self, $text, $separator, $sort) = @_;
-  $sort = 1 if !defined $sort;
+  $sort      = 1                  if !defined $sort;
   $separator = $self->quote(', ') if !defined $separator;
   my $sql = "array_accum($text)";
   if ($sort) {

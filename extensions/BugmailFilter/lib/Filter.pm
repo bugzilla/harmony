@@ -162,7 +162,7 @@ sub _check_field_name {
   if (substr($field_name, 0, 1) eq '~') {
     $field_name = lc(trim($field_name));
     $field_name =~ /^~[a-z0-9_\.\-]+$/ || ThrowUserError('bugmail_filter_invalid');
-    length($field_name) <= 64 || ThrowUserError('bugmail_filter_too_long');
+    length($field_name) <= 64          || ThrowUserError('bugmail_filter_too_long');
     return $field_name;
   }
   foreach my $rh (@{FAKE_FIELD_NAMES()}) {

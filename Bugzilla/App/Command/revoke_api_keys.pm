@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::App::Command::revoke_api_keys; ## no critic (Capitalization)
+package Bugzilla::App::Command::revoke_api_keys;    ## no critic (Capitalization)
 use 5.10.1;
 use Mojo::Base 'Mojolicious::Command';
 
@@ -16,7 +16,7 @@ use Mojo::Util 'getopt';
 use PerlX::Maybe 'maybe';
 
 has description => 'Revoke api keys';
-has usage => sub { shift->extract_usage };
+has usage       => sub { shift->extract_usage };
 
 sub run {
   my ($self, @args) = @_;
@@ -28,10 +28,8 @@ sub run {
     'd|description-id=s' => \$description;
   die $self->usage unless $app_id || $description;
 
-  my $query = {
-    revoked => 0,
-    maybe(app_id => $app_id), maybe(description => $description)
-  };
+  my $query = {revoked => 0, maybe(app_id => $app_id),
+    maybe(description => $description)};
   my $keys = Bugzilla::User::APIKey->match($query);
   foreach my $key (@$keys) {
     say 'Updating ', $key->id;

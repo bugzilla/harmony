@@ -299,7 +299,7 @@ sub page_before_template {
 
     # load from user_id
     $user_id = 0 if $user_id =~ /\D/;
-    $target = Bugzilla::User->check({id => $user_id});
+    $target  = Bugzilla::User->check({id => $user_id});
   }
   else {
     # loading from login name requires authentication

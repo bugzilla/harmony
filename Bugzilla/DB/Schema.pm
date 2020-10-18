@@ -223,7 +223,7 @@ use constant FIELD_TABLE_SCHEMA => {
   # to these index names.
   INDEXES => [
     value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-    sortkey_idx             => ['sortkey',           'value'],
+    sortkey_idx             => ['sortkey', 'value'],
     visibility_value_id_idx => ['visibility_value_id'],
   ],
 };
@@ -243,17 +243,17 @@ use constant ABSTRACT_SCHEMA => {
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'profiles', COLUMN => 'userid'}
       },
-      bug_file_loc => {TYPE => 'MEDIUMTEXT',   NOTNULL => 1, DEFAULT => "''"},
-      bug_severity => {TYPE => 'varchar(64)',  NOTNULL => 1},
-      bug_status   => {TYPE => 'varchar(64)',  NOTNULL => 1},
-      bug_type     => {TYPE => 'varchar(20)',  NOTNULL => 1},
-      filed_via    => {TYPE => 'varchar(40)',  NOTNULL => 1, DEFAULT => "'unknown'"},
-      creation_ts  => {TYPE => 'DATETIME'},
-      delta_ts     => {TYPE => 'DATETIME',     NOTNULL => 1},
-      short_desc   => {TYPE => 'varchar(255)', NOTNULL => 1},
-      op_sys       => {TYPE => 'varchar(64)',  NOTNULL => 1},
-      priority     => {TYPE => 'varchar(64)',  NOTNULL => 1},
-      product_id   => {
+      bug_file_loc => {TYPE => 'MEDIUMTEXT',  NOTNULL => 1, DEFAULT => "''"},
+      bug_severity => {TYPE => 'varchar(64)', NOTNULL => 1},
+      bug_status   => {TYPE => 'varchar(64)', NOTNULL => 1},
+      bug_type     => {TYPE => 'varchar(20)', NOTNULL => 1},
+      filed_via    => {TYPE => 'varchar(40)', NOTNULL => 1, DEFAULT => "'unknown'"},
+      creation_ts => {TYPE => 'DATETIME'},
+      delta_ts   => {TYPE => 'DATETIME',     NOTNULL => 1},
+      short_desc => {TYPE => 'varchar(255)', NOTNULL => 1},
+      op_sys     => {TYPE => 'varchar(64)',  NOTNULL => 1},
+      priority   => {TYPE => 'varchar(64)',  NOTNULL => 1},
+      product_id => {
         TYPE       => 'INT2',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'products', COLUMN => 'id'}
@@ -274,15 +274,15 @@ use constant ABSTRACT_SCHEMA => {
       target_milestone => {TYPE => 'varchar(20)', NOTNULL => 1, DEFAULT => "'---'"},
       qa_contact =>
         {TYPE => 'INT3', REFERENCES => {TABLE => 'profiles', COLUMN => 'userid'}},
-      status_whiteboard   => {TYPE => 'MEDIUMTEXT', NOTNULL => 1, DEFAULT => "''"},
-      lastdiffed          => {TYPE => 'DATETIME'},
-      everconfirmed       => {TYPE => 'BOOLEAN', NOTNULL => 1},
+      status_whiteboard => {TYPE => 'MEDIUMTEXT', NOTNULL => 1, DEFAULT => "''"},
+      lastdiffed        => {TYPE => 'DATETIME'},
+      everconfirmed     => {TYPE => 'BOOLEAN', NOTNULL => 1},
       reporter_accessible => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'},
       cclist_accessible   => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'},
-      estimated_time      => {TYPE => 'decimal(7,2)', NOTNULL => 1, DEFAULT => '0'},
-      remaining_time      => {TYPE => 'decimal(7,2)', NOTNULL => 1, DEFAULT => '0'},
-      deadline            => {TYPE => 'DATETIME'},
-      alias               => {TYPE => 'varchar(40)'},
+      estimated_time => {TYPE => 'decimal(7,2)', NOTNULL => 1, DEFAULT => '0'},
+      remaining_time => {TYPE => 'decimal(7,2)', NOTNULL => 1, DEFAULT => '0'},
+      deadline       => {TYPE => 'DATETIME'},
+      alias          => {TYPE => 'varchar(40)'},
     ],
     INDEXES => [
       bugs_alias_idx            => {FIELDS => ['alias'], TYPE => 'UNIQUE'},
@@ -402,13 +402,13 @@ use constant ABSTRACT_SCHEMA => {
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'profiles', COLUMN => 'userid'}
       },
-      bug_when        => {TYPE => 'DATETIME',     NOTNULL => 1},
-      work_time       => {TYPE => 'decimal(7,2)', NOTNULL => 1, DEFAULT => '0'},
-      thetext         => {TYPE => 'LONGTEXT',     NOTNULL => 1},
-      isprivate       => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'FALSE'},
-      already_wrapped => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'FALSE'},
-      type            => {TYPE => 'INT2',         NOTNULL => 1, DEFAULT => '0'},
-      extra_data  => {TYPE => 'varchar(255)'},
+      bug_when  => {TYPE => 'DATETIME',     NOTNULL => 1},
+      work_time => {TYPE => 'decimal(7,2)', NOTNULL => 1, DEFAULT => '0'},
+      thetext   => {TYPE => 'LONGTEXT',     NOTNULL => 1},
+      isprivate       => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      already_wrapped => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      type            => {TYPE => 'INT2',    NOTNULL => 1, DEFAULT => '0'},
+      extra_data      => {TYPE => 'varchar(255)'},
       is_markdown => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'}
     ],
     INDEXES => [
@@ -521,7 +521,7 @@ use constant ABSTRACT_SCHEMA => {
       mimetype          => {TYPE => 'TINYTEXT',     NOTNULL => 1},
       ispatch           => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'FALSE'},
       filename          => {TYPE => 'varchar(100)', NOTNULL => 1},
-      submitter_id => {
+      submitter_id      => {
         TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'profiles', COLUMN => 'userid'}
@@ -612,7 +612,7 @@ use constant ABSTRACT_SCHEMA => {
       field     => {TYPE => 'varchar(64)',  NOTNULL => 1},
       removed   => {TYPE => 'MEDIUMTEXT'},
       added     => {TYPE => 'MEDIUMTEXT'},
-      at_time   => {TYPE => 'DATETIME',     NOTNULL => 1},
+      at_time   => {TYPE => 'DATETIME', NOTNULL => 1},
     ],
     INDEXES => [audit_log_class_idx => ['class', 'at_time'],],
   },
@@ -675,7 +675,7 @@ use constant ABSTRACT_SCHEMA => {
       },
       creation_date     => {TYPE => 'DATETIME', NOTNULL => 1},
       modification_date => {TYPE => 'DATETIME'},
-      setter_id         => {
+      setter_id => {
         TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'profiles', COLUMN => 'userid'}
@@ -694,16 +694,16 @@ use constant ABSTRACT_SCHEMA => {
   # "flagtypes" defines the types of flags that can be set.
   flagtypes => {
     FIELDS => [
-      id               => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      name             => {TYPE => 'varchar(50)', NOTNULL => 1},
-      description      => {TYPE => 'MEDIUMTEXT',  NOTNULL => 1},
-      cc_list          => {TYPE => 'varchar(200)'},
-      target_type      => {TYPE => 'char(1)',     NOTNULL => 1, DEFAULT => "'b'"},
-      is_active        => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'TRUE'},
-      is_requestable   => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'FALSE'},
-      is_requesteeble  => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'FALSE'},
-      is_multiplicable => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'FALSE'},
-      sortkey          => {TYPE => 'INT2',        NOTNULL => 1, DEFAULT => '0'},
+      id          => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      name        => {TYPE => 'varchar(50)', NOTNULL => 1},
+      description => {TYPE => 'MEDIUMTEXT',  NOTNULL => 1},
+      cc_list => {TYPE => 'varchar(200)'},
+      target_type      => {TYPE => 'char(1)', NOTNULL => 1, DEFAULT => "'b'"},
+      is_active        => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'},
+      is_requestable   => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      is_requesteeble  => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      is_multiplicable => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      sortkey          => {TYPE => 'INT2',    NOTNULL => 1, DEFAULT => '0'},
       grant_group_id   => {
         TYPE       => 'INT3',
         REFERENCES => {TABLE => 'groups', COLUMN => 'id', DELETE => 'SET NULL'}
@@ -815,8 +815,8 @@ use constant ABSTRACT_SCHEMA => {
 
   versions => {
     FIELDS => [
-      id         => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      value      => {TYPE => 'varchar(64)',  NOTNULL => 1},
+      id    => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      value => {TYPE => 'varchar(64)',  NOTNULL => 1},
       product_id => {
         TYPE       => 'INT2',
         NOTNULL    => 1,
@@ -854,7 +854,7 @@ use constant ABSTRACT_SCHEMA => {
     FIELDS  => dclone(FIELD_TABLE_SCHEMA->{FIELDS}),
     INDEXES => [
       bug_type_value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-      bug_type_sortkey_idx             => ['sortkey',           'value'],
+      bug_type_sortkey_idx             => ['sortkey', 'value'],
       bug_type_visibility_value_id_idx => ['visibility_value_id'],
     ],
   },
@@ -867,7 +867,7 @@ use constant ABSTRACT_SCHEMA => {
     ],
     INDEXES => [
       bug_status_value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-      bug_status_sortkey_idx             => ['sortkey',           'value'],
+      bug_status_sortkey_idx             => ['sortkey', 'value'],
       bug_status_visibility_value_id_idx => ['visibility_value_id'],
     ],
   },
@@ -876,7 +876,7 @@ use constant ABSTRACT_SCHEMA => {
     FIELDS  => dclone(FIELD_TABLE_SCHEMA->{FIELDS}),
     INDEXES => [
       resolution_value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-      resolution_sortkey_idx             => ['sortkey',           'value'],
+      resolution_sortkey_idx             => ['sortkey', 'value'],
       resolution_visibility_value_id_idx => ['visibility_value_id'],
     ],
   },
@@ -885,7 +885,7 @@ use constant ABSTRACT_SCHEMA => {
     FIELDS  => dclone(FIELD_TABLE_SCHEMA->{FIELDS}),
     INDEXES => [
       bug_severity_value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-      bug_severity_sortkey_idx             => ['sortkey',           'value'],
+      bug_severity_sortkey_idx             => ['sortkey', 'value'],
       bug_severity_visibility_value_id_idx => ['visibility_value_id'],
     ],
   },
@@ -894,7 +894,7 @@ use constant ABSTRACT_SCHEMA => {
     FIELDS  => dclone(FIELD_TABLE_SCHEMA->{FIELDS}),
     INDEXES => [
       priority_value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-      priority_sortkey_idx             => ['sortkey',           'value'],
+      priority_sortkey_idx             => ['sortkey', 'value'],
       priority_visibility_value_id_idx => ['visibility_value_id'],
     ],
   },
@@ -903,7 +903,7 @@ use constant ABSTRACT_SCHEMA => {
     FIELDS  => dclone(FIELD_TABLE_SCHEMA->{FIELDS}),
     INDEXES => [
       rep_platform_value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-      rep_platform_sortkey_idx             => ['sortkey',           'value'],
+      rep_platform_sortkey_idx             => ['sortkey', 'value'],
       rep_platform_visibility_value_id_idx => ['visibility_value_id'],
     ],
   },
@@ -912,7 +912,7 @@ use constant ABSTRACT_SCHEMA => {
     FIELDS  => dclone(FIELD_TABLE_SCHEMA->{FIELDS}),
     INDEXES => [
       op_sys_value_idx               => {FIELDS => ['value'], TYPE => 'UNIQUE'},
-      op_sys_sortkey_idx             => ['sortkey',           'value'],
+      op_sys_sortkey_idx             => ['sortkey', 'value'],
       op_sys_visibility_value_id_idx => ['visibility_value_id'],
     ],
   },
@@ -946,16 +946,16 @@ use constant ABSTRACT_SCHEMA => {
 
   profiles => {
     FIELDS => [
-      userid         => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      login_name     => {TYPE => 'varchar(255)', NOTNULL => 1},
-      cryptpassword  => {TYPE => 'varchar(128)'},
-      realname       => {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"},
-      nickname       => {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"},
-      disabledtext   => {TYPE => 'MEDIUMTEXT',   NOTNULL => 1, DEFAULT => "''"},
-      disable_mail   => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'FALSE'},
-      mybugslink     => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE'},
-      extern_id      => {TYPE => 'varchar(64)'},
-      is_enabled     => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE'},
+      userid     => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      login_name => {TYPE => 'varchar(255)', NOTNULL => 1},
+      cryptpassword => {TYPE => 'varchar(128)'},
+      realname     => {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"},
+      nickname     => {TYPE => 'varchar(255)', NOTNULL => 1, DEFAULT => "''"},
+      disabledtext => {TYPE => 'MEDIUMTEXT',   NOTNULL => 1, DEFAULT => "''"},
+      disable_mail => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'FALSE'},
+      mybugslink   => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE'},
+      extern_id    => {TYPE => 'varchar(64)'},
+      is_enabled     => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'},
       last_seen_date => {TYPE => 'DATETIME'},
       password_change_required =>
         {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
@@ -969,7 +969,7 @@ use constant ABSTRACT_SCHEMA => {
       profiles_login_name_idx  => {FIELDS => ['login_name'], TYPE => 'UNIQUE'},
       profiles_extern_id_idx   => {FIELDS => ['extern_id'],  TYPE => 'UNIQUE'},
       profiles_nickname_idx    => ['nickname'],
-      profiles_realname_ft_idx => {FIELDS => ['realname'],   TYPE => 'FULLTEXT'},
+      profiles_realname_ft_idx => {FIELDS => ['realname'], TYPE => 'FULLTEXT'},
     ],
   },
 
@@ -1124,8 +1124,8 @@ use constant ABSTRACT_SCHEMA => {
 
   tag => {
     FIELDS => [
-      id      => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      name    => {TYPE => 'varchar(64)',  NOTNULL => 1},
+      id   => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      name => {TYPE => 'varchar(64)',  NOTNULL => 1},
       user_id => {
         TYPE       => 'INT3',
         NOTNULL    => 1,
@@ -1257,7 +1257,7 @@ use constant ABSTRACT_SCHEMA => {
       isbuggroup  => {TYPE => 'BOOLEAN',      NOTNULL => 1},
       userregexp  => {TYPE => 'TINYTEXT',     NOTNULL => 1, DEFAULT => "''"},
       isactive    => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE'},
-      icon_url    => {TYPE => 'TINYTEXT'},
+      icon_url => {TYPE => 'TINYTEXT'},
       owner_user_id =>
         {TYPE => 'INT3', REFERENCES => {TABLE => 'profiles', COLUMN => 'userid'}},
       idle_member_removal => {TYPE => 'INT2', NOTNULL => 1, DEFAULT => '0'}
@@ -1416,10 +1416,10 @@ use constant ABSTRACT_SCHEMA => {
 
   classifications => {
     FIELDS => [
-      id          => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      name        => {TYPE => 'varchar(64)', NOTNULL => 1},
+      id   => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      name => {TYPE => 'varchar(64)', NOTNULL => 1},
       description => {TYPE => 'MEDIUMTEXT'},
-      sortkey     => {TYPE => 'INT2',        NOTNULL => 1, DEFAULT => '0'},
+      sortkey     => {TYPE => 'INT2', NOTNULL => 1, DEFAULT => '0'},
     ],
     INDEXES =>
       [classifications_name_idx => {FIELDS => ['name'], TYPE => 'UNIQUE'},],
@@ -1427,28 +1427,28 @@ use constant ABSTRACT_SCHEMA => {
 
   products => {
     FIELDS => [
-      id                => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      name              => {TYPE => 'varchar(64)', NOTNULL => 1},
+      id   => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      name => {TYPE => 'varchar(64)', NOTNULL => 1},
       classification_id => {
         TYPE       => 'INT2',
         NOTNULL    => 1,
         DEFAULT    => '1',
         REFERENCES => {TABLE => 'classifications', COLUMN => 'id', DELETE => 'CASCADE'}
       },
-      description        => {TYPE => 'MEDIUMTEXT',  NOTNULL => 1},
+      description => {TYPE => 'MEDIUMTEXT', NOTNULL => 1},
       isactive           => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 1},
       defaultmilestone   => {TYPE => 'varchar(20)', NOTNULL => 1, DEFAULT => "'---'"},
       allows_unconfirmed => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'TRUE'},
       bug_description_template => {TYPE => 'MEDIUMTEXT'},
-      default_bug_type  => {TYPE => 'varchar(20)'},
+      default_bug_type         => {TYPE => 'varchar(20)'},
     ],
     INDEXES => [products_name_idx => {FIELDS => ['name'], TYPE => 'UNIQUE'},],
   },
 
   components => {
     FIELDS => [
-      id         => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      name       => {TYPE => 'varchar(64)', NOTNULL => 1},
+      id   => {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      name => {TYPE => 'varchar(64)', NOTNULL => 1},
       product_id => {
         TYPE       => 'INT2',
         NOTNULL    => 1,
@@ -1470,7 +1470,7 @@ use constant ABSTRACT_SCHEMA => {
         REFERENCES => {TABLE => 'profiles', COLUMN => 'userid', DELETE => 'SET NULL'}
       },
       bug_description_template => {TYPE => 'MEDIUMTEXT'},
-      default_bug_type  => {TYPE => 'varchar(20)'},
+      default_bug_type         => {TYPE => 'varchar(20)'},
     ],
     INDEXES => [
       components_product_id_idx =>
@@ -1624,8 +1624,8 @@ use constant ABSTRACT_SCHEMA => {
       name          => {TYPE => 'varchar(32)', NOTNULL => 1, PRIMARYKEY => 1},
       default_value => {TYPE => 'varchar(32)', NOTNULL => 1},
       is_enabled    => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'TRUE'},
-      subclass      => {TYPE => 'varchar(32)'},
-      category      => {TYPE => 'varchar(64)', NOTNULL => 1, DEFAULT => "'General'"}
+      subclass => {TYPE => 'varchar(32)'},
+      category => {TYPE => 'varchar(64)', NOTNULL => 1, DEFAULT => "'General'"}
     ],
   },
 
@@ -1839,11 +1839,11 @@ use constant ABSTRACT_SCHEMA => {
 
   oauth2_client => {
     FIELDS => [
-      id            => {TYPE => 'INTSERIAL',    NOTNULL => 1, PRIMARYKEY => 1},
-      client_id     => {TYPE => 'varchar(255)', NOTNULL => 1},
-      description   => {TYPE => 'varchar(255)', NOTNULL => 1},
-      secret        => {TYPE => 'varchar(255)', NOTNULL => 1},
-      active        => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE'},
+      id          => {TYPE => 'INTSERIAL',    NOTNULL => 1, PRIMARYKEY => 1},
+      client_id   => {TYPE => 'varchar(255)', NOTNULL => 1},
+      description => {TYPE => 'varchar(255)', NOTNULL => 1},
+      secret      => {TYPE => 'varchar(255)', NOTNULL => 1},
+      active      => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE'},
       last_modified => {TYPE => 'DATETIME'},
     ],
   },
@@ -1854,10 +1854,7 @@ use constant ABSTRACT_SCHEMA => {
       name        => {TYPE => 'varchar(255)', NOTNULL => 1},
       description => {TYPE => 'TINYTEXT',     NOTNULL => 1},
     ],
-    INDEXES => [
-      oauth2_scope_idx =>
-        {FIELDS => ['name'], TYPE => 'UNIQUE'},
-    ],
+    INDEXES => [oauth2_scope_idx => {FIELDS => ['name'], TYPE => 'UNIQUE'},],
   },
 
   oauth2_client_scope => {
@@ -1892,9 +1889,9 @@ use constant ABSTRACT_SCHEMA => {
 
   oauth2_jwt => {
     FIELDS => [
-      id      => {TYPE => 'INTSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-      jti     => {TYPE => 'varchar(255)', NOTNULL => 1},
-      type    => {TYPE => 'INT2', NOTNULL => 1},
+      id   => {TYPE => 'INTSERIAL',    NOTNULL => 1, PRIMARYKEY => 1},
+      jti  => {TYPE => 'varchar(255)', NOTNULL => 1},
+      type => {TYPE => 'INT2',         NOTNULL => 1},
       client_id => {
         TYPE       => 'INT4',
         NOTNULL    => 1,
@@ -1917,9 +1914,8 @@ use constant ABSTRACT_SCHEMA => {
       },
       expires => {TYPE => 'DATETIME'},
     ],
-    INDEXES => [
-      oauth2_jwt_jti_type_idx => {FIELDS => [qw(jti type)], TYPE => 'UNIQUE'},
-    ],
+    INDEXES =>
+      [oauth2_jwt_jti_type_idx => {FIELDS => [qw(jti type)], TYPE => 'UNIQUE'},],
   },
 
   # Report Ping Table
@@ -1927,9 +1923,9 @@ use constant ABSTRACT_SCHEMA => {
 
   report_ping => {
     FIELDS => [
-      id           => {TYPE => 'INTSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      id           => {TYPE => 'INTSERIAL',    NOTNULL => 1, PRIMARYKEY => 1},
       class        => {TYPE => 'varchar(255)', NOTNULL => 1},
-      last_ping_ts => {TYPE => 'DATETIME', NOTNULL => 1},
+      last_ping_ts => {TYPE => 'DATETIME',     NOTNULL => 1},
     ]
   }
 
@@ -2202,7 +2198,7 @@ is undefined.
   my $delete    = $references->{DELETE} || 'RESTRICT';
   my $to_table  = $references->{TABLE}  || confess "No table in reference";
   my $to_column = $references->{COLUMN} || confess "No column in reference";
-  my $fk_name = $self->_get_fk_name($table, $column, $references);
+  my $fk_name   = $self->_get_fk_name($table, $column, $references);
 
   return
       "\n     CONSTRAINT $fk_name FOREIGN KEY ($column)\n"
@@ -2257,7 +2253,7 @@ sub _column_fks_to_ddl {
   my ($self, $table, $column_fks) = @_;
   my @ddl;
   foreach my $column (keys %$column_fks) {
-    my $def = $column_fks->{$column};
+    my $def       = $column_fks->{$column};
     my $fk_string = $self->get_fk_ddl($table, $column, $def);
     push(@ddl, $fk_string);
   }
@@ -2356,7 +2352,7 @@ sub get_table_columns {
 sub get_table_indexes_abstract {
   my ($self, $table) = @_;
   my $table_def = $self->get_table_abstract($table);
-  my %indexes = @{$table_def->{INDEXES} || []};
+  my %indexes   = @{$table_def->{INDEXES} || []};
   return \%indexes;
 }
 
@@ -2426,7 +2422,7 @@ sub _get_create_table_ddl {
     my $finfo = shift(@fields);
     push(@col_lines, "\t$field\t" . $self->get_type_ddl($finfo));
     if ($self->FK_ON_CREATE and $finfo->{REFERENCES}) {
-      my $fk = $finfo->{REFERENCES};
+      my $fk     = $finfo->{REFERENCES};
       my $fk_ddl = $self->get_fk_ddl($table, $field, $fk);
       push(@fk_lines, $fk_ddl);
     }
@@ -2561,7 +2557,7 @@ sub get_alter_column_ddl {
   my ($table, $column, $new_def, $set_nulls_to) = @_;
 
   my @statements;
-  my $old_def = $self->get_column_abstract($table, $column);
+  my $old_def  = $self->get_column_abstract($table, $column);
   my $specific = $self->{db_specific};
 
   # If the types have changed, we have to deal with that.
@@ -2920,7 +2916,7 @@ sub delete_column {
   my ($self, $table, $column) = @_;
 
   my $abstract_fields = $self->{abstract_schema}{$table}{FIELDS};
-  my $name_position = firstidx { $_ eq $column } @$abstract_fields;
+  my $name_position   = firstidx { $_ eq $column } @$abstract_fields;
   die "Attempted to delete nonexistent column ${table}.${column}"
     if $name_position == -1;
 
@@ -3068,7 +3064,7 @@ sub _set_object {
 sub delete_index {
   my ($self, $table, $name) = @_;
 
-  my $indexes = $self->{abstract_schema}{$table}{INDEXES};
+  my $indexes       = $self->{abstract_schema}{$table}{INDEXES};
   my $name_position = firstidx { $_ eq $name } @$indexes;
   die "Attempted to delete nonexistent index $name on the $table table"
     if $name_position == -1;

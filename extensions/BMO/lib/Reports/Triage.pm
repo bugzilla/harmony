@@ -26,10 +26,13 @@ use List::MoreUtils qw(any);
 use constant MAX_NUMBER_BUGS => 4000;
 
 use constant DEFAULT_OWNER_PRODUCTS => (
-  'Core', 'DevTools', 'External Software Affecting Firefox',
-  'Firefox', 'Firefox for Android', 'Firefox Build System',
-  'GeckoView', 'NSPR', 'NSS', 'Remote Protocol', 'Testing',
-  'Toolkit', 'WebExtensions',
+  'Core',                                'DevTools',
+  'External Software Affecting Firefox', 'Firefox',
+  'Firefox for Android',                 'Firefox Build System',
+  'GeckoView',                           'NSPR',
+  'NSS',                                 'Remote Protocol',
+  'Testing',                             'Toolkit',
+  'WebExtensions',
 );
 
 sub unconfirmed {
@@ -57,7 +60,9 @@ sub unconfirmed {
         ? $input->{'component'}
         : [$input->{'component'}];
       foreach my $component_name (@$ra_components) {
-        next unless my $component = Bugzilla::Component->new(
+        next
+          unless my $component
+          = Bugzilla::Component->new(
           {name => $component_name, product => $product, cache => 1});
         push(@component_ids, $component->id);
       }
@@ -89,7 +94,7 @@ sub unconfirmed {
     if ($filter_last) {
       if ($filter_last_period eq 'is') {
         $filter_last_period = -1;
-        $filter_last_time = str2time($input->{'last_is'} . " 00:00:00") || 0;
+        $filter_last_time   = str2time($input->{'last_is'} . " 00:00:00") || 0;
       }
       else {
         detaint_natural($filter_last_period);
@@ -271,7 +276,9 @@ sub owners {
       ? $input->{'component'}
       : [$input->{'component'}];
     foreach my $component_name (@$ra_components) {
-      next unless my $component = Bugzilla::Component->new(
+      next
+        unless my $component
+        = Bugzilla::Component->new(
         {name => $component_name, product => $products[0], cache => 1});
       push(@component_ids, $component->id);
     }

@@ -71,9 +71,9 @@ sub run_last_changes {
     $params->{changeddate_api});
   if ($last_comment_id) {
     my $comments = $self->comments({comment_ids => [$last_comment_id]});
-    my $comment = $comments->{comments}{$last_comment_id};
+    my $comment  = $comments->{comments}{$last_comment_id};
     $last_changes->{comment} = $comment->{text};
-    $last_changes->{email} = $comment->{creator} if !$last_changes->{email};
+    $last_changes->{email}   = $comment->{creator} if !$last_changes->{email};
     my $datetime = datetime_from($comment->{creation_time});
     $datetime->set_time_zone($user->timezone);
     $last_changes->{when} = $datetime->strftime('%Y-%m-%d %T %Z');
@@ -157,11 +157,13 @@ sub bug_interest_unmark {
 
 sub rest_resources {
   return [
-    # REST API v1: Expose `bug_interest_unmark` method without prefix for backward compatibility
-    qr{^/(mydashboard/)?bug_interest_unmark$}, {PUT => {method => 'bug_interest_unmark'}},
+# REST API v1: Expose `bug_interest_unmark` method without prefix for backward compatibility
+    qr{^/(mydashboard/)?bug_interest_unmark$},
+    {PUT => {method => 'bug_interest_unmark'}},
+
     # Other methods are new, so require the prefix
-    qr{^/mydashboard/run_bug_query$}, {GET => {method => 'run_bug_query'}},
-    qr{^/mydashboard/run_flag_query$}, {GET => {method => 'run_flag_query'}},
+    qr{^/mydashboard/run_bug_query$},    {GET => {method => 'run_bug_query'}},
+    qr{^/mydashboard/run_flag_query$},   {GET => {method => 'run_flag_query'}},
     qr{^/mydashboard/run_last_changes$}, {GET => {method => 'run_last_changes'}},
   ];
 }

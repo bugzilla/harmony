@@ -113,7 +113,7 @@ sub page_before_template {
   $user->can_see_bug($flag->bug->id)
     || ThrowUserError("bug_access_denied", {bug_id => $flag->bug->id});
   $flag->status eq '?' || ThrowUserError('request_nagging_flag_set');
-  $flag->requestee || ThrowUserError('request_nagging_flag_wind');
+  $flag->requestee     || ThrowUserError('request_nagging_flag_wind');
   $flag->requestee->id == $user->id
     || ThrowUserError('request_nagging_flag_not_owned');
 

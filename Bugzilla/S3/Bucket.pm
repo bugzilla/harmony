@@ -77,7 +77,7 @@ sub get_key {
   $filename = $$filename if ref $filename;
   my $acct = $self->account;
 
-  my $request = $acct->_make_request($method, $self->_uri($key), {});
+  my $request  = $acct->_make_request($method, $self->_uri($key), {});
   my $response = $acct->_do_http($request, $filename);
 
   if ($response->code == 404) {
@@ -128,7 +128,7 @@ sub get_acl {
   my ($self, $key) = @_;
   my $acct = $self->account;
 
-  my $request = $acct->_make_request('GET', $self->_uri($key) . '?acl', {});
+  my $request  = $acct->_make_request('GET', $self->_uri($key) . '?acl', {});
   my $response = $acct->_do_http($request);
 
   if ($response->code == 404) {

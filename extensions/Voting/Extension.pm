@@ -292,7 +292,7 @@ sub sanitycheck_check {
   my $needs_rebuild;
   foreach my $id (keys %cached_counts) {
     my $cached_count = $cached_counts{$id};
-    my $real_count = $real_counts{$id} || 0;
+    my $real_count   = $real_counts{$id} || 0;
     if ($cached_count < 0) {
       $status->('voting_count_alert', {id => $id}, 'alert');
     }
@@ -419,7 +419,7 @@ sub _page_user {
 
   my $bug_id = $input->{bug_id};
   $bug_id = $bug_id->[0] if ref($bug_id) eq 'ARRAY';
-  my $bug = Bugzilla::Bug->check({id => $bug_id, cache => 1}) if $bug_id;
+  my $bug    = Bugzilla::Bug->check({id => $bug_id, cache => 1}) if $bug_id;
   my $who_id = $input->{user_id} || $user->id;
 
   # Logged-out users must specify a user_id.
@@ -464,7 +464,7 @@ sub _page_user {
       ($who->id, $product->id)
     );
 
-    my %votes = map { $_->[0] => $_->[1] } @$vote_list;
+    my %votes   = map { $_->[0] => $_->[1] } @$vote_list;
     my @bug_ids = sort keys %votes;
 
     # Exclude bugs that the user can no longer see.

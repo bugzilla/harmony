@@ -76,7 +76,7 @@ sub FIELD_MAP {
   # Get all the fields whose names don't contain periods. (Fields that
   # contain periods are always handled in MAPPINGS.)
   my @db_fields = grep { $_->name !~ /\./ } @{Bugzilla->fields({obsolete => 0})};
-  my %full_map = (%{MAPPINGS()}, map { $_->name => $_->name } @db_fields);
+  my %full_map  = (%{MAPPINGS()}, map { $_->name => $_->name } @db_fields);
 
   # Eliminate the fields that start with bug_ or rep_, because those are
   # handled by the MAPPINGS instead, and we don't want too many names
@@ -88,12 +88,10 @@ sub FIELD_MAP {
   # Also, don't allow searching the _accessible stuff via quicksearch
   # (both because it's unnecessary and because otherwise
   # "reporter_accessible" and "reporter" both match "rep".
-  delete @full_map{
-    qw(rep_platform bug_status bug_file_loc bug_group
-      bug_severity bug_status bug_type
-      status_whiteboard
-      cclist_accessible reporter_accessible)
-  };
+  delete @full_map{qw(rep_platform bug_status bug_file_loc bug_group
+    bug_severity bug_status bug_type
+    status_whiteboard
+  cclist_accessible reporter_accessible)};
 
   Bugzilla::Hook::process('quicksearch_map', {'map' => \%full_map});
 
@@ -132,7 +130,7 @@ use constant COMPONENT_EXCEPTIONS => (
 
 # Quicksearch-wide globals for boolean charts.
 our ($chart, $and, $or, $longdesc_initial, $fulltext, $bug_status_set,
-     $bug_product_set, $ELASTIC);
+  $bug_product_set, $ELASTIC);
 
 sub quicksearch {
   my ($searchstring) = (@_);
@@ -291,10 +289,11 @@ sub quicksearch {
   }
 
   # List of quicksearch-specific CGI parameters to get rid of.
-  my @params_to_strip = ('quicksearch', 'load', 'run');
+  my @params_to_strip       = ('quicksearch', 'load', 'run');
   my $modified_query_string = $cgi->canonicalize_query(@params_to_strip);
 
   if ($cgi->param('load')) {
+
     # Param 'load' asks us to display the query in the advanced search form.
     $cgi->base_redirect("query.cgi?format=advanced&$modified_query_string");
   }
@@ -412,13 +411,12 @@ sub _handle_special_first_chars {
   return 0 if !defined $qsword || length($qsword) <= 1;
 
   my $firstChar = substr($qsword, 0, 1);
-  my $baseWord = substr($qsword, 1);
-  my @subWords = split(/,/, $baseWord);
+  my $baseWord  = substr($qsword, 1);
+  my @subWords  = split(/,/, $baseWord);
 
   if ($firstChar eq '#') {
     addChart('short_desc', 'substring', $baseWord, $negate);
-    addChart('longdesc',   'substring', $baseWord, $negate)
-      if $longdesc_initial;
+    addChart('longdesc',   'substring', $baseWord, $negate) if $longdesc_initial;
     addChart('content', 'matches', _matches_phrase($baseWord), $negate)
       if $fulltext;
     return 1;
@@ -536,7 +534,7 @@ sub _translate_field_name {
 
   # Check if we match, as a starting substring, exactly one field.
   my @field_names = keys %$field_map;
-  my @matches = grep { $_ =~ /^\Q$field\E/ } @field_names;
+  my @matches     = grep { $_ =~ /^\Q$field\E/ } @field_names;
 
   # Eliminate duplicates that are actually the same field
   # (otherwise "assi" matches both "assignee" and "assigned_to", and
@@ -605,7 +603,7 @@ sub _special_field_syntax {
       # If Pn doesn't exist explicitly, then we mean the nth priority.
       if ($end == -1) {
         $end = min(scalar(@$legal_priorities), $p_end) - 1;
-        $end = max(0, $end);    # Just in case the user typed P0.
+        $end = max(0, $end);                                  # Just in case the user typed P0.
       }
       ($start, $end) = ($end, $start) if $end < $start;
       $prios = join(',', @$legal_priorities[$start .. $end]);

@@ -102,7 +102,7 @@ my %requires = (
 );
 
 my %build_requires = ('ExtUtils::MakeMaker' => '7.22',);
-my %recommends = (Safe => '2.30',);
+my %recommends     = (Safe                  => '2.30',);
 
 # Windows requires some additional modules.
 if ($OSNAME eq 'MSWin32') {
@@ -124,8 +124,7 @@ if ($OSNAME eq 'linux' && -f '/etc/debian_version') {
 my %optional_features = (
   better_xff => {
     description => 'Improved behavior of MOJO_REVERSE_PROXY',
-    prereqs =>
-      {runtime => {requires => {'Mojolicious::Plugin::ForwardedFor' => 0}}}
+    prereqs => {runtime => {requires => {'Mojolicious::Plugin::ForwardedFor' => 0}}}
   },
   alien_cmark => {
     description => 'Support GitHub-flavored markdown',
@@ -141,8 +140,7 @@ my %optional_features = (
   },
   detect_charset => {
     description => 'Automatic charset detection for text attachments',
-    prereqs =>
-      {runtime => {requires => {'Encode::Detect' => 0, Encode => '2.21'}}},
+    prereqs => {runtime => {requires => {'Encode::Detect' => 0, Encode => '2.21'}}},
   },
   chart_clicker => {
     description => 'Support nice-looking charts',
@@ -155,9 +153,8 @@ my %optional_features = (
   },
   html_desc => {
     description => 'More HTML in Product/Group Descriptions',
-    prereqs     => {
-      runtime => {requires => {'HTML::Parser' => '3.67', 'HTML::Scrubber' => 0}}
-    }
+    prereqs =>
+      {runtime => {requires => {'HTML::Parser' => '3.67', 'HTML::Scrubber' => 0}}}
   },
   markdown => {
     description => 'Markdown syntax support for comments',
@@ -172,7 +169,7 @@ my %optional_features = (
   },
   memcached => {
     description => 'Memcached Support',
-    prereqs => {runtime => {requires => {'Cache::Memcached::Fast' => '0.17'}}}
+    prereqs     => {runtime => {requires => {'Cache::Memcached::Fast' => '0.17'}}}
   },
   updates => {
     description => 'Automatic Update Notifications',
@@ -185,19 +182,15 @@ my %optional_features = (
   documentation => {
     description => 'Documentation',
     prereqs     => {
-      runtime =>
-        {requires => {'File::Which' => 0, 'File::Copy::Recursive' => 0,}}
+      runtime => {requires => {'File::Which' => 0, 'File::Copy::Recursive' => 0,}}
     },
   },
   xmlrpc => {
     description => 'XML-RPC Interface',
     prereqs     => {
       runtime => {
-        requires => {
-          'XMLRPC::Lite' => '0.712',
-          'SOAP::Lite'   => '0.712',
-          'Test::Taint'  => '1.06'
-        }
+        requires =>
+          {'XMLRPC::Lite' => '0.712', 'SOAP::Lite' => '0.712', 'Test::Taint' => '1.06'}
       }
     }
   },
@@ -223,34 +216,35 @@ my %optional_features = (
     description => 'Amazon S3 Attachment Storage',
     prereqs     => {
       runtime => {
-        requires => {
-          'Class::Accessor::Fast' => 0,
-          'XML::Simple'           => 0,
-          'URI::Escape'           => 0,
-        }
+        requires =>
+          {'Class::Accessor::Fast' => 0, 'XML::Simple' => 0, 'URI::Escape' => 0,}
       }
     }
   },
   typesniffer => {
     description => 'Sniff MIME type of attachments',
     prereqs     => {
-      runtime =>
-        {requires => {'IO::Scalar' => 0, 'File::MimeInfo::Magic' => 0,},},
+      runtime => {requires => {'IO::Scalar' => 0, 'File::MimeInfo::Magic' => 0,},},
     },
   },
   sqlite => {
     description => 'SQLite database support',
-    prereqs     => {runtime => {requires => {'DBD::SQLite' => '1.29', 'DateTime::Format::SQLite' => '0.11'}}},
+    prereqs     => {
+      runtime =>
+        {requires => {'DBD::SQLite' => '1.29', 'DateTime::Format::SQLite' => '0.11'}}
+    },
   },
   mysql => {
     description => 'MySQL database support',
-    prereqs     => {runtime => {requires => {'DBD::mysql' => '4.037', 'DateTime::Format::MySQL' => '0.06'}}}
+    prereqs     => {
+      runtime =>
+        {requires => {'DBD::mysql' => '4.037', 'DateTime::Format::MySQL' => '0.06'}}
+    }
   },
   jsonrpc => {
     description => 'JSON-RPC Interface',
     prereqs     => {
-      runtime =>
-        {requires => {'JSON::RPC' => '== 1.01', 'Test::Taint' => '1.06'}}
+      runtime => {requires => {'JSON::RPC' => '== 1.01', 'Test::Taint' => '1.06'}}
     }
   },
   graphical_reports => {
@@ -269,18 +263,15 @@ my %optional_features = (
   mfa => {
     description => 'Multi-Factor Authentication',
     prereqs     => {
-      runtime => {
-        requires =>
-          {'Auth::GoogleAuth' => '1.01', 'GD::Barcode::QRcode' => '0',},
-      }
+      runtime =>
+        {requires => {'Auth::GoogleAuth' => '1.01', 'GD::Barcode::QRcode' => '0',},}
     },
   },
   inbound_email => {
     description => 'Inbound Email',
     prereqs     => {
       runtime => {
-        requires =>
-          {'Email::MIME::Attachment::Stripper' => 0, 'Email::Reply' => 0,}
+        requires => {'Email::MIME::Attachment::Stripper' => 0, 'Email::Reply' => 0,}
       }
     },
   },
@@ -291,8 +282,7 @@ my %optional_features = (
   rest => {
     description => 'REST Interface',
     prereqs     => {
-      runtime =>
-        {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '==1.01',}}
+      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '==1.01',}}
     }
   },
   linux_pid => {
@@ -302,8 +292,7 @@ my %optional_features = (
   linux_smaps => {
     description => 'Linux::Smaps::Tiny for limiting memory usage',
     prereqs     => {
-      runtime =>
-        {requires => {'Linux::Smaps::Tiny' => '0', 'BSD::Resource' => 0}}
+      runtime => {requires => {'Linux::Smaps::Tiny' => '0', 'BSD::Resource' => 0}}
     },
   },
   linux_pdeath => {
@@ -312,9 +301,8 @@ my %optional_features = (
   },
   jobqueue => {
     description => 'Mail Queueing',
-    prereqs     => {
-      runtime => {requires => {TheSchwartz => '1.10', 'Daemon::Generic' => 0}}
-    }
+    prereqs =>
+      {runtime => {requires => {TheSchwartz => '1.10', 'Daemon::Generic' => 0}}}
   },
   elasticsearch => {
     description => 'Elasticsearch-powered searches',
@@ -328,13 +316,12 @@ my %optional_features = (
   },
   sentry => {
     description => 'Sentry Support',
-    prereqs     => {
-      runtime => {requires => {'Log::Log4perl::Appender::Raven' => '0.006'},},
-    },
+    prereqs =>
+      {runtime => {requires => {'Log::Log4perl::Appender::Raven' => '0.006'},},},
   },
   datadog => {
     description => 'Data Dog support',
-    prereqs => {runtime => {requires => {'DataDog::DogStatsd' => '0.05'},},},
+    prereqs     => {runtime => {requires => {'DataDog::DogStatsd' => '0.05'},},},
   },
 );
 
@@ -364,19 +351,19 @@ for my $file (glob 'extensions/*/Config.pm') {
 }
 
 my %test_requires = (
-  %{ $optional_features{sqlite}{prereqs}{runtime}{requires} },
-  'Capture::Tiny'                   => 0,
-  'DBD::SQLite'                     => '1.29',
-  'Perl::Critic::Freenode'          => 0,
+  %{$optional_features{sqlite}{prereqs}{runtime}{requires}},
+  'Capture::Tiny'                                                   => 0,
+  'DBD::SQLite'                                                     => '1.29',
+  'Perl::Critic::Freenode'                                          => 0,
   'Perl::Critic::Policy::Documentation::RequirePodLinksIncludeText' => 0,
-  'Perl::Tidy'                      => '20180220',
-  'Pod::Coverage'                   => 0,
-  'Selenium::Remote::Driver'        => 1.31,
-  'Test::More'                      => 0,
-  'Test::Perl::Critic::Progressive' => 0,
-  'Test::Selenium::Firefox'         => 0,
-  'Test::WWW::Selenium'             => 0,
-  'Test2::V0'                       => 0,
+  'Perl::Tidy'                                                      => '20180220',
+  'Pod::Coverage'                                                   => 0,
+  'Selenium::Remote::Driver'                                        => 1.31,
+  'Test::More'                                                      => 0,
+  'Test::Perl::Critic::Progressive'                                 => 0,
+  'Test::Selenium::Firefox'                                         => 0,
+  'Test::WWW::Selenium'                                             => 0,
+  'Test2::V0'                                                       => 0,
 );
 
 # BMO Customization
@@ -386,10 +373,8 @@ $optional_features{bmo} = {
   description => 'features that BMO needs',
   prereqs     => {
     runtime => {
-      requires => {
-        map { %{$optional_features{$_}{prereqs}{runtime}{requires}} }
-          @bmo_features
-      },
+      requires =>
+        {map { %{$optional_features{$_}{prereqs}{runtime}{requires}} } @bmo_features},
     },
   },
 };
@@ -407,10 +392,8 @@ WriteMakefile(
   BUILD_REQUIRES => {%build_requires},
   TEST_REQUIRES  => {%test_requires},
   META_MERGE     => {
-    'meta-spec' => {
-      url     => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec',
-      version => '2'
-    },
+    'meta-spec' =>
+      {url => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec', version => '2'},
     dynamic_config => 1,
     prereqs        => {
       build   => {requires => {%build_requires}},

@@ -288,7 +288,7 @@ if ($cloned_bug_id) {
   # We need to ensure that we respect the 'insider' status of
   # the first comment, if it has one. Either way, make a note
   # that this bug was cloned from another bug.
-  my $bug_desc = $cloned_bug->comments({order => 'oldest_to_newest'})->[0];
+  my $bug_desc  = $cloned_bug->comments({order => 'oldest_to_newest'})->[0];
   my $isprivate = $bug_desc->is_private;
 
   $vars->{'comment'}            = "";
@@ -343,7 +343,7 @@ else {
 
   $vars->{'cc'} = join(', ', $cgi->param('cc'));
 
-  $vars->{'comment'}            = formvalue('comment', $product->bug_description_template);
+  $vars->{'comment'} = formvalue('comment', $product->bug_description_template);
   $vars->{'comment_is_private'} = formvalue('comment_is_private');
 
   # BMO Add support for mentors

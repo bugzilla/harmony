@@ -47,6 +47,7 @@ sub process {
 # in the PROCESS or INCLUDE directive haven't been set, and if we're
 # in an INCLUDE, the stash is not yet localized during process().
 our $in_template_before_process = 0;
+
 sub stash {
   my $self  = shift;
   my $stash = $self->SUPER::stash(@_);

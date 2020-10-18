@@ -106,7 +106,8 @@ requires 'extract_id', 'extract_content';
 around 'extract_id' => sub {
   my ($method, $self, $row) = @_;
 
-  return create_uuid_as_string(UUID_SHA1, $self->uuid_namespace, $self->$method($row));
+  return create_uuid_as_string(UUID_SHA1, $self->uuid_namespace,
+    $self->$method($row));
 };
 
 sub send_row {

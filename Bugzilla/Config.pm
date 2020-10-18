@@ -73,7 +73,7 @@ sub param_panels {
 sub SetParam {
   my ($name, $value) = @_;
 
-  _load_params unless %params;
+  _load_params              unless %params;
   die "Unknown param $name" unless (exists $params{$name});
 
   my $entry = $params{$name};
@@ -307,7 +307,7 @@ sub _write_file {
   my $param_file = "$datadir/params";
   my ($fh, $tmpname) = File::Temp::tempfile('params.XXXXX', DIR => $datadir);
   print $fh $str || die "Can't write param file: $!";
-  close $fh || die "Can't close param file: $!";
+  close $fh      || die "Can't close param file: $!";
 
   rename $tmpname, $param_file or die "Can't rename $tmpname to $param_file: $!";
 

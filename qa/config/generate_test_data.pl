@@ -647,7 +647,7 @@ print "adding users to groups...\n";
 foreach my $user_group (@users_groups) {
 
   my $group = new Bugzilla::Group({name => $user_group->{group}});
-  my $user = new Bugzilla::User({name => $user_group->{user}});
+  my $user  = new Bugzilla::User({name => $user_group->{user}});
 
   my $sth_add_mapping = $dbh->prepare(
     qq{INSERT INTO user_group_map (user_id, group_id, isbless, grant_type)
@@ -662,7 +662,7 @@ foreach my $user_group (@users_groups) {
 # Associate Products with groups
 ##########################################################################
 # Associate the QA-Selenium-TEST group with the QA-Selenium-TEST.
-my $created_group = new Bugzilla::Group({name => 'QA-Selenium-TEST'});
+my $created_group  = new Bugzilla::Group({name => 'QA-Selenium-TEST'});
 my $secret_product = new Bugzilla::Product({name => 'QA-Selenium-TEST'});
 my $no_entry       = new Bugzilla::Product({name => 'QA Entry Only'});
 my $no_search      = new Bugzilla::Product({name => 'QA Search Only'});

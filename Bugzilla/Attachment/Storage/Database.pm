@@ -17,10 +17,7 @@ sub data_type { return 'database'; }
 sub set_data {
   my ($self, $data) = @_;
   my $dbh = Bugzilla->dbh;
-  my $sth
-    = $dbh->prepare(
-    "REPLACE INTO attach_data (id, thedata) VALUES (?, ?)"
-    );
+  my $sth = $dbh->prepare("REPLACE INTO attach_data (id, thedata) VALUES (?, ?)");
   $sth->bind_param(1, $self->attach_id);
   $sth->bind_param(2, $data, $dbh->BLOB_TYPE);
   $sth->execute();

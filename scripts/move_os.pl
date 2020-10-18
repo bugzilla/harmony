@@ -41,7 +41,7 @@ my $timestamp = $dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
 my $bug_ids
   = $dbh->selectcol_arrayref(q{SELECT bug_id FROM bugs WHERE bugs.op_sys = ?},
   undef, $from_os);
-my $field = Bugzilla::Field->check({name => 'op_sys', cache => 1});
+my $field  = Bugzilla::Field->check({name => 'op_sys', cache => 1});
 my $nobody = Bugzilla::User->check({name => 'nobody@mozilla.org', cache => 1});
 
 my $bug_count = @$bug_ids;

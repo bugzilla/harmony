@@ -45,7 +45,7 @@ if ($cgi->param('do_save')) {
   my $token = $cgi->param('token');
   check_token_data($token, 'reset_password');
 
-  my $old_password = $cgi->param('old_password') // '';
+  my $old_password = $cgi->param('old_password')  // '';
   my $password_1   = $cgi->param('new_password1') // '';
   my $password_2   = $cgi->param('new_password2') // '';
 

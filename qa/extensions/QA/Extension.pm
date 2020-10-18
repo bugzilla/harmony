@@ -33,7 +33,7 @@ sub page_before_template {
 
   my ($output, $tmpl_file);
   my $action = $cgi->param('action') || '';
-  my $vars = {sender => $user, action => $action, pid => $$};
+  my $vars   = {sender => $user, action => $action, pid => $$};
 
   if ($action eq 'create') {
     $tmpl_file = 'qa/create_bug.txt.tmpl';

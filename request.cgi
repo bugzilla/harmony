@@ -58,7 +58,7 @@ if ($action eq 'queue') {
 }
 else {
   my $flagtypes = get_flag_types();
-  my @types = ('all', @$flagtypes);
+  my @types     = ('all', @$flagtypes);
 
   my $vars = {};
   $vars->{'types'}    = \@types;
@@ -178,7 +178,7 @@ sub queue {
   # Filter results by exact email address of requester or requestee.
   if (defined $cgi->param('requester') && $cgi->param('requester') ne "") {
     my $requester = $dbh->quote($cgi->param('requester'));
-    push(@criteria, $dbh->sql_istrcmp('requesters.login_name', $requester));
+    push(@criteria,         $dbh->sql_istrcmp('requesters.login_name', $requester));
     push(@excluded_columns, 'requester') unless $do_union;
   }
   if (defined $cgi->param('requestee') && $cgi->param('requestee') ne "") {

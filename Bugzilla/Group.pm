@@ -123,7 +123,7 @@ sub members_complete {
   foreach my $group_id (@{$self->flatten_group_membership($self->id)}) {
     next if $group_id == $self->id;
     my $group_name = Bugzilla::Group->new({id => $group_id, cache => 1})->name;
-    my $user_ids = $dbh->selectcol_arrayref($sth, undef, $group_id);
+    my $user_ids   = $dbh->selectcol_arrayref($sth, undef, $group_id);
     $result->{$group_name} = Bugzilla::User->new_from_list($user_ids);
   }
   return $result;
@@ -226,7 +226,7 @@ sub check_members_are_visible {
   my $user = Bugzilla->user;
   return if !Bugzilla->params->{'usevisibilitygroups'};
 
-  my $group_id = $self->id;
+  my $group_id   = $self->id;
   my $is_visible = grep { $_ == $group_id } @{$user->visible_groups_inherited};
   if (!$is_visible) {
     ThrowUserError('group_not_visible', {group => $self});

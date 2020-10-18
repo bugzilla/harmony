@@ -199,7 +199,7 @@ sub show {
   if (!$last_updated) {
     foreach my $key (keys %$bug_hash) {
       my $field = {name => $key, current_value => $bug_hash->{$key}};
-      my $name = Bugzilla::Bug::FIELD_MAP()->{$key} || $key;
+      my $name  = Bugzilla::Bug::FIELD_MAP()->{$key} || $key;
       $field->{can_edit} = $self->_can_change_field($name, $bug);
       push(@fields, $field);
     }
@@ -300,11 +300,11 @@ sub get_attachments {
   my $flag_types  = [];
   my $bug;
   if ($params->{ids}) {
-    $bug = Bugzilla::Bug->check($params->{ids}->[0]);
+    $bug        = Bugzilla::Bug->check($params->{ids}->[0]);
     $flag_types = $self->_get_flag_types_bug($bug, 'attachment');
   }
   elsif ($params->{attachment_ids} && @$attachments) {
-    $bug = Bugzilla::Bug->check($attachments->[0]->{bug_id});
+    $bug        = Bugzilla::Bug->check($attachments->[0]->{bug_id});
     $flag_types = $self->_get_flag_types_all($bug, 'attachment')->{attachment};
   }
   if (@$flag_types) {
@@ -607,7 +607,7 @@ sub _get_field_values {
   my @filtered_values;
   foreach my $value (@values) {
     next if !$bug->id && !$value->is_active;
-    next if $bug->id && !$self->_can_change_field($field, $bug, $value->name);
+    next if $bug->id  && !$self->_can_change_field($field, $bug, $value->name);
     push(@filtered_values, $value);
   }
 
@@ -616,7 +616,7 @@ sub _get_field_values {
 
 sub _can_change_field {
   my ($self, $field, $bug, $value) = @_;
-  my $user = Bugzilla->user;
+  my $user       = Bugzilla->user;
   my $field_name = blessed $field ? $field->name : $field;
 
   # Cannot set resolution on bug creation
@@ -654,7 +654,7 @@ sub _flag_to_hash {
     $data->{$field} = $self->_user_to_hash($flag->$field) if $flag->$field_id;
   }
 
-  $data->{type} = $flag->attach_id ? 'attachment' : 'bug';
+  $data->{type}      = $flag->attach_id ? 'attachment' : 'bug';
   $data->{attach_id} = $flag->attach_id if $flag->attach_id;
 
   return $data;

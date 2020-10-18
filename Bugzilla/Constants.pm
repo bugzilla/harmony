@@ -223,7 +223,7 @@ sub BUGZILLA_VERSION {
 
 # Location of the remote and local XML files to track new releases.
 use constant REMOTE_FILE => 'https://updates.bugzilla.org/bugzilla-update.xml';
-use constant LOCAL_FILE => 'bugzilla-update.xml';    # Relative to datadir.
+use constant LOCAL_FILE  => 'bugzilla-update.xml';                             # Relative to datadir.
 
 # These are unique values that are unlikely to match a string or a number,
 # to be used in criteria for match() functions and other things. They start
@@ -303,8 +303,8 @@ use constant MAILTO_GROUP => 1;
 
 # The default list of columns for buglist.cgi
 use constant DEFAULT_COLUMN_LIST => (
-  "bug_type", "short_desc", "product", "component", "assigned_to",
-  "bug_status", "resolution", "changeddate"
+  "bug_type",    "short_desc", "product",    "component",
+  "assigned_to", "bug_status", "resolution", "changeddate"
 );
 
 # Used by query.cgi and buglist.cgi as the named-query name
@@ -486,8 +486,8 @@ use constant SAFE_PROTOCOLS => (
 
 # Valid MIME types for attachments.
 use constant LEGAL_CONTENT_TYPES => (
-  'application', 'audio',     'font', 'image', 'message',
-  'model',       'multipart', 'text', 'video'
+  'application', 'audio', 'font', 'image', 'message', 'model',
+  'multipart',   'text',  'video'
 );
 
 use constant contenttypes => {
@@ -751,7 +751,8 @@ sub DEFAULT_CSP {
     default_src => ['self'],
     script_src =>
       ['self', 'nonce', 'unsafe-inline', 'https://www.google-analytics.com'],
-    frame_src   => [
+    frame_src => [
+
       # This is for extensions/BMO/web/js/firefox-crash-table.js
       'https://crash-stop-addon.herokuapp.com',
     ],
@@ -774,7 +775,7 @@ sub DEFAULT_CSP {
       # socorro lens
       'https://crash-stats.mozilla.org/api/SuperSearch/',
     ],
-    font_src => [ 'self', 'https://fonts.gstatic.com' ],
+    font_src    => ['self', 'https://fonts.gstatic.com'],
     form_action => [
       'self',
 
@@ -823,7 +824,7 @@ sub SHOW_BUG_MODAL_CSP {
       # This is from extensions/OrangeFactor/web/js/orange_factor.js
       'https://treeherder.mozilla.org/api/failurecount/',
     ],
-    frame_src  => [
+    frame_src => [
       'self',
 
       # This is for extensions/BMO/web/js/firefox-crash-table.js
@@ -834,7 +835,7 @@ sub SHOW_BUG_MODAL_CSP {
   if (Bugzilla::Util::use_attachbase() && $bug_id) {
     my $attach_base = Bugzilla->localconfig->attachment_base;
     $attach_base =~ s/\%bugid\%/$bug_id/g;
-    push @{$policy{img_src}}, $attach_base;
+    push @{$policy{img_src}},   $attach_base;
     push @{$policy{media_src}}, $attach_base;
   }
 

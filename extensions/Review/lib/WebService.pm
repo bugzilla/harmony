@@ -161,7 +161,7 @@ sub flag_activity {
     $before = $now->ymd('-');
   }
 
-  $match_criteria{LIMIT} = $limit;
+  $match_criteria{LIMIT}  = $limit;
   $match_criteria{OFFSET} = $offset if defined $offset;
   $match_criteria{WHERE}
     = {'date(flag_when) BETWEEN ? AND ?' => [$after, $before]};
@@ -177,7 +177,7 @@ sub flag_activity {
   $user->visible_bugs([map { $_->bug_id } @$matches]);
   my @results
     = map { $self->_flag_state_activity_to_hash($_, $params) }
-    grep { $user->can_see_bug($_->bug_id) && _can_see_attachment($user, $_) }
+    grep  { $user->can_see_bug($_->bug_id) && _can_see_attachment($user, $_) }
     @$matches;
   return \@results;
 }
@@ -280,7 +280,7 @@ sub _flag_state_activity_to_hash {
   );
 
   $flag{requestee} = $self->_user_to_hash($fsa->requestee) if $fsa->requestee;
-  $flag{flag_id} = $self->type('int', $fsa->flag_id) unless $params->{flag_id};
+  $flag{flag_id}   = $self->type('int', $fsa->flag_id) unless $params->{flag_id};
 
   return filter($params, \%flag);
 }

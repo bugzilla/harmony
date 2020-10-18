@@ -134,7 +134,7 @@ sub bz_get_products {
   $self->bz_log_in('QA_Selenium_TEST');
 
   my $accessible = $self->bz_call_success('Product.get_accessible_products');
-  my $prod_call = $self->bz_call_success('Product.get', $accessible->result);
+  my $prod_call  = $self->bz_call_success('Product.get', $accessible->result);
   my %products;
   foreach my $prod (@{$prod_call->result->{products}}) {
     $products{$prod->{name}} = $prod->{id};
@@ -220,7 +220,7 @@ sub bz_run_tests {
     my $user = $t->{user} || '';
     if ($former_user ne $user) {
       $self->bz_call_success('User.logout') if $former_user;
-      $self->bz_log_in($user) if $user;
+      $self->bz_log_in($user)               if $user;
       $former_user = $user;
     }
 

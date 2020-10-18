@@ -197,7 +197,7 @@ sub _check_passwdqc_min {
 sub _check_passwdqc_max {
   my ($value) = @_;
   return "must be a positive integer" unless PositiveInt->check($value);
-  return "must be greater than 8" unless $value > 8;
+  return "must be greater than 8"     unless $value > 8;
   return "";
 }
 

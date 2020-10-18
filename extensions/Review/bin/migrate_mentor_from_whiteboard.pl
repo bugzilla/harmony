@@ -41,7 +41,7 @@ $nobody->{groups} = [Bugzilla::Group->get_all];
 Bugzilla->set_user($nobody);
 
 my $mentor_field = Bugzilla::Field->check({name => 'bug_mentor'});
-my $dbh = Bugzilla->dbh;
+my $dbh          = Bugzilla->dbh;
 
 # fix broken migration
 

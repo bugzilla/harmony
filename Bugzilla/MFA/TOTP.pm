@@ -41,7 +41,7 @@ sub enroll_api {
   $self->property_set('secret.temp', generate_random_password(16));
 
   # build the qr code
-  my $auth = $self->_auth();
+  my $auth    = $self->_auth();
   my $otpauth = $auth->qr_code(undef, undef, undef, 1);
   my $png = GD::Barcode::QRcode->new($otpauth, {Version => 10, ModuleSize => 3})
     ->plot()->png();

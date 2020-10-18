@@ -35,8 +35,9 @@ use constant DB_COLUMNS => qw(
   sticky
 );
 
-use constant UPDATE_COLUMNS => qw(description revoked last_used last_used_ip sticky);
-use constant VALIDATORS     => {
+use constant UPDATE_COLUMNS =>
+  qw(description revoked last_used last_used_ip sticky);
+use constant VALIDATORS => {
   api_key     => \&_check_api_key,
   app_id      => \&_check_app_id,
   description => \&_check_description,
@@ -82,6 +83,7 @@ sub update_last_used {
 # normally using the api keys.
 sub audit_log {
   my ($self, $changes) = @_;
+
   # Only interested in AUDIT_UPDATE
   if (ref $changes eq 'HASH') {
     delete $changes->{last_used};
@@ -104,7 +106,7 @@ sub run_create_validators {
   return $params;
 }
 
-sub _check_api_key { return generate_random_password(40); }
+sub _check_api_key     { return generate_random_password(40); }
 sub _check_description { return trim($_[1]) || ''; }
 
 sub _check_app_id {

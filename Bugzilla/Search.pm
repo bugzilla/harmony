@@ -291,23 +291,23 @@ use constant OPERATOR_FIELD_OVERRIDE => {
     lessthaneq    => \&_owner_idle_time_greater_less,
     _default      => \&_invalid_combination,
   },
-  product     => {_non_changed => \&_product_nonchanged,},
-  regressed_by  => MULTI_SELECT_OVERRIDE,
-  regresses     => MULTI_SELECT_OVERRIDE,
-  duplicates    => MULTI_SELECT_OVERRIDE,
-  tag         => MULTI_SELECT_OVERRIDE,
-  comment_tag => MULTI_SELECT_OVERRIDE,
+  product      => {_non_changed => \&_product_nonchanged,},
+  regressed_by => MULTI_SELECT_OVERRIDE,
+  regresses    => MULTI_SELECT_OVERRIDE,
+  duplicates   => MULTI_SELECT_OVERRIDE,
+  tag          => MULTI_SELECT_OVERRIDE,
+  comment_tag  => MULTI_SELECT_OVERRIDE,
 
   # Count Fields
-  'attachments.count'   => RELATION_COUNT_OVERRIDE,
-  'cc_count'            => RELATION_COUNT_OVERRIDE,
-  'keywords.count'      => RELATION_COUNT_OVERRIDE,
-  'blocked.count'       => RELATION_COUNT_OVERRIDE,
-  'dependson.count'     => RELATION_COUNT_OVERRIDE,
-  'regressed_by.count'  => RELATION_COUNT_OVERRIDE,
-  'regresses.count'     => RELATION_COUNT_OVERRIDE,
-  'dupe_count'          => RELATION_COUNT_OVERRIDE,
-  'longdescs.count'     => {
+  'attachments.count'  => RELATION_COUNT_OVERRIDE,
+  'cc_count'           => RELATION_COUNT_OVERRIDE,
+  'keywords.count'     => RELATION_COUNT_OVERRIDE,
+  'blocked.count'      => RELATION_COUNT_OVERRIDE,
+  'dependson.count'    => RELATION_COUNT_OVERRIDE,
+  'regressed_by.count' => RELATION_COUNT_OVERRIDE,
+  'regresses.count'    => RELATION_COUNT_OVERRIDE,
+  'dupe_count'         => RELATION_COUNT_OVERRIDE,
+  'longdescs.count'    => {
     changedby     => \&_long_desc_changedby,
     everchanged   => \&_long_desc_everchanged,
     changedbefore => \&_long_desc_changedbefore_after,
@@ -514,21 +514,21 @@ sub COLUMN_JOINS {
         to    => 'id',
       },
     },
-    'attachments.count'   => {table => 'attachments',},
-    'cc_count'            => {table => 'cc',},
-    'keywords.count'      => {table => 'keywords',},
-    'longdescs.count'     => {table => 'longdescs', join => 'INNER',},
-    'blocked'             => {table => 'dependencies', to => 'dependson',},
-    'blocked.count'       => {table => 'dependencies', to => 'dependson',},
-    'dependson'           => {table => 'dependencies', to => 'blocked',},
-    'dependson.count'     => {table => 'dependencies', to => 'blocked',},
-    'regressed_by'        => {table => 'regressions', to => 'regresses',},
-    'regressed_by.count'  => {table => 'regressions', to => 'regresses',},
-    'regresses'           => {table => 'regressions', to => 'regressed_by',},
-    'regresses.count'     => {table => 'regressions', to => 'regressed_by',},
-    'dupe_count'          => {table => 'duplicates', to => 'dupe_of',},
-    'duplicates'          => {table => 'duplicates', to => 'dupe_of',},
-    last_visit_ts     => {
+    'attachments.count' => {table => 'attachments',},
+    'cc_count'          => {table => 'cc',},
+    'keywords.count'    => {table => 'keywords',},
+    'longdescs.count'    => {table => 'longdescs',    join => 'INNER',},
+    'blocked'            => {table => 'dependencies', to   => 'dependson',},
+    'blocked.count'      => {table => 'dependencies', to   => 'dependson',},
+    'dependson'          => {table => 'dependencies', to   => 'blocked',},
+    'dependson.count'    => {table => 'dependencies', to   => 'blocked',},
+    'regressed_by'       => {table => 'regressions',  to   => 'regresses',},
+    'regressed_by.count' => {table => 'regressions',  to   => 'regresses',},
+    'regresses'          => {table => 'regressions',  to   => 'regressed_by',},
+    'regresses.count'    => {table => 'regressions',  to   => 'regressed_by',},
+    'dupe_count'         => {table => 'duplicates',   to   => 'dupe_of',},
+    'duplicates'         => {table => 'duplicates',   to   => 'dupe_of',},
+    last_visit_ts        => {
       as    => 'bug_user_last_visit',
       table => 'bug_user_last_visit',
       extra => ['bug_user_last_visit.user_id = ' . $user->id],
@@ -605,12 +605,13 @@ sub COLUMNS {
       'DISTINCT ' . $dbh->sql_string_concat('map_flagtypes.name', 'map_flags.status')
     ),
 
-    'keywords'      => $dbh->sql_group_concat('DISTINCT map_keyworddefs.name'),
-    'blocked'       => $dbh->sql_group_concat('DISTINCT map_blocked.blocked'),
-    'dependson'     => $dbh->sql_group_concat('DISTINCT map_dependson.dependson'),
-    'regressed_by'  => $dbh->sql_group_concat('DISTINCT map_regressed_by.regressed_by'),
-    'regresses'     => $dbh->sql_group_concat('DISTINCT map_regresses.regresses'),
-    'duplicates'    => $dbh->sql_group_concat('DISTINCT map_duplicates.dupe'),
+    'keywords'  => $dbh->sql_group_concat('DISTINCT map_keyworddefs.name'),
+    'blocked'   => $dbh->sql_group_concat('DISTINCT map_blocked.blocked'),
+    'dependson' => $dbh->sql_group_concat('DISTINCT map_dependson.dependson'),
+    'regressed_by' =>
+      $dbh->sql_group_concat('DISTINCT map_regressed_by.regressed_by'),
+    'regresses'  => $dbh->sql_group_concat('DISTINCT map_regresses.regresses'),
+    'duplicates' => $dbh->sql_group_concat('DISTINCT map_duplicates.dupe'),
 
     'attachments.count'  => 'COUNT(DISTINCT map_attachments_count.attach_id)',
     'cc_count'           => 'COUNT(DISTINCT map_cc_count.who)',
@@ -694,7 +695,7 @@ sub COLUMNS {
 
 sub REPORT_COLUMNS {
   my $invocant = shift;
-  my $user = blessed($invocant) ? $invocant->_user : Bugzilla->user;
+  my $user     = blessed($invocant) ? $invocant->_user : Bugzilla->user;
 
   my $columns = dclone(blessed($invocant) ? $invocant->COLUMNS : COLUMNS);
 
@@ -752,7 +753,7 @@ use constant GROUP_BY_SKIP => qw(
 # Note that the params argument may be modified by Bugzilla::Search
 sub new {
   my $invocant = shift;
-  my $class = ref($invocant) || $invocant;
+  my $class    = ref($invocant) || $invocant;
 
   my $self = {@_};
   bless($self, $class);
@@ -768,7 +769,7 @@ sub new {
   # do it, because there's no way to know if we were passed a tied hash
   # or not.
   my $params_in = $self->_params;
-  my %params = map { $_ => $params_in->{$_} } keys %$params_in;
+  my %params    = map { $_ => $params_in->{$_} } keys %$params_in;
   $self->{params} = \%params;
 
   return $self;
@@ -802,7 +803,7 @@ sub data {
   # BMO - to avoid massive amounts of joins, if we're selecting a lot of
   # tracking flags, replace them with placeholders. the values will be
   # retrieved later and injected into the result.
-  my %tf_map = map { $_ => 1 } Bugzilla->tracking_flag_names;
+  my %tf_map      = map  { $_ => 1 } Bugzilla->tracking_flag_names;
   my @tf_selected = grep { exists $tf_map{$_} } @orig_fields;
 
   # MySQL has a limit of 61 joins, and we want to avoid massive amounts of joins
@@ -821,7 +822,7 @@ sub data {
   my $sql        = $self->_sql;
 
   # Do we just want bug IDs to pass to the 2nd query or all the data immediately?
-  my $func = $all_in_bugs_table ? 'selectall_arrayref' : 'selectcol_arrayref';
+  my $func    = $all_in_bugs_table ? 'selectall_arrayref' : 'selectcol_arrayref';
   my $bug_ids = $dbh->$func($sql);
   my @extra_data = ({sql => $sql, time => tv_interval($start_time)});
 
@@ -993,7 +994,7 @@ sub boolean_charts_to_custom_search {
   # We can just pick the last id in the array because they are sorted
   # numerically.
   my $last_id = ($self->_field_ids)[-1];
-  my $count = defined($last_id) ? $last_id + 1 : 0;
+  my $count   = defined($last_id) ? $last_id + 1 : 0;
   foreach my $param_set (@as_params) {
     foreach my $name (keys %$param_set) {
       my $value = $param_set->{$name};
@@ -1190,7 +1191,7 @@ sub _special_order {
     my $name = $field->name;
     $special_order{$name} = {
       order => ["map_$name.sortkey", "map_$name.value"],
-      join => {table => $name, from => "bugs.$name", to => "value", join => 'INNER',}
+      join  => {table => $name, from => "bugs.$name", to => "value", join => 'INNER',}
     };
   }
   $self->{special_order} = \%special_order;
@@ -1488,7 +1489,7 @@ sub _sql_where {
 
   # The newline and this particular spacing makes the resulting
   # SQL a bit more readable for debugging.
-  my $where = join("\n   AND ", $self->_standard_where);
+  my $where      = join("\n   AND ", $self->_standard_where);
   my $clause_sql = $main_clause->as_string;
   $where .= "\n   AND " . $clause_sql if $clause_sql;
   return $where;
@@ -1590,7 +1591,7 @@ sub _parse_basic_fields {
     my @values = $self->_param_array($param_name);
     next if !@values;
     my $default_op = $param_name eq 'content' ? 'matches' : 'anyexact';
-    my $operator = $params->{"${param_name}_type"} || $default_op;
+    my $operator   = $params->{"${param_name}_type"} || $default_op;
 
     # Fields that are displayed as multi-selects are passed as arrays,
     # so that they can properly search values that contain commas.
@@ -1846,19 +1847,19 @@ sub _boolean_charts {
   my @param_list = keys %$params;
 
   my @all_field_params = grep {/^field-?\d+/} @param_list;
-  my @chart_ids = map { /^field(-?\d+)/; $1 } @all_field_params;
+  my @chart_ids        = map  { /^field(-?\d+)/; $1 } @all_field_params;
   @chart_ids = sort { $a <=> $b } uniq @chart_ids;
 
   my $clause = new Bugzilla::Search::Clause();
   foreach my $chart_id (@chart_ids) {
     my @all_and = grep {/^field$chart_id-\d+/} @param_list;
-    my @and_ids = map { /^field$chart_id-(\d+)/; $1 } @all_and;
+    my @and_ids = map  { /^field$chart_id-(\d+)/; $1 } @all_and;
     @and_ids = sort { $a <=> $b } uniq @and_ids;
 
     my $and_clause = new Bugzilla::Search::Clause();
     foreach my $and_id (@and_ids) {
       my @all_or = grep {/^field$chart_id-$and_id-\d+/} @param_list;
-      my @or_ids = map { /^field$chart_id-$and_id-(\d+)/; $1 } @all_or;
+      my @or_ids = map  { /^field$chart_id-$and_id-(\d+)/; $1 } @all_or;
       @or_ids = sort { $a <=> $b } uniq @or_ids;
 
       my $or_clause = new Bugzilla::Search::Clause('OR');
@@ -1933,7 +1934,7 @@ sub _field_ids {
   my @param_list = keys %$params;
 
   my @field_params = grep {/^f\d+$/} @param_list;
-  my @field_ids = map { /(\d+)/; $1 } @field_params;
+  my @field_ids    = map  { /(\d+)/; $1 } @field_params;
   @field_ids = sort { $a <=> $b } @field_ids;
   return @field_ids;
 }
@@ -1950,7 +1951,7 @@ sub _handle_chart {
   if (ref $value eq 'ARRAY') {
 
     # Trim input and ignore blank values.
-    @$value = map { trim($_) } @$value;
+    @$value = map  { trim($_) } @$value;
     @$value = grep { defined $_ and $_ ne '' } @$value;
     return if !@$value;
     $string_value = join(',', @$value);
@@ -2221,7 +2222,7 @@ sub _substring_terms {
   # split each term on spaces and commas anyway.
   my @words = split(/[\s,]+/, $args->{value});
   @words = grep { defined $_ and $_ ne '' } @words;
-  @words = map { $dbh->quote($_) } @words;
+  @words = map  { $dbh->quote($_) } @words;
   my @terms
     = map { $dbh->sql_iposition($_, $args->{full_field}) . " > 0" } @words;
   return @terms;
@@ -2562,12 +2563,12 @@ sub _triage_owner_pronoun {
 ######################################
 
 sub _chart_resolution_parser {
-  my ($self, $args) = @_;
+  my ($self,  $args)     = @_;
   my ($value, $operator) = @$args{qw(value operator)};
 
   # Treat `---` as empty
   if (trim($value) eq '---' && $operator =~ /^(?:not)?equals$/) {
-    $args->{value} = $args->{all_values} = $args->{quoted} = '';
+    $args->{value}    = $args->{all_values} = $args->{quoted} = '';
     $args->{operator} = $operator eq 'equals' ? 'isempty' : 'isnotempty';
   }
 }
@@ -2847,26 +2848,32 @@ sub _relation_count_changed {
 sub _relation_count_default {
   my ($self, $args) = @_;
   my ($chart_id, $field, $joins) = @$args{qw(chart_id field joins)};
-  my $extra = !$self->_user->is_insider
-    && $field =~ /^(?:attachments|longdescs)\.count$/ ? 'WHERE isprivate = 0' : '';
+  my $extra
+    = !$self->_user->is_insider && $field =~ /^(?:attachments|longdescs)\.count$/
+    ? 'WHERE isprivate = 0'
+    : '';
   my ($table, $column, $other_column)
-    = $field eq 'attachments.count' ? ('attachments', 'attach_id', 'bug_id')
-    : $field eq 'cc_count' ? ('cc', 'cc', 'bug_id')
-    : $field eq 'keywords.count' ? ('keywords', 'keywords', 'bug_id')
-    : $field eq 'longdescs.count' ? ('longdescs', 'comment_id', 'bug_id')
-    : $field eq 'blocked.count' ? ('dependencies', 'blocked', 'dependson')
-    : $field eq 'dependson.count' ? ('dependencies', 'dependson', 'blocked')
-    : $field eq 'regressed_by.count' ? ('regressions', 'regressed_by', 'regresses')
+    = $field eq 'attachments.count' ? ('attachments',  'attach_id',  'bug_id')
+    : $field eq 'cc_count'          ? ('cc',           'cc',         'bug_id')
+    : $field eq 'keywords.count'    ? ('keywords',     'keywords',   'bug_id')
+    : $field eq 'longdescs.count'   ? ('longdescs',    'comment_id', 'bug_id')
+    : $field eq 'blocked.count'     ? ('dependencies', 'blocked',    'dependson')
+    : $field eq 'dependson.count'   ? ('dependencies', 'dependson',  'blocked')
+    : $field eq 'regressed_by.count'
+    ? ('regressions', 'regressed_by', 'regresses')
     : $field eq 'regresses.count' ? ('regressions', 'regresses', 'regressed_by')
-    : $field eq 'dupe_count' ? ('duplicates', 'dupe', 'dupe_of')
-    : undef;
+    : $field eq 'dupe_count'      ? ('duplicates',  'dupe',      'dupe_of')
+    :                               undef;
   my $alias = "${column}_count_${chart_id}";
 
-  push(@$joins, {
-    table => "(SELECT $other_column AS bug_id, COUNT(*) AS num"
-      . " FROM $table $extra GROUP BY $other_column)",
-    as => $alias,
-  });
+  push(
+    @$joins,
+    {
+      table => "(SELECT $other_column AS bug_id, COUNT(*) AS num"
+        . " FROM $table $extra GROUP BY $other_column)",
+      as => $alias,
+    }
+  );
 
   $args->{full_field} = "COALESCE(${alias}.num, 0)";
 }
@@ -2978,10 +2985,10 @@ sub _component_nonchanged {
   # Allow to search product/component pairs like "Core::General" with a simple
   # operator. Since product/component names may include spaces, other operators
   # like `anywords` won't work.
-  if ($args->{operator} =~ /^(?:(?:not)?equals)$/
+  if ( $args->{operator} =~ /^(?:(?:not)?equals)$/
     && $args->{value} =~ /^(?:(.+)\s*::\s*)?(.+)$/)
   {
-    $product = $1;
+    $product        = $1;
     $args->{value}  = $args->{all_values} = $2;
     $args->{quoted} = $dbh->quote($2);
   }
@@ -2992,16 +2999,23 @@ sub _component_nonchanged {
   my $term = $args->{term};
 
   if ($product) {
+
     # Pass the complete condition and negative option to make sure both product
     # and component are included or excluded
-    $args->{term} = build_subselect('bugs.component_id', 'components.id',
+    $args->{term} = build_subselect(
+      'bugs.component_id',
+      'components.id',
       'components JOIN products ON components.product_id = products.id',
-      'products.name = ' . $dbh->quote($product)
-        . ' AND components.name = ' . $args->{quoted},
-      $args->{operator} eq 'notequals');
-  } else {
-    $args->{term} = build_subselect('bugs.component_id', 'components.id',
-      'components', $term);
+      'products.name = '
+        . $dbh->quote($product)
+        . ' AND components.name = '
+        . $args->{quoted},
+      $args->{operator} eq 'notequals'
+    );
+  }
+  else {
+    $args->{term}
+      = build_subselect('bugs.component_id', 'components.id', 'components', $term);
   }
 }
 
@@ -3019,7 +3033,7 @@ sub _product_nonchanged {
       }
     }
     if ($aliased) {
-      $args->{value} = join(',', @{$args->{all_values}});
+      $args->{value}  = join(',', @{$args->{all_values}});
       $args->{quoted} = Bugzilla->dbh->quote($args->{value});
     }
   }
@@ -3142,7 +3156,7 @@ sub _multiselect_negative {
   my ($field, $operator) = @$args{qw(field operator)};
 
   $args->{operator} = $self->_reverse_operator($operator);
-  $args->{term} = $self->_multiselect_term($args, 1);
+  $args->{term}     = $self->_multiselect_term($args, 1);
 }
 
 sub _multiselect_multiple {
@@ -3278,7 +3292,7 @@ sub _multiselect_table {
   }
   elsif ($field eq 'longdesc') {
     $args->{_extra_where} = " AND isprivate = 0" if !$self->_user->is_insider;
-    $args->{full_field} = 'thetext';
+    $args->{full_field}   = 'thetext';
     return "longdescs";
   }
   elsif ($field eq 'longdescs.isprivate') {
@@ -3334,7 +3348,7 @@ sub _multiselect_isempty {
     = @$args{qw(field operator joins chart_id)};
   my $dbh = Bugzilla->dbh;
   $operator = $self->_reverse_operator($operator) if $not;
-  $not = $operator eq 'isnotempty' ? 'NOT' : '';
+  $not      = $operator eq 'isnotempty' ? 'NOT' : '';
 
   if ($field eq 'keywords') {
     push @$joins,
@@ -3593,9 +3607,11 @@ sub _changedbefore_changedafter {
   my $join = {table => 'bugs_activity', extra => []};
 
   if ($field eq 'anything') {
+
     # Handle special field name to find changes in any field
     $table = $join->{as} = "act_x_$chart_id";
-  } else {
+  }
+  else {
     my $field_object = $self->_chart_fields->{$field}
       || ThrowCodeError("invalid_field_name", {field => $field});
 
@@ -3615,7 +3631,7 @@ sub _changedbefore_changedafter {
   }
 
   my $sql_operator = ($operator =~ /before/) ? '<=' : '>=';
-  my $sql_date = $dbh->quote(SqlifyDate($value));
+  my $sql_date     = $dbh->quote(SqlifyDate($value));
   push(@{$join->{extra}}, "$table.bug_when $sql_operator $sql_date");
 
   $args->{term} = "$table.bug_when IS NOT NULL";
@@ -3629,13 +3645,15 @@ sub _changedfrom_changedto {
     = @$args{qw(chart_id joins field operator quoted)};
 
   my $table;
-  my $join = {table => 'bugs_activity', extra => []};
+  my $join   = {table => 'bugs_activity', extra => []};
   my $column = ($operator =~ /from/) ? 'removed' : 'added';
 
   if ($field eq 'anything') {
+
     # Handle special field name to find changes in any field
     $table = $join->{as} = "act_x_$chart_id";
-  } else {
+  }
+  else {
     my $field_object = $self->_chart_fields->{$field}
       || ThrowCodeError("invalid_field_name", {field => $field});
     my $field_id = $field_object->id;
@@ -3659,9 +3677,11 @@ sub _changedby {
   my $join = {table => 'bugs_activity', extra => []};
 
   if ($field eq 'anything') {
+
     # Handle special field name to find changes in any field
     $table = $join->{as} = "act_x_$chart_id";
-  } else {
+  }
+  else {
     my $field_object = $self->_chart_fields->{$field}
       || ThrowCodeError("invalid_field_name", {field => $field});
     my $field_id = $field_object->id;

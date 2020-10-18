@@ -23,7 +23,7 @@ use Bugzilla::User;
 use Bugzilla::Bug qw(LogActivityEntry);
 
 Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
-my $dbh = Bugzilla->dbh;
+my $dbh  = Bugzilla->dbh;
 my $user = Bugzilla::User->check({name => 'nobody@mozilla.org'});
 
 my $tf_vis = $dbh->selectall_arrayref(<<SQL);

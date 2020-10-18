@@ -45,8 +45,10 @@ has edit_policy      => (is => 'ro',   isa => Str);
 has subscriber_count => (is => 'ro',   isa => Int);
 has bug              => (is => 'lazy', isa => Object);
 has author           => (is => 'lazy', isa => Object);
-has reviews =>
-  (is => 'lazy', isa => ArrayRef [Dict [user => PhabUser | PhabProject, status => Str]]);
+has reviews          => (
+  is  => 'lazy',
+  isa => ArrayRef [Dict [user => PhabUser | PhabProject, status => Str]]
+);
 has subscribers => (is => 'lazy', isa => ArrayRef [PhabUser]);
 has projects    => (is => 'lazy', isa => ArrayRef [Project]);
 has reviewers_raw => (
@@ -270,7 +272,8 @@ sub update {
 
 sub _build_bug {
   my ($self) = @_;
-  my $bug = $self->{bug} ||= Bugzilla::Bug->new({id => $self->bug_id, cache => 1});
+  my $bug = $self->{bug}
+    ||= Bugzilla::Bug->new({id => $self->bug_id, cache => 1});
   weaken($self->{bug});
   return $bug;
 }
@@ -307,7 +310,7 @@ sub _build_reviews {
   foreach my $user (@users) {
     my $reviewer_data = {user => $user, status => $by_phid{$user->phid}{status}};
 
-    # Set to accepted-prior if the diffs reviewer are different and the reviewer status is accepted
+# Set to accepted-prior if the diffs reviewer are different and the reviewer status is accepted
     foreach my $reviewer_extra (@{$self->reviewers_extra_raw}) {
       if ($reviewer_extra->{reviewerPHID} eq $user->phid) {
         if ($reviewer_extra->{diffPHID}) {
@@ -437,8 +440,8 @@ sub make_private {
 
   my @set_projects;
   foreach my $name (@$project_names) {
-    my $set_project = $self->{"_project_${name}"} ||=
-      Bugzilla::Extension::PhabBugz::Project->new_from_query({name => $name});
+    my $set_project = $self->{"_project_${name}"}
+      ||= Bugzilla::Extension::PhabBugz::Project->new_from_query({name => $name});
     push @set_projects, $set_project;
   }
 
@@ -452,8 +455,8 @@ sub make_private {
 sub make_public {
   my ($self) = @_;
 
-  my $editbugs = $self->{'_project_bmo-editbugs-team'} ||=
-    Bugzilla::Extension::PhabBugz::Project->new_from_query({
+  my $editbugs = $self->{'_project_bmo-editbugs-team'}
+    ||= Bugzilla::Extension::PhabBugz::Project->new_from_query({
     name => 'bmo-editbugs-team'
     });
 
@@ -472,15 +475,15 @@ sub make_public {
 sub set_private_project_tags {
   my ($self, $project_names) = @_;
 
-  my $secure_revision_project = $self->{'_project_secure-revision'} ||=
-    Bugzilla::Extension::PhabBugz::Project->new_from_query({
+  my $secure_revision_project = $self->{'_project_secure-revision'}
+    ||= Bugzilla::Extension::PhabBugz::Project->new_from_query({
     name => 'secure-revision'
     });
 
   my @set_projects;
   foreach my $name (@$project_names) {
-    my $set_project = $self->{"_project_${name}"} ||=
-      Bugzilla::Extension::PhabBugz::Project->new_from_query({name => $name});
+    my $set_project = $self->{"_project_${name}"}
+      ||= Bugzilla::Extension::PhabBugz::Project->new_from_query({name => $name});
     push @set_projects, $set_project;
   }
 

@@ -14,7 +14,7 @@ sub import {
   my ($class, %lc) = @_;
   $lc{urlbase} //= sprintf 'http://%s:%d', hostname(), 8000;
   $ENV{LOCALCONFIG_ENV} = 'BMO';
-  $ENV{"BMO_$_"} = $lc{$_} for keys %lc;
+  $ENV{"BMO_$_"}        = $lc{$_} for keys %lc;
 }
 
 1;

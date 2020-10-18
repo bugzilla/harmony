@@ -38,7 +38,7 @@ sub mailer_before_send {
     print $fh encode_utf8(sprintf(
       "[%s] %s%s %s : %s\n",
       time2str('%D %T', time),
-      ($blocked eq '' ? '' : '(blocked) '),
+      ($blocked eq '' ? ''                    : '(blocked) '),
       ($blocked eq '' ? $header->header('to') : $blocked),
       $header->header('X-Bugzilla-Reason') || '-',
       $header->header('subject')

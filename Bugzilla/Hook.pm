@@ -19,7 +19,7 @@ use Types::Standard -all;
 my %HOOKS;
 
 sub finalize {
-  state $check = compile(ArrayRef[ClassName]);
+  state $check = compile(ArrayRef [ClassName]);
   my ($extensions) = $check->(@_);
 
   foreach my $extension (@$extensions) {
@@ -27,7 +27,7 @@ sub finalize {
     foreach my $name ($stash->list_all_symbols('CODE')) {
       next if $name =~ /^[A-Z_]+/;
       my $hook = $extension->can($name) or die "$extension has no method '$name'";
-      next if stash_name($hook) ne $extension; # skip imported methods.
+      next if stash_name($hook) ne $extension;    # skip imported methods.
       push @{$HOOKS{$name}}, [$hook, $extension];
     }
   }

@@ -35,7 +35,7 @@ use constant type => 'OR';
 
 sub new {
   my $class = shift;
-  my $self = {field_tests => [@_]};
+  my $self  = {field_tests => [@_]};
   return bless $self, $class;
 }
 
@@ -100,7 +100,7 @@ sub _bug_will_actually_be_contained {
     # Some tests are broken in such a way that they actually
     # generate no criteria in the SQL. In this case, the only way
     # the test contains the bug is if *another* test contains it.
-    next if $test->_known_broken->{no_criteria};
+    next     if $test->_known_broken->{no_criteria};
     return 1 if $test->will_actually_contain_bug($number);
   }
   return 0;

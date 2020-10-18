@@ -54,7 +54,7 @@ sub list {
   my $dbh = Bugzilla->dbh;
 
   my $filter_sql = $args{filter} || '';
-  my $sth = $dbh->prepare("
+  my $sth        = $dbh->prepare("
         SELECT log.id, message_id, push_ts, payload, change_set, routing_key, attempt_ts, log.attempts
           FROM push_backlog log
                LEFT JOIN push_backoff off ON off.connector = log.connector
@@ -80,7 +80,8 @@ sub list {
 
 sub delete {
   my ($self) = @_;
-  Bugzilla->dbh->do("DELETE FROM push_backlog WHERE connector = ?",undef, $self->{connector});
+  Bugzilla->dbh->do("DELETE FROM push_backlog WHERE connector = ?",
+    undef, $self->{connector});
 }
 
 #

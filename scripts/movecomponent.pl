@@ -136,7 +136,7 @@ $dbh->do(
 
 # Update bugs_activity
 my $auto_user = Bugzilla::User->check({name => 'automation@bmo.tld'});
-my $userid = $auto_user->id;
+my $userid    = $auto_user->id;
 Bugzilla->set_user($auto_user);
 
 $dbh->do(

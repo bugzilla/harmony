@@ -8,7 +8,8 @@
 package Bugzilla::Model::Result::Bug;
 use Mojo::Base 'DBIx::Class::Core';
 
-__PACKAGE__->load_components(qw( Helper::Row::NumifyGet InflateColumn::DateTime ));
+__PACKAGE__->load_components(
+  qw( Helper::Row::NumifyGet InflateColumn::DateTime ));
 
 __PACKAGE__->table(Bugzilla::Bug->DB_TABLE);
 __PACKAGE__->add_columns(Bugzilla::Bug->DB_COLUMN_NAMES);
@@ -80,7 +81,10 @@ __PACKAGE__->has_many(
 
 __PACKAGE__->many_to_many('duplicates', 'map_duplicates', 'duplicate');
 
-__PACKAGE__->might_have( map_duplicate_of => 'Bugzilla::Model::Result::Duplicate', 'dupe');
+__PACKAGE__->might_have(
+  map_duplicate_of => 'Bugzilla::Model::Result::Duplicate',
+  'dupe'
+);
 
 sub duplicate_of {
   my ($self) = @_;

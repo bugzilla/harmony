@@ -152,7 +152,7 @@ sub bulk_load_ids {
 sub _bulk_load_ids {
   my ($self, $bulk, $class, $all_ids) = @_;
 
-  my $iter = natatime $class->ES_OBJECTS_AT_ONCE, @$all_ids;
+  my $iter  = natatime $class->ES_OBJECTS_AT_ONCE, @$all_ids;
   my $mtime = $self->_current_mtime;
   my $progress_bar;
   my $next_update;

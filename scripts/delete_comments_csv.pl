@@ -39,7 +39,7 @@ while (my $line = <CSV>) {
   my ($bug_id, $comment_id) = @values;
   next if $bug_id !~ /^\d+$/;
   print "Deleting comment '$comment_id' from bug '$bug_id' ";
-  my $bug = Bugzilla::Bug->check({id => $bug_id});
+  my $bug     = Bugzilla::Bug->check({id => $bug_id});
   my $comment = Bugzilla::Comment->new($comment_id);
 
   if (!$comment || $comment->bug_id ne $bug_id) {

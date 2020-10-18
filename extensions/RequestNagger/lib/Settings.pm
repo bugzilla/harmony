@@ -19,7 +19,7 @@ use constant FIELDS => qw( reviews_only extended_period no_encryption );
 sub new {
   my ($class, $user_id) = @_;
 
-  my $dbh = Bugzilla->dbh;
+  my $dbh  = Bugzilla->dbh;
   my $self = {user_id => $user_id};
   foreach my $row (@{
     $dbh->selectall_arrayref(

@@ -50,7 +50,8 @@ sub create_oauth_client {
   my $id     = generate_random_password(20);
   my $secret = generate_random_password(40);
 
-  $dbh->do('INSERT INTO oauth2_client (client_id, description, secret) VALUES (?, ?, ?)',
+  $dbh->do(
+    'INSERT INTO oauth2_client (client_id, description, secret) VALUES (?, ?, ?)',
     undef, $id, $description, $secret);
 
   my $client_data
@@ -64,10 +65,8 @@ sub create_oauth_client {
     if (!$scope_id) {
       die "Scope $scope not found";
     }
-    $dbh->do(
-      'INSERT INTO oauth2_client_scope (client_id, scope_id) VALUES (?, ?)',
-      undef, $client_data->{id}, $scope_id
-    );
+    $dbh->do('INSERT INTO oauth2_client_scope (client_id, scope_id) VALUES (?, ?)',
+      undef, $client_data->{id}, $scope_id);
   }
 
   return $client_data;

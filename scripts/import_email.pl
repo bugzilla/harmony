@@ -20,7 +20,8 @@ die "Need mbox filename\n" if !$filename;
 
 print "Processing $filename\n";
 
-open my $fh, '<:encoding(UTF-8)', $filename || die "Could not open mbox file: $!\n";
+open my $fh, '<:encoding(UTF-8)',
+  $filename || die "Could not open mbox file: $!\n";
 
 my ($msg, $count);
 while (my $line = <$fh>) {

@@ -54,7 +54,7 @@ sub handle {
   # unless we were looking for OPTIONS
   if (!$self->_find_resource($self->cgi->path_info)) {
     if ($self->request->method eq 'OPTIONS' && $self->bz_rest_options) {
-      my $response = $self->response_header(STATUS_OK, "");
+      my $response       = $self->response_header(STATUS_OK, "");
       my $options_string = join(', ', @{$self->bz_rest_options});
       $response->header(
         'Allow'                        => $options_string,
@@ -152,7 +152,7 @@ sub response {
     $translated_header =~ tr/A-Z_/a-z\-/;
     push(@allowed_headers, $translated_header);
   }
-  $response->header("Access-Control-Allow-Origin", "*");
+  $response->header("Access-Control-Allow-Origin",  "*");
   $response->header("Access-Control-Allow-Headers", join(', ', @allowed_headers));
 
   # ETag support
@@ -493,7 +493,7 @@ sub _get_content_prefs {
 
   # Parse the Accept header, and save type name, score, and position.
   my @accept_types = split /,/, $self->cgi->http('accept') || '';
-  my $order = 0;
+  my $order        = 0;
   for my $accept_type (@accept_types) {
     my ($weight) = ($accept_type =~ /q=(\d\.\d+|\d+)/);
     my ($name)   = ($accept_type =~ m#(\S+/[^;]+)#);

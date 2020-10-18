@@ -790,7 +790,7 @@ sub update_table_definitions {
     {TYPE => 'MEDIUMTEXT'});
 
   # Bug 1522341, 1541617, 1546788 - kohei.yoshino@gmail.com
-  $dbh->bz_add_column('bugs', 'bug_type', {TYPE => 'varchar(20)'});
+  $dbh->bz_add_column('bugs',       'bug_type',         {TYPE => 'varchar(20)'});
   $dbh->bz_add_column('components', 'default_bug_type', {TYPE => 'varchar(20)'});
   $dbh->bz_add_column('products',   'default_bug_type', {TYPE => 'varchar(20)'});
   $dbh->bz_alter_column('bugs', 'bug_type',
@@ -806,7 +806,8 @@ sub update_table_definitions {
   _populate_api_keys_creation_ts();
 
   # Bug 1612290 - dkl@mozilla.com
-  $dbh->bz_add_column('profiles', 'bounce_count', {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0});
+  $dbh->bz_add_column('profiles', 'bounce_count',
+    {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0});
 
   # Bug 1588221 - dkl@mozilla.com
   $dbh->bz_alter_column('bugs_activity', 'attach_id', {TYPE => 'INT5'});
@@ -814,8 +815,9 @@ sub update_table_definitions {
     {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
   $dbh->bz_alter_column('attach_data', 'id',
     {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
+  $dbh->bz_alter_column('flags', 'attach_id', {TYPE => 'INT5'});
+  $dbh->bz_alter_column('user_request_log', 'attach_id',
+    {TYPE => 'INT5', NOTNULL => 0});
   _populate_attachment_storage_class();
 
 
@@ -1929,8 +1931,7 @@ sub _convert_groups_system_from_groupset {
     my ($admin_gid)
       = $dbh->selectrow_array("SELECT id FROM groups WHERE name = 'admin'");
     if (!$admin_gid) {
-      $dbh->do(
-        q{INSERT INTO groups (name, description)
+      $dbh->do(q{INSERT INTO groups (name, description)
                                    VALUES ('admin', 'Administrators')}
       );
       $admin_gid = $dbh->bz_last_key('groups', 'id');
@@ -2069,7 +2070,7 @@ sub _convert_attachment_statuses_to_flags {
       while (($added, $who, $when) = $sth2->fetchrow_array()) {
         last if $added =~ /(^|[, ]+)\Q$status\E([, ]+|$)/;
       }
-      $who = $dbh->quote($who);    # "NULL" by default if $who is undefined
+      $who  = $dbh->quote($who);                      # "NULL" by default if $who is undefined
       $when = $when ? $dbh->quote($when) : "NOW()";
 
 
@@ -2341,7 +2342,7 @@ sub _copy_old_charts_into_database {
       # We also add a new query for "Open", so that migrated products get
       # the same set as new products (see editproducts.cgi.)
       my @openedstatuses = ("UNCONFIRMED", "NEW", "ASSIGNED", "REOPENED");
-      my $query = join("&", map {"bug_status=$_"} @openedstatuses);
+      my $query          = join("&", map {"bug_status=$_"} @openedstatuses);
       my $series
         = new Bugzilla::Series(undef, $product, $all_name, $open_name, undef, 1,
         $query_prod . $query, 1);
@@ -3448,8 +3449,7 @@ sub _initialize_workflow_for_upgrade {
 
 sub _make_lang_setting_dynamic {
   my $dbh   = Bugzilla->dbh;
-  my $count = $dbh->selectrow_array(
-    q{SELECT 1 FROM setting
+  my $count = $dbh->selectrow_array(q{SELECT 1 FROM setting
                                          WHERE name = 'lang'
                                            AND subclass IS NULL}
   );
@@ -3746,7 +3746,7 @@ sub _set_attachment_comment_type {
     my $text = $comments{$id};
     next if $text !~ /^\Q$string\E(\d+)/;
     my $attachment_id = $1;
-    my @lines = split("\n", $text);
+    my @lines         = split("\n", $text);
     if ($type == CMT_ATTACHMENT_CREATED) {
 
       # Now we have to remove the text up until we find a line that's
@@ -3815,7 +3815,7 @@ sub _convert_flagtypes_fks_to_set_null {
 }
 
 sub _fix_decimal_types {
-  my $dbh = Bugzilla->dbh;
+  my $dbh  = Bugzilla->dbh;
   my $type = {TYPE => 'decimal(7,2)', NOTNULL => 1, DEFAULT => '0'};
   $dbh->bz_alter_column('bugs',      'estimated_time', $type);
   $dbh->bz_alter_column('bugs',      'remaining_time', $type);
@@ -3824,7 +3824,7 @@ sub _fix_decimal_types {
 
 sub _fix_series_creator_fk {
   my $dbh = Bugzilla->dbh;
-  my $fk = $dbh->bz_fk_info('series', 'creator');
+  my $fk  = $dbh->bz_fk_info('series', 'creator');
   if ($fk and $fk->{DELETE} eq 'SET NULL') {
     $fk->{DELETE} = 'CASCADE';
     $dbh->bz_alter_fk('series', 'creator', $fk);
@@ -3981,7 +3981,7 @@ sub _migrate_user_tags {
 
     indicate_progress({current => ++$current, total => $total, every => 25});
 
-    my $uri = URI->new("buglist.cgi?$query", 'http');
+    my $uri         = URI->new("buglist.cgi?$query", 'http');
     my $bug_id_list = $uri->query_param_delete('bug_id');
     if (!$bug_id_list) {
       warn "No bug_id param for tag $name from user $user_id: $query";
@@ -4078,7 +4078,7 @@ sub _rename_tags_to_tag {
 
 sub _on_delete_set_null_for_audit_log_userid {
   my $dbh = Bugzilla->dbh;
-  my $fk = $dbh->bz_fk_info('audit_log', 'user_id');
+  my $fk  = $dbh->bz_fk_info('audit_log', 'user_id');
   if ($fk and !defined $fk->{DELETE}) {
     $fk->{DELETE} = 'SET NULL';
     $dbh->bz_alter_fk('audit_log', 'user_id', $fk);
@@ -4149,7 +4149,7 @@ sub _fix_dependencies_dupes {
 sub _fix_flagclusions_indexes {
   my $dbh = Bugzilla->dbh;
   foreach my $table ('flaginclusions', 'flagexclusions') {
-    my $index = $table . '_type_id_idx';
+    my $index    = $table . '_type_id_idx';
     my $idx_info = $dbh->bz_index_info($table, $index);
     if ($idx_info && $idx_info->{'TYPE'} ne 'UNIQUE') {
 
@@ -4262,10 +4262,9 @@ sub _populate_oauth2_scopes {
 
   # if there are no scopes, then we're creating a database from scratch
   my ($scope_count) = $dbh->selectrow_array('SELECT COUNT(*) FROM oauth2_scope');
-    if (!$scope_count) {
-    $dbh->do(
-      "INSERT INTO oauth2_scope (id, name, description) VALUES " .
-      "(1, 'user:read', 'View basic account information such as email address.')"
+  if (!$scope_count) {
+    $dbh->do("INSERT INTO oauth2_scope (id, name, description) VALUES "
+        . "(1, 'user:read', 'View basic account information such as email address.')"
     );
   }
 
@@ -4345,7 +4344,9 @@ sub _populate_api_keys_creation_ts {
 
   # We do not have a way to tell when an API key was originally created
   # so we use the last_used timestamp as the initial creation value.
-  $dbh->do('UPDATE user_api_keys SET creation_ts = COALESCE(last_used, LOCALTIMESTAMP(0))');
+  $dbh->do(
+    'UPDATE user_api_keys SET creation_ts = COALESCE(last_used, LOCALTIMESTAMP(0))'
+  );
 
   $dbh->bz_alter_column('user_api_keys', 'creation_ts',
     {TYPE => 'DATETIME', NOTNULL => 1});
@@ -4355,7 +4356,8 @@ sub _populate_attachment_storage_class {
   my $dbh = Bugzilla->dbh;
 
   # Return if we have already made these changes
-  my $count = $dbh->selectrow_array('SELECT COUNT(id) FROM attachment_storage_class');
+  my $count
+    = $dbh->selectrow_array('SELECT COUNT(id) FROM attachment_storage_class');
   if (!$count) {
     $dbh->do(
       "INSERT INTO attachment_storage_class (id, storage_class) SELECT attachments.attach_id, 'database' FROM attachments ORDER BY attachments.attach_id"

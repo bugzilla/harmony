@@ -337,7 +337,7 @@ if ($cmdtype eq "dorem") {
       $vars->{'search_id'}  = $query_id;
     }
     $params = new Bugzilla::CGI($buffer);
-    $order = $params->param('order') || $order;
+    $order  = $params->param('order') || $order;
 
   }
   elsif ($remaction eq "runseries") {
@@ -578,9 +578,10 @@ if (grep('relevance', @displaycolumns) && !$fulltext) {
 # The bug ID is always selected because bug IDs are always displayed. Type,
 # severity, priority, status, resolution and product are required for buglist
 # CSS classes.
-my @selectcolumns
-  = ("bug_id", "bug_type", "bug_severity", "priority", "bug_status",
-  "resolution", "product");
+my @selectcolumns = (
+  "bug_id",     "bug_type",   "bug_severity", "priority",
+  "bug_status", "resolution", "product"
+);
 
 # remaining and actual_time are required for percentage_complete calculation:
 if (grep { $_ eq "percentage_complete" } @displaycolumns) {
@@ -854,12 +855,12 @@ foreach my $row (@$data) {
     $bug->{'changeddate'}
       =~ s/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/$1-$2-$3 $4:$5:$6/;
 
-    $bug->{'changedtime'} = $bug->{'changeddate'};          # for iCalendar and Atom
+    $bug->{'changedtime'} = $bug->{'changeddate'};             # for iCalendar and Atom
     $bug->{'changeddate'} = DiffDate($bug->{'changeddate'});
   }
 
   if ($bug->{'opendate'}) {
-    $bug->{'opentime'} = $bug->{'opendate'};                # for iCalendar
+    $bug->{'opentime'} = $bug->{'opendate'};                   # for iCalendar
     $bug->{'opendate'} = DiffDate($bug->{'opendate'});
   }
 
@@ -944,7 +945,7 @@ $vars->{'buglist_joined'} = join(',', @bugidlist);
 $vars->{'columns'}        = $columns;
 $vars->{'displaycolumns'} = \@displaycolumns;
 
-$vars->{'openstates'} = [BUG_STATE_OPEN];
+$vars->{'openstates'}   = [BUG_STATE_OPEN];
 $vars->{'closedstates'} = [map { $_->name } closed_bug_statuses()];
 
 # The iCal file needs priorities ordered from 1 to 9 (highest to lowest)
@@ -1033,7 +1034,7 @@ if ($dotweak && scalar @bugs) {
   $vars->{'resolutions'} = get_legal_field_values('resolution');
 
   # Convert bug statuses to their ID.
-  my @bug_statuses = map { $dbh->quote($_) } keys %$bugstatuses;
+  my @bug_statuses   = map { $dbh->quote($_) } keys %$bugstatuses;
   my $bug_status_ids = $dbh->selectcol_arrayref(
     'SELECT id FROM bug_status
                                WHERE ' . $dbh->sql_in('value', \@bug_statuses)
@@ -1105,7 +1106,7 @@ my $disposition = "inline";
 
 if ($format->{'extension'} eq "html" && !$agent) {
   my $list_id = $cgi->param('list_id') || $cgi->param('regetlastlist');
-  my $search = $user->save_last_search(
+  my $search  = $user->save_last_search(
     {bugs => \@bugidlist, order => $order, vars => $vars, list_id => $list_id});
   $cgi->param('list_id', $search->id) if $search;
   $contenttype = "text/html";

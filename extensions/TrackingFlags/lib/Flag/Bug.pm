@@ -84,7 +84,7 @@ sub match {
 sub remove_from_db {
   my ($self) = @_;
   $self->SUPER::remove_from_db();
-  $self->{'id'} = $self->{'tracking_flag_id'} = $self->{'bug_id'} = 0;
+  $self->{'id'}    = $self->{'tracking_flag_id'} = $self->{'bug_id'} = 0;
   $self->{'value'} = '---';
 }
 

@@ -205,10 +205,10 @@ sub SETTINGS {
       category => 'User Interface'
     },
     {
-        name     => 'inline_attachments',
-        options  => ['on', 'off'],
-        default  => 'on',
-        category => 'User Interface'
+      name     => 'inline_attachments',
+      options  => ['on', 'off'],
+      default  => 'on',
+      category => 'User Interface'
     },
   ];
 }
@@ -514,6 +514,7 @@ sub _prompt_for_password {
     chomp $pass2;
     my $pwqc = Bugzilla->passwdqc;
     my $ok   = $pwqc->validate_password($password);
+
     if (!$ok) {
       print "\n", $pwqc->reason, "\n";
       undef $password;

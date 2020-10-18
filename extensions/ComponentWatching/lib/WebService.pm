@@ -60,7 +60,7 @@ sub add {
 
   # load product and verify access
   my $productName = $params->{'product'};
-  my $product = Bugzilla::Product->new({name => $productName, cache => 1});
+  my $product     = Bugzilla::Product->new({name => $productName, cache => 1});
   unless ($product && $user->can_access_product($product)) {
     ThrowUserError('product_access_denied', {product => $productName});
   }

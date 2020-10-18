@@ -189,7 +189,7 @@ sub _validate_config {
   die join("\n", @errors) if @errors;
 
   if ($self->{_name} ne 'global') {
-    my $name = $self->{_name} =~ /\QWebhook\E/ ? 'Webhook' : $self->{_name};
+    my $name  = $self->{_name} =~ /\QWebhook\E/ ? 'Webhook' : $self->{_name};
     my $class = 'Bugzilla::Extension::Push::Connector::' . $name;
     $class->options_validate($config);
   }

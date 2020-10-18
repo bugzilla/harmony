@@ -39,7 +39,7 @@ my $bug = Bugzilla::Bug->check(scalar $cgi->param('id'));
 my $id  = $bug->id;
 
 local our $hide_resolved = $cgi->param('hide_resolved') ? 1 : 0;
-local our $maxdepth = $cgi->param('maxdepth') || 0;
+local our $maxdepth      = $cgi->param('maxdepth') || 0;
 if ($maxdepth !~ /^\d+$/) {
   $maxdepth = 0;
 }
@@ -54,7 +54,7 @@ local our $realdepth = 0;
 # Generate the tree of bugs that this bug depends on and a list of IDs
 # appearing in the tree.
 my $dependson_tree = {$id => $bug};
-my $dependson_ids = {};
+my $dependson_ids  = {};
 GenerateTree($id, "dependson", 1, $dependson_tree, $dependson_ids);
 $vars->{'dependson_tree'} = $dependson_tree;
 $vars->{'dependson_ids'}  = [keys(%$dependson_ids)];
@@ -62,7 +62,7 @@ $vars->{'dependson_ids'}  = [keys(%$dependson_ids)];
 # Generate the tree of bugs that this bug blocks and a list of IDs
 # appearing in the tree.
 my $blocked_tree = {$id => $bug};
-my $blocked_ids = {};
+my $blocked_ids  = {};
 GenerateTree($id, "blocked", 1, $blocked_tree, $blocked_ids);
 $vars->{'blocked_tree'} = $blocked_tree;
 $vars->{'blocked_ids'}  = [keys(%$blocked_ids)];
@@ -144,8 +144,8 @@ sub _get_dependencies {
   return $cache->{$bug_id}->{$relationship}
     ||= $relationship eq 'dependson'
     ? Bugzilla::Bug::list_relationship('dependencies', 'blocked', 'dependson',
-      $bug_id, $hide_resolved)
+    $bug_id, $hide_resolved)
     : Bugzilla::Bug::list_relationship('dependencies', 'dependson', 'blocked',
-      $bug_id, $hide_resolved);
+    $bug_id, $hide_resolved);
 }
 

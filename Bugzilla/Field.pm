@@ -243,11 +243,11 @@ use constant DEFAULT_FIELDS => (
     buglist        => 1
   },
   {
-    name           => 'keywords.count',
-    desc           => 'Number of Keywords',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'keywords.count',
+    desc       => 'Number of Keywords',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {
     name    => 'resolution',
@@ -297,18 +297,13 @@ use constant DEFAULT_FIELDS => (
     in_new_bugmail => 1,
     buglist        => 1,
   },
+  {name => 'cc', desc => 'CC', type => FIELD_TYPE_USERS, in_new_bugmail => 1,},
   {
-    name           => 'cc',
-    desc           => 'CC',
-    type           => FIELD_TYPE_USERS,
-    in_new_bugmail => 1,
-  },
-  {
-    name           => 'cc_count', # Originated in BMO extension
-    desc           => 'Number of CC',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'cc_count',           # Originated in BMO extension
+    desc       => 'Number of CC',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {
     name           => 'dependson',
@@ -318,11 +313,11 @@ use constant DEFAULT_FIELDS => (
     buglist        => 1
   },
   {
-    name           => 'dependson.count',
-    desc           => 'Number of Depends on',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'dependson.count',
+    desc       => 'Number of Depends on',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {
     name           => 'blocked',
@@ -332,11 +327,11 @@ use constant DEFAULT_FIELDS => (
     buglist        => 1
   },
   {
-    name           => 'blocked.count',
-    desc           => 'Number of Blocks',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'blocked.count',
+    desc       => 'Number of Blocks',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {
     name           => 'regressed_by',
@@ -346,11 +341,11 @@ use constant DEFAULT_FIELDS => (
     buglist        => 1
   },
   {
-    name           => 'regressed_by.count',
-    desc           => 'Number of Regressed by',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'regressed_by.count',
+    desc       => 'Number of Regressed by',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {
     name           => 'regresses',
@@ -360,24 +355,24 @@ use constant DEFAULT_FIELDS => (
     buglist        => 1
   },
   {
-    name           => 'regresses.count',
-    desc           => 'Number of Regressions',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'regresses.count',
+    desc       => 'Number of Regressions',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {
-    name           => 'dupe_count', # Originated in BMO extension
-    desc           => 'Number of Duplicates',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'dupe_count',             # Originated in BMO extension
+    desc       => 'Number of Duplicates',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {
-    name           => 'duplicates',
-    desc           => 'Duplicates',
-    type           => FIELD_TYPE_BUG_ID,
-    buglist        => 1,
+    name    => 'duplicates',
+    desc    => 'Duplicates',
+    type    => FIELD_TYPE_BUG_ID,
+    buglist => 1,
   },
 
   {
@@ -388,11 +383,11 @@ use constant DEFAULT_FIELDS => (
   },
 
   {
-    name           => 'attachments.count',
-    desc           => 'Number of Attachments',
-    type           => FIELD_TYPE_INTEGER,
-    buglist        => 1,
-    is_numeric     => 1,
+    name       => 'attachments.count',
+    desc       => 'Number of Attachments',
+    type       => FIELD_TYPE_INTEGER,
+    buglist    => 1,
+    is_numeric => 1,
   },
   {name => 'attachments.description', desc => 'Attachment description'},
   {name => 'attachments.filename',    desc => 'Attachment filename'},
@@ -421,8 +416,8 @@ use constant DEFAULT_FIELDS => (
     type => FIELD_TYPE_USER,
   },
 
-  {name => 'target_milestone',    desc => 'Target Milestone',   buglist    => 1},
-  {name => 'filed_via', desc => 'Filed via', buglist => 1,},
+  {name => 'target_milestone', desc => 'Target Milestone', buglist => 1},
+  {name => 'filed_via',        desc => 'Filed via',        buglist => 1,},
   {
     name    => 'creation_ts',
     desc    => 'Opened',
@@ -435,7 +430,7 @@ use constant DEFAULT_FIELDS => (
     type    => FIELD_TYPE_DATETIME,
     buglist => 1,
   },
-  {name => 'longdesc',            desc => 'Comment'},
+  {name => 'longdesc', desc => 'Comment'},
   {
     name       => 'longdescs.isprivate',
     desc       => 'Comment is private',
@@ -449,7 +444,7 @@ use constant DEFAULT_FIELDS => (
     buglist    => 1,
     is_numeric => 1
   },
-  {name => 'alias',               desc => 'Alias',               buglist    => 1},
+  {name => 'alias', desc => 'Alias', buglist => 1},
   {
     name       => 'everconfirmed',
     desc       => 'Ever Confirmed',
@@ -491,22 +486,14 @@ use constant DEFAULT_FIELDS => (
     in_new_bugmail => 1,
     buglist        => 1
   },
-  {
-    name => 'commenter',
-    desc => 'Commenter',
-    type => FIELD_TYPE_USER,
-  },
-  {name => 'flagtypes.name',        desc => 'Flags', buglist => 1},
+  {name => 'commenter',      desc => 'Commenter', type    => FIELD_TYPE_USER,},
+  {name => 'flagtypes.name', desc => 'Flags',     buglist => 1},
   {
     name => 'requestees.login_name',
     desc => 'Flag Requestee',
     type => FIELD_TYPE_USER,
   },
-  {
-    name => 'setters.login_name',
-    desc => 'Flag Setter',
-    type => FIELD_TYPE_USER,
-  },
+  {name => 'setters.login_name', desc => 'Flag Setter', type => FIELD_TYPE_USER,},
   {
     name       => 'work_time',
     desc       => 'Hours Worked',
@@ -538,7 +525,7 @@ use constant DEFAULT_FIELDS => (
     buglist => 1,
     type    => FIELD_TYPE_DATETIME
   },
-  {name => 'comment_tag',  desc => 'Comment Tag'},
+  {name => 'comment_tag', desc => 'Comment Tag'},
   {
     name    => 'triage_owner',
     desc    => 'Triage Owner',
@@ -1641,7 +1628,7 @@ sub check_field {
   {
     return 0 if $no_warn;    # We don't want an error to be thrown; return.
 
-    my $field = new Bugzilla::Field({name => $name});
+    my $field      = new Bugzilla::Field({name => $name});
     my $field_desc = $field ? $field->description : $name;
     ThrowCodeError('illegal_field', {field => $field_desc});
   }

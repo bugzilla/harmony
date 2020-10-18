@@ -45,9 +45,10 @@ sub wants_object {
 
   return $cache->{filter_wants_object} //= do {
     my $params = Bugzilla->input_params;
-     Bugzilla::WebService::Wants->new(
-      cache                => $cache->{filter_wants} ||= {},
-      maybe include_fields => $params->{include_fields},
+    Bugzilla::WebService::Wants->new(
+      cache => $cache->{filter_wants} ||= {},
+      maybe
+        include_fields => $params->{include_fields},
       maybe exclude_fields => $params->{exclude_fields},
     );
   };

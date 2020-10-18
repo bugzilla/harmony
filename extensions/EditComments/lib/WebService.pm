@@ -37,7 +37,7 @@ sub comments {
       {function => 'Bug.comments', param => 'comment_ids'});
   }
 
-  my @ids = map { trim($_) } @{$params->{comment_ids} || []};
+  my @ids          = map { trim($_) } @{$params->{comment_ids} || []};
   my $comment_data = Bugzilla::Comment->new_from_list(\@ids);
 
   # See if we were passed any invalid comment ids.
@@ -50,7 +50,7 @@ sub comments {
 
   # Now make sure that we can see all the associated bugs.
   my %got_bug_ids = map { $_->bug_id => 1 } @$comment_data;
-  $user->visible_bugs([keys %got_bug_ids]);   # preload cache for visibility check
+  $user->visible_bugs([keys %got_bug_ids]);    # preload cache for visibility check
   Bugzilla::Bug->check($_) foreach (keys %got_bug_ids);
 
   my %comments;
@@ -158,9 +158,14 @@ sub modify_revision {
   my $user = Bugzilla->login(LOGIN_REQUIRED);
 
   # Only allow edit_comments_admins_group members to modify revisions
-  ThrowUserError('auth_failure',
-    {group => 'edit_comments_admins_group', action => 'view', object => 'editcomments'})
-    unless $user->is_edit_comments_admin;
+  ThrowUserError(
+    'auth_failure',
+    {
+      group  => 'edit_comments_admins_group',
+      action => 'view',
+      object => 'editcomments'
+    }
+  ) unless $user->is_edit_comments_admin;
 
   my $comment_id
     = (defined $params->{comment_id} && $params->{comment_id} =~ /^(\d+)$/)

@@ -207,7 +207,7 @@ sub _process_bounce {
         # Increment bounce count for user
         my $bounce_count = $user->bounce_count + 1;
 
-        # If user has not had a bounce in less than 30 days, set the bounce count to 1 instead
+  # If user has not had a bounce in less than 30 days, set the bounce count to 1 instead
         my $dbh = Bugzilla->dbh;
         my ($has_recent_bounce) = $dbh->selectrow_array(
           "SELECT 1 FROM audit_log WHERE object_id = ? AND class = 'Bugzilla::User' AND field = 'bounce_message' AND ("

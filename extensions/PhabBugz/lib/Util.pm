@@ -55,10 +55,10 @@ sub create_revision_attachment {
   # BMO does not contain actual diff content.
   my @review_attachments
     = grep { is_attachment_phab_revision($_) } @{$bug->attachments};
-  my $attachment
-    = first { trim($_->data) eq $revision_uri } @review_attachments;
+  my $attachment = first { trim($_->data) eq $revision_uri } @review_attachments;
 
   if (!defined $attachment) {
+
     # No attachment is present, so we can now create new one
 
     if (!$timestamp) {
@@ -66,7 +66,7 @@ sub create_revision_attachment {
     }
 
     # If submitter, then switch to that user when creating attachment
-    local $submitter->{groups} = [Bugzilla::Group->get_all]; # We need to always be able to add attachment
+    local $submitter->{groups} = [Bugzilla::Group->get_all];    # We need to always be able to add attachment
     my $restore_prev_user = Bugzilla->set_user($submitter, scope_guard => 1);
 
     $attachment = Bugzilla::Attachment->create({
@@ -94,11 +94,10 @@ sub create_revision_attachment {
 
   # Assign the bug to the submitter if it isn't already owned and
   # the revision has reviewers assigned to it.
-  if (
-    !is_bug_assigned($bug)
+  if ( !is_bug_assigned($bug)
     && $revision->status ne 'abandoned'
-    && @{$revision->reviews}
-  ) {
+    && @{$revision->reviews})
+  {
     INFO('Assigning bug ' . $bug->id . ' to ' . $submitter->email);
     $bug->set_assigned_to($submitter);
     $bug->set_bug_status('ASSIGNED') if $bug->status->name eq 'NEW';

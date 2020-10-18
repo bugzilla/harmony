@@ -62,7 +62,7 @@ sub Send {
   # Bugzilla::User objects of people in various roles. More than one person
   # can 'have' a role, if the person in that role has changed, or people are
   # watching.
-  my @assignees = ($bug->assigned_to);
+  my @assignees   = ($bug->assigned_to);
   my @qa_contacts = $bug->qa_contact || ();
 
   my @ccs = @{$bug->cc_users};
@@ -502,7 +502,7 @@ sub _flatten_object {
 
   # the same objects are used for each recipient, so cache the flattened hash
   my $cache = Bugzilla->request_cache->{bugmail_flat_objects} ||= {};
-  my $key = blessed($object) . '-' . $object->id;
+  my $key   = blessed($object) . '-' . $object->id;
   return $cache->{$key} ||= $object->flatten_to_hash;
 }
 
@@ -611,7 +611,7 @@ sub _get_diffs {
 }
 
 sub _get_new_bugmail_fields {
-  my $bug = shift;
+  my $bug    = shift;
   my @fields = @{Bugzilla->fields({obsolete => 0, in_new_bugmail => 1})};
   my @diffs;
 
@@ -672,11 +672,11 @@ sub _get_new_bugmail_fields {
 }
 
 sub _parse_see_also {
-  my (@links) = @_;
-  my $urlbase = Bugzilla->localconfig->urlbase;
+  my (@links)     = @_;
+  my $urlbase     = Bugzilla->localconfig->urlbase;
   my $bug_link_re = qr/^\Q$urlbase\Eshow_bug\.cgi\?id=(\d+)$/;
 
-  return grep { /^\d+$/ } map { /$bug_link_re/ ? int($1) : () } @links;
+  return grep {/^\d+$/} map { /$bug_link_re/ ? int($1) : () } @links;
 }
 
 1;

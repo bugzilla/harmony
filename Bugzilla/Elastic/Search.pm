@@ -26,8 +26,8 @@ has 'es_query'           => (is => 'lazy');
 has 'search_description' => (is => 'lazy');
 has 'query_time'         => (is => 'rwp');
 
-has '_input_order' => (is => 'ro', init_arg => 'order', required => 1);
-has '_order' => (is => 'lazy', init_arg => undef);
+has '_input_order' => (is => 'ro',   init_arg => 'order', required => 1);
+has '_order'       => (is => 'lazy', init_arg => undef);
 has 'invalid_order_columns' => (is => 'lazy');
 
 with 'Bugzilla::Elastic::Role::HasClient';
@@ -133,7 +133,7 @@ sub _quicksearch_to_params {
   my ($quicksearch) = @_;
   no warnings 'redefine';
   my $cgi = Bugzilla::Elastic::Search::FakeCGI->new;
-  local *Bugzilla::cgi = sub {$cgi};
+  local *Bugzilla::cgi                          = sub {$cgi};
   local $Bugzilla::Search::Quicksearch::ELASTIC = 1;
   quicksearch($quicksearch);
 
@@ -246,7 +246,7 @@ sub _build_es_query {
   push @extra, size => $limit;
   return {
     _source => @{$self->fields} ? \1 : \0,
-    query => _query($self->clause),
+    query   => _query($self->clause),
     @extra,
   };
 }

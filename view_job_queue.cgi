@@ -106,7 +106,7 @@ sub generate_report {
 }
 
 sub _cond_thaw {
-  my $data = shift;
+  my $data  = shift;
   my $magic = eval { read_magic($data); };
   if ($magic && $magic->{major} && $magic->{major} >= 2 && $magic->{major} <= 5) {
     my $thawed = eval { thaw($data) };

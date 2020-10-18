@@ -128,9 +128,7 @@ sub object_validators {
       if ($value =~ /PUBLIC KEY/) {
 
         # PGP keys must be ASCII-armoured.
-        my $tct = Bugzilla::Extension::SecureMail::TCT->new(
-          public_key => $value
-        );
+        my $tct = Bugzilla::Extension::SecureMail::TCT->new(public_key => $value);
         unless ($tct->is_valid->get) {
           ThrowUserError('securemail_invalid_key',
             {errstr => 'key is invalid or expired'});
@@ -477,9 +475,7 @@ sub _make_secure {
     # PGP Encryption #
     ##################
 
-    my $tct = Bugzilla::Extension::SecureMail::TCT->new(
-      public_key => $key
-    );
+    my $tct = Bugzilla::Extension::SecureMail::TCT->new(public_key => $key);
 
     if (scalar $email->parts > 1) {
       my $old_boundary = $email->{ct}{attributes}{boundary};
@@ -660,7 +656,7 @@ sub _fix_encoding {
   return if $part->parts > 1;
 
   # nothing to do if the part already has a charset
-  my $ct = parse_content_type($part->content_type);
+  my $ct      = parse_content_type($part->content_type);
   my $charset = $ct->{attributes}{charset} ? $ct->{attributes}{charset} : '';
   return unless !$charset || $charset eq 'us-ascii';
 

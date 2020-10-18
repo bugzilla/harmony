@@ -63,7 +63,7 @@ sub undo {
       {id => $_->{comment_id},};
   }
 
-  my $dbh = Bugzilla->dbh;
+  my $dbh     = Bugzilla->dbh;
   my @bug_ids = reverse sort { $a <=> $b } keys %action;
   say 'Found ', 0 + @bug_ids, ' bugs';
   foreach my $bug_id (@bug_ids) {

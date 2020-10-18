@@ -160,7 +160,7 @@ sub _add_activity_to_stream {
 
 sub _add_comments_to_stream {
   my ($bug, $stream) = @_;
-  my $user = Bugzilla->user;
+  my $user           = Bugzilla->user;
   my @treeherder_ids = map { $_->id } @{Bugzilla->treeherder_users};
 
   my $raw_comments = $bug->comments();
@@ -204,8 +204,7 @@ sub _add_activities_to_stream {
     : Bugzilla::Bug::GetBugActivity($bug->id);
 
   # allow other extensions to alter history
-  Bugzilla::Hook::process('inline_history_activity',
-    {activity => $raw_activity});
+  Bugzilla::Hook::process('inline_history_activity', {activity => $raw_activity});
 
   my %attachment_cache;
   foreach my $attachment (@{$bug->attachments}) {
@@ -248,7 +247,7 @@ sub _add_activities_to_stream {
       my $column = $dbh->bz_column_info($table, $field);
       if ($column && $column->{TYPE} eq 'BOOLEAN') {
         $change->{removed} = '';
-        $change->{added} = $change->{added} ? 'true' : 'false';
+        $change->{added}   = $change->{added} ? 'true' : 'false';
       }
 
       # load field object (only required for custom fields), and set the

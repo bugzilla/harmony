@@ -278,8 +278,11 @@ our %create_bug_formats = (
   'developer.mozilla.org' => {'format' => 'mdn',        'include' => 'everyone',},
   'Legal'                 => {'format' => 'legal',      'include' => 'everyone',},
   'Recruiting'            => {'format' => 'recruiting', 'include' => 'everyone',},
-  'Toolkit'               => {'component' => 'Blocklist Policy Requests',
-                              'format' => 'blocklist', 'include' => 'everyone',},
+  'Toolkit'               => {
+    'component' => 'Blocklist Policy Requests',
+    'format'    => 'blocklist',
+    'include'   => 'everyone',
+  },
   'Internet Public Policy' => {'format' => 'ipp', 'include' => 'everyone',},
 );
 

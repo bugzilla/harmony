@@ -27,6 +27,6 @@ class_type URL         {class => 'Mojo::URL'};
 role_type Task,        {role  => 'Bugzilla::Task'};
 
 coerce URL, from Str() => q{ Mojo::URL->new($_) },
-            from URI() => q{ Mojo::URL->new("$_") };
+  from URI() => q{ Mojo::URL->new("$_") };
 
 1;

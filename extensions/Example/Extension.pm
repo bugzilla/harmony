@@ -460,7 +460,7 @@ sub error_catch {
   return unless $args->{error} eq 'bad_page_cgi_id';
 
   my $page_id = $args->{vars}->{page_id};
-  my $login = Bugzilla->user->identity || "Someone";
+  my $login   = Bugzilla->user->identity || "Someone";
   warn "$login attempted to access page.cgi with id = $page_id";
 
   my $page          = $args->{message};
@@ -486,7 +486,7 @@ sub flag_end_of_update {
   my $flag_params = $args;
   my ($object, $timestamp, $old_flags, $new_flags)
     = @$flag_params{qw(object timestamp old_flags new_flags)};
-  my ($removed, $added) = diff_arrays($old_flags, $new_flags);
+  my ($removed, $added)  = diff_arrays($old_flags, $new_flags);
   my ($granted, $denied) = (0, 0);
   foreach my $new_flag (@$added) {
     $granted++ if $new_flag =~ /\+$/;

@@ -179,7 +179,7 @@ sub _get_highest_status_firefox {
 
   my @status_flags
     = sort { $b <=> $a }
-    map { $_->name =~ /(\d+)$/; $1 }
+    map  { $_->name                  =~ /(\d+)$/; $1 }
     grep { $_->is_active && $_->name =~ /^cf_status_firefox\d/ } @$flags;
   return @status_flags ? $status_flags[0] : undef;
 }
@@ -197,9 +197,9 @@ sub db_schema_abstract_schema {
       name        => {TYPE => 'varchar(64)', NOTNULL => 1,},
       description => {TYPE => 'varchar(64)', NOTNULL => 1,},
       type        => {TYPE => 'varchar(64)', NOTNULL => 1,},
-      sortkey     => {TYPE => 'INT2',        NOTNULL => 1, DEFAULT => '0',},
-      enter_bug   => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'TRUE',},
-      is_active   => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'TRUE',},
+      sortkey   => {TYPE => 'INT2',    NOTNULL => 1, DEFAULT => '0',},
+      enter_bug => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE',},
+      is_active => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE',},
     ],
     INDEXES => [tracking_flags_idx => {FIELDS => ['name'], TYPE => 'UNIQUE',},],
   };
@@ -216,11 +216,11 @@ sub db_schema_abstract_schema {
         NOTNULL    => 0,
         REFERENCES => {TABLE => 'groups', COLUMN => 'id', DELETE => 'SET NULL',},
       },
-      value     => {TYPE => 'varchar(64)', NOTNULL => 1,},
-      sortkey   => {TYPE => 'INT2',        NOTNULL => 1, DEFAULT => '0',},
-      enter_bug => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'TRUE',},
-      is_active => {TYPE => 'BOOLEAN',     NOTNULL => 1, DEFAULT => 'TRUE',},
-      comment   => {TYPE => 'TEXT',        NOTNULL => 0,},
+      value => {TYPE => 'varchar(64)', NOTNULL => 1,},
+      sortkey   => {TYPE => 'INT2',    NOTNULL => 1, DEFAULT => '0',},
+      enter_bug => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE',},
+      is_active => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE',},
+      comment   => {TYPE => 'TEXT',    NOTNULL => 0,},
     ],
     INDEXES => [
       tracking_flags_values_idx =>
@@ -489,7 +489,7 @@ sub bug_end_of_create {
     next if !$params->{$flag->name};
     foreach my $value (@{$flag->values}) {
       next if $value->value ne $params->{$flag->name};
-      next if $value->value eq '---'; # do not insert if value is '---', same as empty
+      next if $value->value eq '---';                    # do not insert if value is '---', same as empty
       if (!$flag->can_set_value($value->value)) {
         ThrowUserError('tracking_flags_change_denied',
           {flag => $flag, value => $value});

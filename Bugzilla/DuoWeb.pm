@@ -60,8 +60,8 @@ sub _sign_vals {
 
   my $exp = time + $expire;
 
-  my $val = join '|', @{$vals}, $exp;
-  my $b64 = encode_base64($val, '');
+  my $val    = join '|', @{$vals}, $exp;
+  my $b64    = encode_base64($val, '');
   my $cookie = "$prefix|$b64";
 
   my $sig = hmac_sha1_hex($cookie, $key);

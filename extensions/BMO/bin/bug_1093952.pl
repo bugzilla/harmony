@@ -29,7 +29,7 @@ my $relops_id
 my $puppet_id
   = Bugzilla::Component->check({product => $infra, name => 'RelOps: Puppet'})
   ->id;
-my $infra_id = $infra->id;
+my $infra_id   = $infra->id;
 my $components = $dbh->sql_in('component_id', [$relops_id, $puppet_id]);
 
 print "Searching for bugs..\n";
@@ -56,8 +56,8 @@ print "Press <Ctrl-C> to stop or <Enter> to continue...\n";
 getc();
 
 my $nobody = Bugzilla::User->check({name => 'nobody@mozilla.org'});
-my $field = Bugzilla::Field->check({name => 'status_whiteboard'});
-my $when = $dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
+my $field  = Bugzilla::Field->check({name => 'status_whiteboard'});
+my $when   = $dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
 
 my $sth_bugs = $dbh->prepare("
     UPDATE bugs

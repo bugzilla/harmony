@@ -74,7 +74,7 @@ sub _classification_to_hash {
     name        => $self->type('string', $classification->name),
     description => $self->type('string', $classification->description),
     sort_key    => $self->type('int',    $classification->sortkey),
-    products => [map { $self->_product_to_hash($_, $params) } @$products],
+    products    => [map { $self->_product_to_hash($_, $params) } @$products],
     };
 }
 

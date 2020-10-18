@@ -269,7 +269,7 @@ sub preload_all_the_things {
   my ($flags, $params) = @_;
 
   my %flag_hash = map { $_->flag_id => $_ } @$flags;
-  my @flag_ids = keys %flag_hash;
+  my @flag_ids  = keys %flag_hash;
   return unless @flag_ids;
 
   # Preload values
@@ -420,7 +420,7 @@ sub bug_flag {
     ? undef
     : {
     condition => "tracking_flag_id = ? AND bug_id = ?",
-    values => [$self->flag_id, $bug_id]
+    values    => [$self->flag_id, $bug_id]
     };
   return $self->{'bug_flag'}
     = Bugzilla::Extension::TrackingFlags::Flag::Bug->new($params);

@@ -91,7 +91,7 @@ sub new {
     }
 
     my $condition = 'product_id = ? AND name = ?';
-    my @values = ($product->id, $name);
+    my @values    = ($product->id, $name);
     $param = {condition => $condition, values => \@values};
   }
 
@@ -210,7 +210,8 @@ sub _check_default_bug_type {
 
   # Reset if the specified bug type is the same as the product's default bug
   # type or if there's any error in validation
-  return undef if $type eq $product->default_bug_type
+  return undef
+    if $type eq $product->default_bug_type
     || Bugzilla::Config::Common::check_bug_type($type) ne '';
   return $type;
 }
@@ -325,7 +326,10 @@ sub set_name             { $_[0]->set('name',             $_[1]); }
 sub set_description      { $_[0]->set('description',      $_[1]); }
 sub set_is_active        { $_[0]->set('isactive',         $_[1]); }
 sub set_default_bug_type { $_[0]->set('default_bug_type', $_[1]); }
-sub set_bug_description_template { $_[0]->set('bug_description_template', $_[1]); }
+
+sub set_bug_description_template {
+  $_[0]->set('bug_description_template', $_[1]);
+}
 
 sub set_default_assignee {
   my ($self, $owner) = @_;

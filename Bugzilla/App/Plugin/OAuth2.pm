@@ -129,7 +129,9 @@ sub _verify_client {
     return (0, 'invalid_scope');
   }
 
-  if (!$ENV{BUGZILLA_ALLOW_INSECURE_HTTP} && Mojo::URL->new($redirect_uri)->scheme ne 'https') {
+  if (!$ENV{BUGZILLA_ALLOW_INSECURE_HTTP}
+    && Mojo::URL->new($redirect_uri)->scheme ne 'https')
+  {
     INFO("invalid_redirect_uri: $redirect_uri");
     return (0, 'invalid_redirect_uri');
   }
@@ -182,7 +184,7 @@ sub _verify_auth_code {
   my $jwt_data = $dbh->selectrow_hashref('SELECT * FROM oauth2_jwt WHERE jti = ?',
     undef, $jwt_claims->{jti});
 
-  if (!$jwt_data
+  if ( !$jwt_data
     or ($jwt_data->{type} ne TOKEN_TYPE_AUTH)
     or ($jwt_claims->{user_id} != $jwt_data->{user_id})
     or ($uri ne $jwt_claims->{aud})
@@ -196,15 +198,17 @@ sub _verify_auth_code {
       INFO('Client redirect_uri does not match')
         if ($uri && $jwt_claims->{aud} ne $uri);
       INFO('Auth code expired') if ($jwt_claims->{exp} <= time);
-      $dbh->do('DELETE FROM oauth2_jwt WHERE client_id = ? AND user_id = ? AND type = ?',
-          undef, $client_data->{id}, $jwt_claims->{user_id}, TOKEN_TYPE_AUTH);
+      $dbh->do(
+        'DELETE FROM oauth2_jwt WHERE client_id = ? AND user_id = ? AND type = ?',
+        undef, $client_data->{id}, $jwt_claims->{user_id},
+        TOKEN_TYPE_AUTH
+      );
     }
 
     return (0, 'invalid_grant');
   }
 
-  $dbh->do('DELETE FROM oauth2_jwt WHERE id = ?',
-    undef, $jwt_data->{id});
+  $dbh->do('DELETE FROM oauth2_jwt WHERE id = ?', undef, $jwt_data->{id});
 
   return ($client_id, undef, $jwt_claims->{scopes}, $jwt_claims->{user_id});
 }
@@ -251,11 +255,13 @@ sub _store_access_token {
 
   my $user_id;
   if (!defined $auth_code && $old_refresh_token) {
+
     # must have generated an access token via a refresh token so revoke the
     # old access token and refresh token (also copy required data if missing)
     my ($res, $jwt_claims) = _get_jwt_claims($old_refresh_token, 'refresh');
     return (0, 'invalid_jwt') unless $res;
-    my $jwt_data = $dbh->selectrow_hashref('SELECT * FROM oauth2_jwt WHERE jti = ?', undef, $jwt_claims->{jti});
+    my $jwt_data = $dbh->selectrow_hashref('SELECT * FROM oauth2_jwt WHERE jti = ?',
+      undef, $jwt_claims->{jti});
     return (0, 'invalid_grant') if !$jwt_data;
     $user_id = $jwt_claims->{user_id};
   }
@@ -288,12 +294,7 @@ sub _store_access_token {
 
   $dbh->do(
     'INSERT INTO oauth2_jwt (jti, client_id, user_id, type) VALUES (?, ?, ?, ?)',
-    undef,
-    $jwt_claims->{jti},
-    $client_data->{id},
-    $user_id,
-    TOKEN_TYPE_REFRESH
-  );
+    undef, $jwt_claims->{jti}, $client_data->{id}, $user_id, TOKEN_TYPE_REFRESH);
 
   return undef;
 }
@@ -307,7 +308,8 @@ sub _verify_access_token {
   my ($res, $jwt_claims) = _get_jwt_claims($access_token);
   return (0, 'invalid_jwt') unless $res;
 
-  my $jwt_data = $dbh->selectrow_hashref('SELECT * FROM oauth2_jwt WHERE jti = ?', undef, $jwt_claims->{jti});
+  my $jwt_data = $dbh->selectrow_hashref('SELECT * FROM oauth2_jwt WHERE jti = ?',
+    undef, $jwt_claims->{jti});
 
   if ($jwt_data && $is_refresh_token) {
     if ($scopes_ref) {
@@ -322,8 +324,7 @@ sub _verify_access_token {
   if ($jwt_data) {
     if ($jwt_claims->{exp} <= time) {
       INFO('Access token has expired');
-      $dbh->do('DELETE FROM oauth2_jwt WHERE id = ?',
-        undef, $jwt_data->{id});
+      $dbh->do('DELETE FROM oauth2_jwt WHERE id = ?', undef, $jwt_data->{id});
       return (0, 'invalid_grant');
     }
     elsif ($scopes_ref) {
@@ -358,7 +359,8 @@ sub _get_jwt_claims {
   return (0) if $jwt_error;
 
   if (defined $check_type && $check_type ne $claims->{type}) {
-    INFO("JWT not correct type: got: " . $claims->{type} . " expected: $check_type");
+    INFO(
+      "JWT not correct type: got: " . $claims->{type} . " expected: $check_type");
     return (0);
   }
 

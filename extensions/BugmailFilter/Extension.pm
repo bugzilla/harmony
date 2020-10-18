@@ -150,7 +150,7 @@ sub user_preferences {
     $fields{$field->name} = $field->description;
   }
 
-  $vars->{fields} = \%fields;
+  $vars->{fields}     = \%fields;
   $vars->{field_list} = [sort { lc($a->{description}) cmp lc($b->{description}) }
       map { {name => $_, description => $fields{$_}} } keys %fields];
 
@@ -321,9 +321,9 @@ sub _should_drop {
   my ($user, $bug, $relationship, $changer)
     = @$args{qw( user bug relationship changer )};
   my ($user_id, $login) = ($user->id, $user->login);
-  my $bit_direct   = Bugzilla::BugMail::BIT_DIRECT;
-  my $bit_watching = Bugzilla::BugMail::BIT_WATCHING;
-  my $bit_compwatch = 15;    # from Bugzilla::Extension::ComponentWatching
+  my $bit_direct    = Bugzilla::BugMail::BIT_DIRECT;
+  my $bit_watching  = Bugzilla::BugMail::BIT_WATCHING;
+  my $bit_compwatch = 15;                                # from Bugzilla::Extension::ComponentWatching
 
   # the index of $rel_map corresponds to the values in FILTER_RELATIONSHIPS
   my @rel_map;
@@ -455,10 +455,8 @@ sub db_schema_abstract_schema {
     ],
     INDEXES => [
       bugmail_filters_unique_idx => {
-        FIELDS => [
-          qw( user_id field_name product_id component_id
-            relationship )
-        ],
+        FIELDS => [qw( user_id field_name product_id component_id
+        relationship )],
         TYPE => 'UNIQUE',
       },
       bugmail_filters_user_idx => ['user_id',],

@@ -39,8 +39,10 @@ sub persist_login {
 
   my $ip_addr = remote_ip();
 
-  $dbh->do('INSERT INTO logincookies (cookie, userid, ipaddr, lastused)
-    VALUES (?, ?, ?, NOW())', undef, $login_cookie, $user->id, $ip_addr);
+  $dbh->do(
+    'INSERT INTO logincookies (cookie, userid, ipaddr, lastused)
+    VALUES (?, ?, ?, NOW())', undef, $login_cookie, $user->id, $ip_addr
+  );
 
   # Issuing a new cookie is a good time to clean up the old
   # cookies.

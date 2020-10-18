@@ -132,7 +132,7 @@ sub membership_report {
       my $member_id = shift @$groups_to_check;
       if (!$checked_groups{$member_id}) {
         $checked_groups{$member_id} = 1;
-        my $members = $group_membership{$member_id};
+        my $members      = $group_membership{$member_id};
         my @new_to_check = grep(!$checked_groups{$_}, @$members);
         push(@$groups_to_check, @new_to_check);
         foreach my $id (@new_to_check) {
@@ -269,7 +269,7 @@ sub members_report {
 sub _filter_userlist {
   my ($list, $include_disabled) = @_;
   $list = [grep { $_->is_enabled } @$list] unless $include_disabled;
-  my $now = DateTime->now();
+  my $now   = DateTime->now();
   my $never = DateTime->from_epoch(epoch => 0);
   foreach my $user (@$list) {
     my $last_seen

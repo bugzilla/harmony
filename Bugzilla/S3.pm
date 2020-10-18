@@ -160,7 +160,7 @@ sub _send_request {
   my $content  = $response->content;
 
   return $content unless $response->content_type eq 'application/xml';
-  return unless $content;
+  return          unless $content;
   return $self->_xpc_of_content($content);
 }
 
@@ -198,7 +198,7 @@ sub _send_request_expect_nothing {
 sub _send_request_expect_nothing_probed {
   my $self = shift;
   my ($method, $path, $conf, $value) = @_;
-  my $request = $self->_make_request('HEAD', $path);
+  my $request      = $self->_make_request('HEAD', $path);
   my $override_uri = undef;
 
   my $old_redirectable = $self->ua->requests_redirectable;

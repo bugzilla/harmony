@@ -55,10 +55,10 @@ sub startup {
   $self->plugin('Bugzilla::App::Plugin::OAuth2');
 
   push @{$self->commands->namespaces}, 'Bugzilla::App::Command';
-  push @{$self->renderer->paths}, @{ Bugzilla::Template::_include_path() };
+  push @{$self->renderer->paths},      @{Bugzilla::Template::_include_path()};
 
   $self->sessions->cookie_name('bugzilla');
-  $self->sessions->default_expiration(60 * 60 * 24 * 7); # 1 week
+  $self->sessions->default_expiration(60 * 60 * 24 * 7);    # 1 week
 
   $self->hook(
     before_routes => sub {
@@ -68,7 +68,7 @@ sub startup {
       # It is possible the regexp is bad.
       # If that is the case, we just log the error and continue on.
       try {
-        my $regexp = Bugzilla->params->{block_user_agent};
+        my $regexp     = Bugzilla->params->{block_user_agent};
         my $user_agent = $c->req->headers->user_agent // '';
         if ($regexp && $user_agent =~ /$regexp/) {
           my $msg = "Contact " . Bugzilla->params->{maintainer};
@@ -84,18 +84,18 @@ sub startup {
     }
   );
 
-  $ENV{MOJO_MAX_LINE_SIZE} ||= 1024 * 10; # Mojo default is 8kb
+  $ENV{MOJO_MAX_LINE_SIZE} ||= 1024 * 10;    # Mojo default is 8kb
 
   # hypnotoad is weird and doesn't look for MOJO_LISTEN itself.
   $self->config(
     hypnotoad => {
-      proxy              => $ENV{MOJO_REVERSE_PROXY} // 1,
+      proxy              => $ENV{MOJO_REVERSE_PROXY}      // 1,
       heartbeat_interval => $ENV{MOJO_HEARTBEAT_INTERVAL} // 10,
-      heartbeat_timeout  => $ENV{MOJO_HEARTBEAT_TIMEOUT} // 120,
+      heartbeat_timeout  => $ENV{MOJO_HEARTBEAT_TIMEOUT}  // 120,
       inactivity_timeout => $ENV{MOJO_INACTIVITY_TIMEOUT} // 120,
-      workers            => $ENV{MOJO_WORKERS} // 1,
-      clients            => $ENV{MOJO_CLIENTS} // 200,
-      spare              => $ENV{MOJO_SPARE} // 1,
+      workers            => $ENV{MOJO_WORKERS}            // 1,
+      clients            => $ENV{MOJO_CLIENTS}            // 200,
+      spare              => $ENV{MOJO_SPARE}              // 1,
       listen             => [$ENV{MOJO_LISTEN} // 'http://*:3000'],
     },
   );
@@ -133,48 +133,50 @@ sub startup {
       }
     );
   }
-  $self->hook(after_dispatch => sub {
-    my ($c) = @_;
-    my ($req, $res) = ($c->req, $c->res);
+  $self->hook(
+    after_dispatch => sub {
+      my ($c) = @_;
+      my ($req, $res) = ($c->req, $c->res);
 
-    if ( $req->is_secure
-      && !$res->headers->strict_transport_security
-      && Bugzilla->params->{'strict_transport_security'} ne 'off')
-    {
-      my $sts_opts = 'max-age=' . MAX_STS_AGE;
-      if (Bugzilla->params->{'strict_transport_security'} eq 'include_subdomains') {
-        $sts_opts .= '; includeSubDomains';
+      if ( $req->is_secure
+        && !$res->headers->strict_transport_security
+        && Bugzilla->params->{'strict_transport_security'} ne 'off')
+      {
+        my $sts_opts = 'max-age=' . MAX_STS_AGE;
+        if (Bugzilla->params->{'strict_transport_security'} eq 'include_subdomains') {
+          $sts_opts .= '; includeSubDomains';
+        }
+        $res->headers->strict_transport_security($sts_opts);
       }
-      $res->headers->strict_transport_security($sts_opts);
-    }
 
-    # Add X-Frame-Options header to prevent framing and subsequent
-    # possible clickjacking problems.
-    unless ($c->url_is_attachment_base) {
-      $res->headers->header('X-frame-options' => 'SAMEORIGIN');
-    }
+      # Add X-Frame-Options header to prevent framing and subsequent
+      # possible clickjacking problems.
+      unless ($c->url_is_attachment_base) {
+        $res->headers->header('X-frame-options' => 'SAMEORIGIN');
+      }
 
-    # Add X-XSS-Protection header to prevent simple XSS attacks
-    # and enforce the blocking (rather than the rewriting) mode.
-    $res->headers->header('X-xss-protection' => '1; mode=block');
+      # Add X-XSS-Protection header to prevent simple XSS attacks
+      # and enforce the blocking (rather than the rewriting) mode.
+      $res->headers->header('X-xss-protection' => '1; mode=block');
 
-    # Add X-Content-Type-Options header to prevent browsers sniffing
-    # the MIME type away from the declared Content-Type.
-    $res->headers->header('X-content-type-options' => 'nosniff');
+      # Add X-Content-Type-Options header to prevent browsers sniffing
+      # the MIME type away from the declared Content-Type.
+      $res->headers->header('X-content-type-options' => 'nosniff');
 
-    if (length($req->url->to_abs->to_string) > 8000) {
-      $res->headers->header('Referrer-policy' => 'origin');
-    }
-    else {
-      $res->headers->header('Referrer-policy' => 'same-origin');
-    }
+      if (length($req->url->to_abs->to_string) > 8000) {
+        $res->headers->header('Referrer-policy' => 'origin');
+      }
+      else {
+        $res->headers->header('Referrer-policy' => 'same-origin');
+      }
 
-    unless ($res->headers->content_security_policy) {
-      if (my $csp = $c->content_security_policy) {
-        $res->headers->header($csp->header_name, $csp->value);
+      unless ($res->headers->content_security_policy) {
+        if (my $csp = $c->content_security_policy) {
+          $res->headers->header($csp->header_name, $csp->value);
+        }
       }
     }
-  });
+  );
   Bugzilla::WebService::Server::REST->preload;
 
   $self->setup_routes;

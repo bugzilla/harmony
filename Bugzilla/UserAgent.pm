@@ -73,12 +73,12 @@ use constant PLATFORMS_MAP => (
   qr/\(.*AIX.*\)/ => ["PowerPC", "Macintosh"],
 
   # Stereotypical and broken
-  qr/\(.*Windows CE.*\)/        => ["ARM",     "PocketPC"],
-  qr/\(.*Macintosh.*\)/         => ["68k",     "Macintosh"],
-  qr/\(.*Mac OS [89].*\)/       => ["68k",     "Macintosh"],
-  qr/\(.*WOW64.*\)/             => ["x86_64"],
-  qr/\(.*Win64.*\)/             => ["IA64"],
-  qr/\(Win.*\)/                 => ["IA32",    "x86", "PC"],
+  qr/\(.*Windows CE.*\)/  => ["ARM", "PocketPC"],
+  qr/\(.*Macintosh.*\)/   => ["68k", "Macintosh"],
+  qr/\(.*Mac OS [89].*\)/ => ["68k", "Macintosh"],
+  qr/\(.*WOW64.*\)/       => ["x86_64"],
+  qr/\(.*Win64.*\)/       => ["IA64"],
+  qr/\(Win.*\)/           => ["IA32", "x86", "PC"],
   qr/\(.*Win(?:dows[ -])NT.*\)/ => ["IA32",    "x86", "PC"],
   qr/\(.*OSF.*\)/               => ["Alpha",   "DEC"],
   qr/\(.*HP-?UX.*\)/i           => ["PA-RISC", "HP"],
@@ -164,15 +164,15 @@ use constant OS_MAP => (
 
   # OS X 10.3 is the most likely default version of PowerPC Macs
   # OS X 10.0 is more for configurations which didn't setup 10.x versions
-  qr/\(.*Mac OS X.*\)/     => [("Mac OS X 10.3",  "Mac OS X 10.0", "macOS")],
-  qr/\(.*Mac OS 9.*\)/     => [("Mac System 9.x", "Mac System 9.0")],
-  qr/\(.*Mac OS 8\.6.*\)/  => [("Mac System 8.6", "Mac System 8.5")],
+  qr/\(.*Mac OS X.*\)/    => [("Mac OS X 10.3",  "Mac OS X 10.0", "macOS")],
+  qr/\(.*Mac OS 9.*\)/    => [("Mac System 9.x", "Mac System 9.0")],
+  qr/\(.*Mac OS 8\.6.*\)/ => [("Mac System 8.6", "Mac System 8.5")],
   qr/\(.*Mac OS 8\.5.*\)/  => ["Mac System 8.5"],
   qr/\(.*Mac OS 8\.1.*\)/  => [("Mac System 8.1", "Mac System 8.0")],
   qr/\(.*Mac OS 8\.0.*\)/  => ["Mac System 8.0"],
   qr/\(.*Mac OS 8[^.].*\)/ => ["Mac System 8.0"],
   qr/\(.*Mac OS 8.*\)/     => ["Mac System 8.6"],
-  qr/\(.*Darwin.*\)/       => [("Mac OS X 10.0",  "macOS")],
+  qr/\(.*Darwin.*\)/       => [("Mac OS X 10.0", "macOS")],
 
   # Silly
   qr/\(.*Mac.*PowerPC.*\)/ => ["Mac System 9.x"],

@@ -195,7 +195,7 @@ sub _load_from_input {
   foreach my $value (@$values) {
     $value->{value} = '' unless exists $value->{value} && defined $value->{value};
     $value->{setter_group_id} = '' unless $value->{setter_group_id};
-    $value->{is_active} = $value->{is_active} ? 1 : 0;
+    $value->{is_active}       = $value->{is_active} ? 1 : 0;
   }
 
   # visibility

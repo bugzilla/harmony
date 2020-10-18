@@ -18,6 +18,7 @@ use base qw(Bugzilla::BugUrl);
 
 sub should_handle {
   my ($class, $uri) = @_;
+
   # https://admin.phacility.com/PHI\d+
   # https://secure.phabricator.com/T\d+
   # https://secure.phabricator.com/D\d+

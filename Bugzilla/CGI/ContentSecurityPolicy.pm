@@ -28,12 +28,10 @@ my $SRC_URI = declare as Str, where {
 };
 my $SRC              = $SRC_KEYWORD | $SRC_URI;
 my $SOURCE_LIST      = ArrayRef [$SRC];
-my $REFERRER_KEYWORD = enum [
-  qw(
-    no-referrer no-referrer-when-downgrade
-    origin      origin-when-cross-origin unsafe-url
-    )
-];
+my $REFERRER_KEYWORD = enum [qw(
+  no-referrer no-referrer-when-downgrade
+  origin      origin-when-cross-origin unsafe-url
+)];
 
 my @ALL_BOOL = qw( sandbox upgrade_insecure_requests );
 my @ALL_SRC  = qw(
@@ -43,12 +41,12 @@ my @ALL_SRC  = qw(
   frame_src frame_ancestors form_action
 );
 
-has \@ALL_SRC => (is => 'ro', isa => $SOURCE_LIST, predicate => 1);
-has \@ALL_BOOL   => (is => 'ro', isa => Bool, default   => 0);
-has 'report_uri' => (is => 'ro', isa => Str,  predicate => 1);
-has 'base_uri'   => (is => 'ro', isa => Str,  predicate => 1);
+has \@ALL_SRC  => (is => 'ro', isa => $SOURCE_LIST, predicate => 1);
+has \@ALL_BOOL => (is => 'ro', isa => Bool, default => 0);
+has 'report_uri' => (is => 'ro', isa => Str, predicate => 1);
+has 'base_uri'   => (is => 'ro', isa => Str, predicate => 1);
 has 'report_only' => (is => 'ro', isa => Bool);
-has 'referrer' => (is => 'ro', isa => $REFERRER_KEYWORD, predicate => 1);
+has 'referrer'    => (is => 'ro', isa => $REFERRER_KEYWORD, predicate => 1);
 has 'value'   => (is => 'lazy');
 has 'nonce'   => (is => 'lazy', init_arg => undef, predicate => 1);
 has 'disable' => (is => 'ro', isa => Bool, default => 0);
@@ -63,7 +61,7 @@ sub header_name {
   my ($self) = @_;
   my $name = 'Content-Security-Policy';
   if ($self->report_only) {
-    return  $name . '-Report-Only';
+    return $name . '-Report-Only';
   }
   else {
     return $name;

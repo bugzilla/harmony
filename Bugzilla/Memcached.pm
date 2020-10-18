@@ -184,10 +184,8 @@ sub set_data {
     my $key        = $self->_resource_prefix . '.' . $args->{key};
     my $expires_in = $args->{expires_in};
 
-    return $self->_set($key, {
-      value   => $args->{value},
-      expires => $expires_in ? time() + $expires_in : 0,
-    });
+    return $self->_set($key,
+      {value => $args->{value}, expires => $expires_in ? time() + $expires_in : 0,});
   }
   else {
     ThrowCodeError('params_required',
@@ -410,7 +408,7 @@ sub _get {
   my ($self, $key) = @_;
 
   my $enc_key = $self->_encode_key($key) or return;
-  my $val = $self->{memcached}->get($enc_key);
+  my $val     = $self->{memcached}->get($enc_key);
   TRACE("get $enc_key: " . (defined $val ? "HIT" : "MISS"));
   return $val;
 }

@@ -24,7 +24,7 @@ sub report {
     || ThrowUserError('auth_failure',
     {group => 'hr', action => 'run', object => 'internship_dashboard'});
 
-  my $product = Bugzilla::Product->check({name => 'Recruiting', cache => 1});
+  my $product   = Bugzilla::Product->check({name => 'Recruiting', cache => 1});
   my $component = Bugzilla::Component->new(
     {product => $product, name => 'Intern', cache => 1});
 

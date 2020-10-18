@@ -291,16 +291,14 @@ elsif ($action eq 'update') {
   $changes = $otherUser->update();
 
   # Update group settings.
-  my $sth_add_mapping = $dbh->prepare(
-    qq{INSERT INTO user_group_map (
+  my $sth_add_mapping = $dbh->prepare(qq{INSERT INTO user_group_map (
                   user_id, group_id, isbless, grant_type
                  ) VALUES (
                   ?, ?, ?, ?
                  )
           }
   );
-  my $sth_remove_mapping = $dbh->prepare(
-    qq{DELETE FROM user_group_map
+  my $sth_remove_mapping = $dbh->prepare(qq{DELETE FROM user_group_map
             WHERE user_id = ?
               AND group_id = ?
               AND isbless = ?

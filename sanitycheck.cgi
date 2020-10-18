@@ -40,10 +40,10 @@ sub Status {
     && !$cgi->param('verbose'));
 
   if (Bugzilla->usage_mode == USAGE_MODE_CMDLINE) {
-    my $output = $cgi->param('output') || '';
+    my $output    = $cgi->param('output') || '';
     my $linebreak = $alert ? "\nALERT: " : "\n";
     $cgi->param('error_found', 1) if $alert;
-    $cgi->param('output', $output . $linebreak . get_string($san_tag, $vars));
+    $cgi->param('output',      $output . $linebreak . get_string($san_tag, $vars));
   }
   else {
     my $start_tag = $alert ? '<p class="alert">' : '<p>';
@@ -107,14 +107,12 @@ if ($cgi->param('createmissinggroupcontrolmapentries')) {
 
   my $na        = CONTROLMAPNA;
   my $shown     = CONTROLMAPSHOWN;
-  my $insertsth = $dbh->prepare(
-    qq{INSERT INTO group_control_map
+  my $insertsth = $dbh->prepare(qq{INSERT INTO group_control_map
                        (group_id, product_id, membercontrol, othercontrol)
                 VALUES (?, ?, $shown, $na)}
   );
 
-  my $updatesth = $dbh->prepare(
-    qq{UPDATE group_control_map
+  my $updatesth = $dbh->prepare(qq{UPDATE group_control_map
                                         SET membercontrol = $shown
                                       WHERE group_id   = ?
                                         AND product_id = ?}
@@ -254,8 +252,7 @@ if ($cgi->param('rescanallBugMail')) {
   Status('send_bugmail_start');
   my $time = $dbh->sql_date_math('NOW()', '-', 30, 'MINUTE');
 
-  my $list = $dbh->selectcol_arrayref(
-    qq{
+  my $list = $dbh->selectcol_arrayref(qq{
                                         SELECT bug_id
                                           FROM bugs
                                          WHERE (lastdiffed IS NULL
@@ -521,8 +518,8 @@ CrossCheck(
   ["regressions",   "regressed_by"],
   ['flags',         'bug_id'],
   ["keywords",      "bug_id"],
-  ["duplicates", "dupe_of", "dupe"],
-  ["duplicates", "dupe",    "dupe_of"]
+  ["duplicates",    "dupe_of", "dupe"],
+  ["duplicates",    "dupe", "dupe_of"]
 );
 
 CrossCheck(
@@ -548,30 +545,30 @@ CrossCheck(
 CrossCheck(
   "profiles",
   "userid",
-  ['profiles_activity', 'userid'],
-  ['profiles_activity', 'who'],
-  ['email_setting',     'user_id'],
-  ['profile_setting',   'user_id'],
-  ["bugs",                        "reporter",         "bug_id"],
-  ["bugs",                        "assigned_to",      "bug_id"],
-  ["bugs",                        "qa_contact",       "bug_id"],
-  ["attachments",                 "submitter_id",     "bug_id"],
-  ['flags',                       'setter_id',        'bug_id'],
-  ['flags',                       'requestee_id',     'bug_id'],
-  ["bugs_activity",               "who",              "bug_id"],
-  ["cc",                          "who",              "bug_id"],
+  ['profiles_activity',           'userid'],
+  ['profiles_activity',           'who'],
+  ['email_setting',               'user_id'],
+  ['profile_setting',             'user_id'],
+  ["bugs",                        "reporter", "bug_id"],
+  ["bugs",                        "assigned_to", "bug_id"],
+  ["bugs",                        "qa_contact", "bug_id"],
+  ["attachments",                 "submitter_id", "bug_id"],
+  ['flags',                       'setter_id', 'bug_id'],
+  ['flags',                       'requestee_id', 'bug_id'],
+  ["bugs_activity",               "who", "bug_id"],
+  ["cc",                          "who", "bug_id"],
   ['quips',                       'userid'],
-  ["longdescs",                   "who",              "bug_id"],
+  ["longdescs",                   "who", "bug_id"],
   ["logincookies",                "userid"],
   ["namedqueries",                "userid"],
   ["namedqueries_link_in_footer", "user_id"],
-  ['series',                      'creator',          'series_id'],
+  ['series',                      'creator', 'series_id'],
   ["watch",                       "watcher"],
   ["watch",                       "watched"],
   ['whine_events',                'owner_userid'],
   ["tokens",                      "userid"],
   ["user_group_map",              "user_id"],
-  ["components",                  "initialowner",     "name"],
+  ["components",                  "initialowner", "name"],
   ["components",                  "initialqacontact", "name"],
   ["component_cc",                "user_id"]
 );
@@ -753,8 +750,7 @@ sub check_keywords {
   Status('keyword_check_start');
 
   my %keywordids;
-  my $keywords = $dbh->selectall_arrayref(
-    q{SELECT id, name
+  my $keywords = $dbh->selectall_arrayref(q{SELECT id, name
                                                 FROM keyworddefs}
   );
 
@@ -769,8 +765,7 @@ sub check_keywords {
     }
   }
 
-  my $sth = $dbh->prepare(
-    q{SELECT bug_id, keywordid
+  my $sth = $dbh->prepare(q{SELECT bug_id, keywordid
                                 FROM keywords
                             ORDER BY bug_id, keywordid}
   );
@@ -850,8 +845,7 @@ sub BugCheck {
   my ($middlesql, $errortext, $repairparam, $repairtext) = @_;
   my $dbh = Bugzilla->dbh;
 
-  my $badbugs = $dbh->selectcol_arrayref(
-    qq{SELECT DISTINCT bugs.bug_id
+  my $badbugs = $dbh->selectcol_arrayref(qq{SELECT DISTINCT bugs.bug_id
                                                 FROM $middlesql
                                             ORDER BY bugs.bug_id}
   );
@@ -985,9 +979,8 @@ BugCheck(
 
 Status('unsent_bugmail_check');
 
-my $time = $dbh->sql_date_math('NOW()', '-', 30, 'MINUTE');
-my $badbugs = $dbh->selectcol_arrayref(
-  qq{
+my $time    = $dbh->sql_date_math('NOW()', '-', 30, 'MINUTE');
+my $badbugs = $dbh->selectcol_arrayref(qq{
                     SELECT bug_id
                       FROM bugs
                      WHERE (lastdiffed IS NULL OR lastdiffed < delta_ts)

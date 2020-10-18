@@ -115,7 +115,7 @@ eval {
 };
 if ($@) {
   $dbh->bz_rollback_transaction() if $dry_run;
-  die "$@" if $@;
+  die "$@"                        if $@;
 }
 
 sub delete_non_public_products {

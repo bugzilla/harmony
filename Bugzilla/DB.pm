@@ -31,8 +31,8 @@ use Storable qw(dclone);
 use English qw(-no_match_vars);
 use Module::Runtime qw(require_module);
 
-has 'connector' => (is => 'lazy', handles => [qw( dbh )]);
-has 'model'     => (is => 'lazy');
+has 'connector'               => (is => 'lazy', handles => [qw( dbh )]);
+has 'model'                   => (is => 'lazy');
 has [qw(dsn user pass attrs)] => (is => 'ro', required => 1);
 
 around 'attrs' => sub {
@@ -511,8 +511,8 @@ sub bz_server_version {
 sub bz_last_key {
   my ($self, $table, $column) = @_;
 
-  return $self->last_insert_id(Bugzilla->localconfig->db_name,
-    undef, $table, $column);
+  return $self->last_insert_id(Bugzilla->localconfig->db_name, undef, $table,
+    $column);
 }
 
 sub bz_check_regexp {
@@ -579,7 +579,7 @@ sub bz_setup_foreign_keys {
   # so if it doesn't have them, then we're setting up FKs
   # for the first time, and should be quieter about it.
   my $activity_fk = $self->bz_fk_info('profiles_activity', 'userid');
-  my $any_fks = $activity_fk && $activity_fk->{created};
+  my $any_fks     = $activity_fk && $activity_fk->{created};
   if (!$any_fks) {
     print get_text('install_fk_setup'), "\n";
   }
@@ -1376,7 +1376,7 @@ sub _build_connector {
       my ($dbh, $dsn) = @_;
       TRACE("$PROGRAM_NAME connected MySQL $dsn");
       ThrowCodeError('not_in_transaction') if $self && $self->bz_in_transaction;
-      $class->on_dbi_connected(@_) if $class->can('on_dbi_connected');
+      $class->on_dbi_connected(@_)         if $class->can('on_dbi_connected');
       return;
     },
   };

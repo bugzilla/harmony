@@ -90,13 +90,13 @@ else {
 # Make sure there are bugs to process.
 scalar(@bug_objects) || ThrowUserError("no_bugs_chosen", {action => 'modify'});
 
-my $first_bug = $bug_objects[0];   # Used when we're only updating a single bug.
+my $first_bug = $bug_objects[0];    # Used when we're only updating a single bug.
 
 # Delete any parameter set to 'dontchange'.
 if (defined $cgi->param('dontchange')) {
   foreach my $name ($cgi->param) {
-    next if $name eq 'dontchange';    # But don't delete dontchange itself!
-         # Skip ones we've already deleted (such as "defined_$name").
+    next if $name eq 'dontchange';         # But don't delete dontchange itself!
+                                           # Skip ones we've already deleted (such as "defined_$name").
     next if !defined $cgi->param($name);
     if ($cgi->param($name) eq $cgi->param('dontchange')) {
       $cgi->delete($name);
@@ -274,8 +274,8 @@ if (should_set('keywords')) {
 }
 if (should_set('comment')) {
   $set_all_fields{comment} = {
-    body       => scalar $cgi->param('comment'),
-    is_private => scalar $cgi->param('comment_is_private'),
+    body        => scalar $cgi->param('comment'),
+    is_private  => scalar $cgi->param('comment_is_private'),
     is_markdown => Bugzilla->params->{use_markdown} ? 1 : 0,
   };
 }
@@ -347,8 +347,8 @@ foreach my $field (grep(/^defined_isprivate/, $cgi->param())) {
 }
 $set_all_fields{comment_is_private} = \%is_private;
 
-my @check_groups = $cgi->param('defined_groups');
-my @set_groups   = $cgi->param('groups');
+my @check_groups     = $cgi->param('defined_groups');
+my @set_groups       = $cgi->param('groups');
 my ($removed_groups) = diff_arrays(\@check_groups, \@set_groups);
 $set_all_fields{groups} = {add => \@set_groups, remove => $removed_groups};
 
@@ -431,14 +431,15 @@ delete_token($token) unless $cgi->param('id');
 
 if (Bugzilla->usage_mode != USAGE_MODE_EMAIL) {
   if ($action eq 'next_bug' or $action eq 'same_bug') {
+
     # We strip the sent changes to just the necessary parameters so that they can
     # be saved in the session flash.
     my @saved_sent_changes;
     foreach my $sent_changes (@all_sent_changes) {
       foreach my $sent_change (@$sent_changes) {
         my $saved_sent_change = {
-          id => $sent_change->{params}->{id},
-          type => $sent_change->{params}->{type},
+          id              => $sent_change->{params}->{id},
+          type            => $sent_change->{params}->{type},
           recipient_count => scalar @{$sent_change->{sent_bugmail}->{sent}},
         };
         push @saved_sent_changes, $saved_sent_change;
@@ -447,22 +448,23 @@ if (Bugzilla->usage_mode != USAGE_MODE_EMAIL) {
 
     $Bugzilla::App::CGI::C->flash(last_sent_changes => \@saved_sent_changes);
 
-    # Redirect to show_bug.cgi.
-    # $bug_id will be the same bug or the next bug due to checks earlier in this file.
-    # An undefined $bug_id (in the case of $action = 'nothing') will still redirect to
-    # show_bug.cgi which will prompt for a bug. This allows mass bug updates to still see
-    # the result of what changed/emails sent.
+# Redirect to show_bug.cgi.
+# $bug_id will be the same bug or the next bug due to checks earlier in this file.
+# An undefined $bug_id (in the case of $action = 'nothing') will still redirect to
+# show_bug.cgi which will prompt for a bug. This allows mass bug updates to still see
+# the result of what changed/emails sent.
     my $bug_id = $vars->{bug} ? $vars->{bug}->id : undef;
-    my $redirect_url = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bug_id);
+    my $redirect_url
+      = $Bugzilla::App::CGI::C->url_for('show_bugcgi')->query(id => $bug_id);
     $Bugzilla::App::CGI::C->redirect_to($redirect_url);
     exit;
   }
-  else { # Handle $action = 'nothing' or mass bug update case.
+  else {    # Handle $action = 'nothing' or mass bug update case.
     print $cgi->header();
 
     foreach my $sent_changes (@all_sent_changes) {
       foreach my $sent_change (@$sent_changes) {
-        my $params       = $sent_change->{params};
+        my $params          = $sent_change->{params};
         my $recipient_count = scalar @{$sent_change->{sent_bugmail}->{sent}};
         $vars->{$_} = $params->{$_} foreach keys %$params;
         $vars->{'recipient_count'} = $recipient_count;

@@ -14,11 +14,7 @@ use Types::Standard qw(Int);
 
 requires qw(set_data get_data remove_data data_exists data_type);
 
-has 'attach_id' => (
-  is       => 'ro',
-  required => 1,
-  isa      => Int
-);
+has 'attach_id' => (is => 'ro', required => 1, isa => Int);
 
 sub set_class {
   my ($self) = @_;

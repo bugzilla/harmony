@@ -152,7 +152,7 @@ sub html_light_quote {
 
   if (!Bugzilla->feature('html_desc')) {
     my $safe = join('|', @allow);
-    my $chr = chr(1);
+    my $chr  = chr(1);
 
     # First, escape safe elements.
     $text =~ s#<($safe)>#$chr$1$chr#go;
@@ -173,7 +173,7 @@ sub html_light_quote {
     push(@allow, qw(a blockquote q span));
 
     # Allowed protocols.
-    my $safe_protocols = join('|', SAFE_PROTOCOLS);
+    my $safe_protocols  = join('|', SAFE_PROTOCOLS);
     my $protocol_regexp = qr{(^(?:$safe_protocols):|^[^:]+$)}i;
 
     # Deny all elements and attributes unless explicitly authorized.
@@ -229,7 +229,7 @@ sub email_filter {
   if (!Bugzilla->user->id) {
     my @emails = Email::Address->parse($toencode);
     if (scalar @emails) {
-      my @hosts = map { quotemeta($_->host) } @emails;
+      my @hosts    = map { quotemeta($_->host) } @emails;
       my $hosts_re = join('|', @hosts);
       $toencode =~ s/\@(?:$hosts_re)//g;
       return $toencode;
@@ -510,7 +510,7 @@ sub wrap_comment {
 
 sub find_wrap_point {
   my ($string, $maxpos) = @_;
-  if (!$string) { return 0 }
+  if (!$string)                  { return 0 }
   if (length($string) < $maxpos) { return length($string) }
   my $wrappoint = rindex($string, ",", $maxpos);    # look for comma
   if ($wrappoint <= 0) {                            # can't find comma
@@ -572,7 +572,7 @@ sub datetime_from {
   # In the database, this is the "0" date.
   use Carp qw(cluck);
   cluck("undefined date") unless defined $date;
-  return undef unless defined $date;
+  return undef            unless defined $date;
   return undef if $date =~ /^0000/;
 
   my @time;
@@ -765,7 +765,7 @@ sub validate_date {
   if ($ts) {
     $date2 = time2str("%Y-%m-%d", $ts);
 
-    $date =~ s/(\d+)-0*(\d+?)-0*(\d+?)/$1-$2-$3/;
+    $date  =~ s/(\d+)-0*(\d+?)-0*(\d+?)/$1-$2-$3/;
     $date2 =~ s/(\d+)-0*(\d+?)-0*(\d+?)/$1-$2-$3/;
   }
   my $ret = ($ts && $date eq $date2);
@@ -912,7 +912,7 @@ sub detect_encoding {
   # Encode::Detect sometimes mis-detects UTF-8 as Windows-1252
   if ($encoding && $encoding eq 'cp1252') {
     my $decoder = guess_encoding($data, ('utf8', 'cp1252'));
-    $encoding = ref $decoder ? $decoder->name : 'utf8'; # Fall back to utf8 if guess_encoding fails
+    $encoding = ref $decoder ? $decoder->name : 'utf8';    # Fall back to utf8 if guess_encoding fails
   }
 
   return $encoding;

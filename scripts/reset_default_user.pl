@@ -54,7 +54,7 @@ if (!$product
 }
 
 # We will need these for entering into bugs_activity
-my $who = Bugzilla::User->new({name => 'nobody@mozilla.org'});
+my $who   = Bugzilla::User->new({name => 'nobody@mozilla.org'});
 my $field = Bugzilla::Field->new({name => $field_name});
 
 my $product_id = $dbh->selectrow_array("SELECT id FROM products WHERE name = ?",
@@ -84,7 +84,7 @@ if ($component_id) {
   push(@args, $component_id, $default_user_id);
 }
 
-my $bugs = $dbh->selectall_arrayref($bugs_query, {Slice => {}}, @args);
+my $bugs      = $dbh->selectall_arrayref($bugs_query, {Slice => {}}, @args);
 my $bug_count = scalar @$bugs;
 $bug_count or die "No bugs were found.\n";
 

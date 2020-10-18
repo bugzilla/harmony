@@ -109,7 +109,7 @@ if (!grep { $_ eq $rankdir } @valid_rankdirs) {
   $rankdir = 'TB';
 }
 
-my $display = $cgi->param('display') || 'tree';
+my $display   = $cgi->param('display') || 'tree';
 my $webdotdir = bz_locations()->{'webdotdir'};
 
 my ($fh, $filename) = File::Temp::tempfile(
@@ -140,8 +140,7 @@ foreach my $i (split('[\s,]+', $cgi->param('id'))) {
 my @stack = keys(%baselist);
 
 if ($display eq 'web') {
-  my $sth = $dbh->prepare(
-    q{SELECT blocked, dependson
+  my $sth = $dbh->prepare(q{SELECT blocked, dependson
                                 FROM dependencies
                                WHERE blocked = ? OR dependson = ?}
   );
@@ -166,7 +165,8 @@ else {
   my @blocker_stack = @stack;
   foreach my $id (@blocker_stack) {
     my $blocker_ids
-      = Bugzilla::Bug::list_relationship('dependencies', 'blocked', 'dependson', $id);
+      = Bugzilla::Bug::list_relationship('dependencies', 'blocked', 'dependson',
+      $id);
     foreach my $blocker_id (@$blocker_ids) {
       push(@blocker_stack, $blocker_id) unless $seen{$blocker_id};
       $AddLink->($id, $blocker_id, $fh);
@@ -175,7 +175,8 @@ else {
   my @dependent_stack = @stack;
   foreach my $id (@dependent_stack) {
     my $dep_bug_ids
-      = Bugzilla::Bug::list_relationship('dependencies', 'dependson', 'blocked', $id);
+      = Bugzilla::Bug::list_relationship('dependencies', 'dependson', 'blocked',
+      $id);
     foreach my $dep_bug_id (@$dep_bug_ids) {
       push(@dependent_stack, $dep_bug_id) unless $seen{$dep_bug_id};
       $AddLink->($dep_bug_id, $id, $fh);
@@ -187,8 +188,7 @@ foreach my $k (keys(%baselist)) {
   $seen{$k} = 1;
 }
 
-my $sth = $dbh->prepare(
-  q{SELECT bug_status, resolution, short_desc
+my $sth = $dbh->prepare(q{SELECT bug_status, resolution, short_desc
                   FROM bugs
                  WHERE bugs.bug_id = ?}
 );

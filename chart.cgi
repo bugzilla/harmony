@@ -63,7 +63,8 @@ if (!Bugzilla->feature('new_charts')) {
 if (grep(/^cmd-/, $cgi->param())) {
   my $params = $cgi->canonicalize_query("format", "ctype", "action");
   $cgi->base_redirect("query.cgi?format="
-      . $cgi->param('query_format') . ($params ? "&$params" : ''));
+      . $cgi->param('query_format')
+      . ($params ? "&$params" : ''));
 }
 
 my $action    = $cgi->param('action');
@@ -76,7 +77,7 @@ $vars->{'doc_section'} = 'reporting.html#charts';
 # series_id they apply to (e.g. subscribe, unsubscribe).
 my @actions = grep(/^action-/, $cgi->param());
 if ($actions[0] && $actions[0] =~ /^action-([^\d]+)(\d*)$/) {
-  $action = $1;
+  $action    = $1;
   $series_id = $2 if $2;
 }
 
@@ -215,8 +216,8 @@ elsif ($action eq "delete") {
 }
 elsif ($action eq "convert_search") {
   my $saved_search = $cgi->param('series_from_search') || '';
-  my ($query) = grep { $_->name eq $saved_search } @{$user->queries};
-  my $url = '';
+  my ($query)      = grep { $_->name eq $saved_search } @{$user->queries};
+  my $url          = '';
   if ($query) {
     my $params = new Bugzilla::CGI($query->edit_link);
 

@@ -76,7 +76,7 @@ sub inc {
   my $dbh = Bugzilla->dbh;
 
   my $attempts = $self->attempts + 1;
-  my $seconds = $attempts <= 4 ? 5**$attempts : 15 * 60;
+  my $seconds  = $attempts <= 4 ? 5**$attempts : 15 * 60;
   my ($date)
     = $dbh->selectrow_array(
     "SELECT " . $dbh->sql_date_math('NOW()', '+', $seconds, 'SECOND'));

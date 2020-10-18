@@ -72,7 +72,7 @@ sub match {
     # so include them in the list if they have been specified.
     if (exists $params->{"${field}_id"}) {
       my $current_ids = $params->{"${field}_id"};
-      my @id_array = ref $current_ids ? @$current_ids : ($current_ids);
+      my @id_array    = ref $current_ids ? @$current_ids : ($current_ids);
       push(@ids, @id_array);
     }
 
@@ -103,7 +103,7 @@ sub match {
     }
   }
 
-  my $where = join(' AND ', @criteria);
+  my $where    = join(' AND ', @criteria);
   my $flag_ids = $dbh->selectcol_arrayref(
     "SELECT id
                                                FROM tracking_flags_visibility

@@ -65,15 +65,13 @@ sub call {
   $params{params} = $args ? [$args] : [];
 
   my $config = $self->bz_config;
-  my $url
-    = $config->{browser_url}
-    . "/jsonrpc.cgi";
+  my $url    = $config->{browser_url} . "/jsonrpc.cgi";
   my $result;
   if ($self->bz_get_mode) {
     my $method_escaped = uri_escape($method);
     $url .= "?method=$method_escaped";
     if (my $cred = $self->_bz_credentials) {
-      $args->{Bugzilla_login} = $cred->{user} if !exists $args->{Bugzilla_login};
+      $args->{Bugzilla_login}    = $cred->{user} if !exists $args->{Bugzilla_login};
       $args->{Bugzilla_password} = $cred->{pass}
         if !exists $args->{Bugzilla_password};
     }

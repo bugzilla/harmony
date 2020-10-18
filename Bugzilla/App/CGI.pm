@@ -45,18 +45,21 @@ sub setup_routes {
   $r->any('/login')->to('CGI#index_cgi' => {'GoAheadAndLogIn' => '1'});
   $r->any('/logout')->to('CGI#index_cgi' => {'logout' => '1'});
 
-  $r->any('/:new_bug' => [new_bug => qr{new[-_]bug}] => sub {
-    my $c = shift;
-    $c->res->code(301);
-    $c->redirect_to(Bugzilla->localconfig->basepath . 'enter_bug.cgi');
-  });
+  $r->any(
+    '/:new_bug' => [new_bug => qr{new[-_]bug}] => sub {
+      my $c = shift;
+      $c->res->code(301);
+      $c->redirect_to(Bugzilla->localconfig->basepath . 'enter_bug.cgi');
+    }
+  );
 }
 
 sub load_one {
   my ($class, $name, $file) = @_;
   my $package = __PACKAGE__ . "::$name", my $inner_name = "_$name";
   my $content = path(bz_locations->{cgi_path}, $file)->slurp;
-  $content = "package $package; local our \$C = \$Bugzilla::App::CGI::C; $content";
+  $content
+    = "package $package; local our \$C = \$Bugzilla::App::CGI::C; $content";
   my %options = (package => $package, file => $file, line => 1, no_defer => 1,);
   die "Tried to load $file more than once" if $SEEN{$file}++;
   my $inner = quote_sub $inner_name, $content, {}, \%options;
@@ -71,10 +74,11 @@ sub load_one {
     open STDIN, '<', $stdin->path
       or die "STDIN @{[$stdin->path]}: $!"
       if -s $stdin->path;
-    tie *STDOUT, 'Bugzilla::App::Stdout', controller => $c;   ## no critic (tie)
+    tie *STDOUT, 'Bugzilla::App::Stdout', controller => $c;    ## no critic (tie)
 
     # the finally block calls cleanup.
-    $Bugzilla::App::Plugin::Glue::cleanup_guard->dismiss if $Bugzilla::App::Plugin::Glue::cleanup_guard;
+    $Bugzilla::App::Plugin::Glue::cleanup_guard->dismiss
+      if $Bugzilla::App::Plugin::Glue::cleanup_guard;
     Bugzilla->usage_mode(USAGE_MODE_BROWSER);
     try {
       Bugzilla->init_page();
@@ -120,10 +124,10 @@ sub _ENV {
   }
   elsif (my $authenticate = $headers->authorization) {
     $remote_user = $authenticate =~ /Basic\s+(.*)/ ? b64_decode $1 : '';
-    $remote_user = $remote_user =~ /([^:]+)/       ? $1            : '';
+    $remote_user = $remote_user  =~ /([^:]+)/      ? $1            : '';
   }
   my $path_info = $c->stash->{'mojo.captures'}{'PATH_INFO'};
-  my %captures = %{$c->stash->{'mojo.captures'} // {}};
+  my %captures  = %{$c->stash->{'mojo.captures'} // {}};
   foreach my $key (keys %captures) {
     if ( $key eq 'controller'
       || $key eq 'action'
@@ -143,17 +147,17 @@ sub _ENV {
     GATEWAY_INTERFACE => 'CGI/1.1',
     HTTPS             => $req->is_secure ? 'on' : 'off',
     %env_headers,
-    QUERY_STRING   => $cgi_query->to_string,
-    PATH_INFO      => $path_info ? "/$path_info" : '',
-    REMOTE_ADDR    => $tx->original_remote_address,
-    REMOTE_HOST    => $tx->original_remote_address,
-    REMOTE_PORT    => $tx->remote_port,
-    REMOTE_USER    => $remote_user || '',
-    REQUEST_METHOD => $req->method,
-    SCRIPT_NAME    => "/$script_name",
-    SERVER_NAME    => hostname,
-    SERVER_PORT    => $tx->local_port,
-    SERVER_PROTOCOL => $req->is_secure ? 'HTTPS' : 'HTTP', # TODO: Version is missing
+    QUERY_STRING    => $cgi_query->to_string,
+    PATH_INFO       => $path_info ? "/$path_info" : '',
+    REMOTE_ADDR     => $tx->original_remote_address,
+    REMOTE_HOST     => $tx->original_remote_address,
+    REMOTE_PORT     => $tx->remote_port,
+    REMOTE_USER     => $remote_user || '',
+    REQUEST_METHOD  => $req->method,
+    SCRIPT_NAME     => "/$script_name",
+    SERVER_NAME     => hostname,
+    SERVER_PORT     => $tx->local_port,
+    SERVER_PROTOCOL => $req->is_secure ? 'HTTPS' : 'HTTP',    # TODO: Version is missing
     SERVER_SOFTWARE => __PACKAGE__,
   );
 }

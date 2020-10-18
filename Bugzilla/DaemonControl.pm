@@ -110,7 +110,7 @@ sub run_httpd {
   my $httpd  = IO::Async::Process->new(
     code => sub {
       $ENV{BUGZILLA_HTTPD_ARGS} = encode_json(\@args);
-      $ENV{PERL5LIB} = join(':', @PERL5LIB);
+      $ENV{PERL5LIB}            = join(':', @PERL5LIB);
       my $backend = $ENV{HTTP_BACKEND} // 'hypnotoad';
       my $command = $HTTP_BACKENDS{$backend};
       exec @$command or die "failed to exec $command->[0] $!";
@@ -143,7 +143,7 @@ sub run_jobqueue {
 sub run_cereal_and_jobqueue {
   my (@jobqueue_args) = @_;
 
-  my $signal_f = catch_signal('TERM', 0);
+  my $signal_f      = catch_signal('TERM', 0);
   my $cereal_exit_f = run_cereal();
 
   return assert_cereal()->then(sub {
@@ -155,7 +155,7 @@ sub run_cereal_and_jobqueue {
 sub run_cereal_and_httpd {
   my @httpd_args = @_;
 
-  my $signal_f = catch_signal('TERM', 0);
+  my $signal_f      = catch_signal('TERM', 0);
   my $cereal_exit_f = run_cereal();
 
   return assert_cereal()->then(sub {

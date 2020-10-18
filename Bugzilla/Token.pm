@@ -271,8 +271,7 @@ sub issue_hash_token {
 
   # $token needs to be a byte string.
   utf8::encode($token);
-  $token
-    = hmac_sha256_base64($token, Bugzilla->localconfig->site_wide_secret);
+  $token = hmac_sha256_base64($token, Bugzilla->localconfig->site_wide_secret);
   $token =~ s/\+/-/g;
   $token =~ s/\//_/g;
 
@@ -302,7 +301,7 @@ sub check_hash_token {
     $vars->{'script_name'} = basename($0);
     $vars->{'token'}       = issue_hash_token($data);
     $vars->{'reason'}
-      = (!$token) ? 'missing_token'
+      = (!$token)                   ? 'missing_token'
       : ($expected_token ne $token) ? 'invalid_token'
       :                               'expired_token';
     print Bugzilla->cgi->header();

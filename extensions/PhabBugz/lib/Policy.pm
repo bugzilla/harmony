@@ -30,7 +30,7 @@ has 'href'      => (is => 'ro', isa => Maybe [Str]);
 has 'workflow'  => (is => 'ro', isa => Maybe [Str]);
 has 'icon'      => (is => 'ro', isa => Str);
 has 'default'   => (is => 'ro', isa => Str);
-has 'rules' => (
+has 'rules'     => (
   is => 'ro',
   isa =>
     ArrayRef [Dict [action => Str, rule => Str, value => Maybe [ArrayRef [Str]]]]

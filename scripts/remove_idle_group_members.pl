@@ -86,7 +86,7 @@ sub _send_email {
   my ($group, $users) = @_;
 
   my $template = Bugzilla->template_inner($group->owner->setting('lang'));
-  my $vars = {group => $group, users => $users};
+  my $vars     = {group => $group, users => $users};
 
   my ($header, $text);
   $template->process("admin/groups/email/idle-member-removal-header.txt.tmpl",

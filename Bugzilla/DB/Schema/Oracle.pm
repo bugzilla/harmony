@@ -211,7 +211,7 @@ sub get_add_column_ddl {
     @sql = $self->SUPER::get_add_column_ddl($table, $column, \%def, $init_value);
     push(@sql, $self->_get_create_seq_ddl($table, $column));
     push(@sql, "UPDATE $table SET $column = ${table}_${column}_SEQ.NEXTVAL");
-    push(@sql, "ALTER TABLE $table MODIFY $column NOT NULL") if $notnull;
+    push(@sql, "ALTER TABLE $table MODIFY $column NOT NULL")   if $notnull;
     push(@sql, "ALTER TABLE $table ADD PRIMARY KEY ($column)") if $pk;
   }
   else {
@@ -230,7 +230,7 @@ sub get_alter_column_ddl {
   my ($self, $table, $column, $new_def, $set_nulls_to) = @_;
 
   my @statements;
-  my $old_def = $self->get_column_abstract($table, $column);
+  my $old_def  = $self->get_column_abstract($table, $column);
   my $specific = $self->{db_specific};
 
   # If the types have changed, we have to deal with that.

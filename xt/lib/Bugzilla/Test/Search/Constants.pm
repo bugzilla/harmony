@@ -260,8 +260,8 @@ use constant KNOWN_BROKEN => {
 
   'allwordssubstr-<1>' => {ALLWORDS_BROKEN},
   'allwords-<1>'       => {ALLWORDS_BROKEN,},
-  'anywords-<1>'       => {'flagtypes.name' => {contains => [1, 2, 3, 4, 5]},},
-  'anywords-<1> <2>'   => {'flagtypes.name' => {contains => [3, 4, 5]},},
+  'anywords-<1>'     => {'flagtypes.name' => {contains => [1, 2, 3, 4, 5]},},
+  'anywords-<1> <2>' => {'flagtypes.name' => {contains => [3, 4, 5]},},
   'anywordssubstr-<1> <2>' => {'flagtypes.name' => {contains => [3, 4, 5]},},
 
   # setters.login_name and requestees.login name aren't tracked individually
@@ -386,7 +386,7 @@ use constant BROKEN_NOT => {
   anyexact           => {'flagtypes.name' => {contains => [1, 2, 5]},},
   'anywords-<1>'     => {'flagtypes.name' => {contains => [1, 2, 3, 4, 5]},},
   'anywords-<1> <2>' => {'flagtypes.name' => {contains => [3, 4, 5]},},
-  anywordssubstr           => {'flagtypes.name' => {contains => [5]},},
+  anywordssubstr     => {'flagtypes.name' => {contains => [5]},},
   'anywordssubstr-<1> <2>' => {'flagtypes.name' => {contains => [3, 4, 5]},},
   casesubstring            => {'flagtypes.name' => {contains => [5]},},
   changedafter => {
@@ -614,7 +614,7 @@ use constant CHANGED_OVERRIDE => (
 # override: This allows you to override "contains" and "values" for
 #           certain fields.
 use constant TESTS => {
-  equals => [{contains => [1], value => '<1>'},],
+  equals    => [{contains => [1],          value => '<1>'},],
   notequals => [{contains => [2, 3, 4, 5], value => '<1>'},],
   substring => [
     {
@@ -669,27 +669,27 @@ use constant TESTS => {
 
         # A lot of these contain bug 5 because an empty value is validly
         # less than the specified value.
-        bug_file_loc             => {value => 'http://2-', contains => [1, 5]},
-        see_also                 => {value => 'http://2-'},
-        'attachments.mimetype'   => {value => 'text/x-2-'},
-        blocked                  => {value => '<4-id>', contains => [1, 2]},
-        dependson                => {value => '<3-id>', contains => [1, 3]},
-        bug_id                   => {value => '<2-id>'},
+        bug_file_loc           => {value => 'http://2-', contains => [1, 5]},
+        see_also               => {value => 'http://2-'},
+        'attachments.mimetype' => {value => 'text/x-2-'},
+        blocked                => {value => '<4-id>', contains => [1, 2]},
+        dependson              => {value => '<3-id>', contains => [1, 3]},
+        bug_id                 => {value => '<2-id>'},
         'attachments.isprivate'  => {value => 1, contains => [2, 3, 4]},
         'attachments.isobsolete' => {value => 1, contains => [2, 3, 4]},
         'attachments.ispatch'    => {value => 1, contains => [2, 3, 4]},
-        cclist_accessible        => {value => 1, contains => [2, 3, 4, 5]},
-        reporter_accessible      => {value => 1, contains => [2, 3, 4, 5]},
-        'longdescs.count'        => {value => 3, contains => [2, 3, 4, 5]},
-        'longdescs.isprivate'    => {value => 1, contains => [1, 2, 3, 4, 5]},
-        everconfirmed            => {value => 1, contains => [2, 3, 4, 5]},
-        creation_ts              => {value => '2037-01-02', contains => [1, 5]},
-        delta_ts                 => {value => '2037-01-02', contains => [1, 5]},
-        deadline                 => {value => '2037-02-02', contains => [1, 5]},
-        remaining_time           => {value => 10, contains => [1, 5]},
-        percentage_complete      => {value => 11, contains => [1, 5]},
-        longdesc                 => {value => '2-', contains => [1, 5]},
-        work_time                => {value => 1, contains => [5]},
+        cclist_accessible     => {value => 1,            contains => [2, 3, 4, 5]},
+        reporter_accessible   => {value => 1,            contains => [2, 3, 4, 5]},
+        'longdescs.count'     => {value => 3,            contains => [2, 3, 4, 5]},
+        'longdescs.isprivate' => {value => 1,            contains => [1, 2, 3, 4, 5]},
+        everconfirmed         => {value => 1,            contains => [2, 3, 4, 5]},
+        creation_ts           => {value => '2037-01-02', contains => [1, 5]},
+        delta_ts              => {value => '2037-01-02', contains => [1, 5]},
+        deadline              => {value => '2037-02-02', contains => [1, 5]},
+        remaining_time        => {value => 10,           contains => [1, 5]},
+        percentage_complete   => {value => 11,           contains => [1, 5]},
+        longdesc              => {value => '2-',         contains => [1, 5]},
+        work_time             => {value => 1,            contains => [5]},
         FIELD_TYPE_BUG_ID, {value => '<2>', contains => [1, 5]}, FIELD_TYPE_DATETIME,
         {value => '2037-03-02', contains => [1, 5]}, LESSTHAN_OVERRIDE,
       }
@@ -703,9 +703,9 @@ use constant TESTS => {
         'attachments.isobsolete' => {value => 0, contains => [2, 3, 4]},
         'attachments.ispatch'    => {value => 0, contains => [2, 3, 4]},
         'attachments.isprivate'  => {value => 0, contains => [2, 3, 4]},
-        cclist_accessible        => {value => 0, contains => [2, 3, 4, 5]},
-        reporter_accessible      => {value => 0, contains => [2, 3, 4, 5]},
-        'longdescs.count'        => {value => 2, contains => [2, 3, 4, 5]},
+        cclist_accessible     => {value => 0,  contains => [2, 3, 4, 5]},
+        reporter_accessible   => {value => 0,  contains => [2, 3, 4, 5]},
+        'longdescs.count'     => {value => 2,  contains => [2, 3, 4, 5]},
         'longdescs.isprivate' => {value => -1, contains => []},
         everconfirmed         => {value => 0,  contains => [2, 3, 4, 5]},
         bug_file_loc        => {contains => [1, 5]},
@@ -717,7 +717,7 @@ use constant TESTS => {
         remaining_time      => {contains => [1, 5]},
         longdesc            => {contains => [1, 5]},
         percentage_complete => {contains => [1, 5]},
-        work_time => {value => 1, contains => [1, 5]},
+        work_time           => {value    => 1, contains => [1, 5]},
         FIELD_TYPE_BUG_ID, {contains => [1, 5]}, FIELD_TYPE_DATETIME,
         {contains => [1, 5]}, LESSTHAN_OVERRIDE,
       },
@@ -728,17 +728,17 @@ use constant TESTS => {
       contains => [2, 3, 4],
       value    => '<1>',
       override => {
-        dependson                => {contains => [3]},
-        blocked                  => {contains => [2]},
-        'attachments.ispatch'    => {value    => 0, contains => [1]},
-        'attachments.isobsolete' => {value    => 0, contains => [1]},
-        'attachments.isprivate'  => {value    => 0, contains => [1]},
-        cclist_accessible        => {value    => 0, contains => [1]},
-        reporter_accessible      => {value    => 0, contains => [1]},
-        'longdescs.count'        => {value    => 2, contains => [1]},
-        'longdescs.isprivate'    => {value    => 0, contains => [1]},
-        everconfirmed            => {value    => 0, contains => [1]},
-        'flagtypes.name'         => {value    => 2, contains => [2, 3, 4]},
+        dependson => {contains => [3]},
+        blocked   => {contains => [2]},
+        'attachments.ispatch'    => {value => 0, contains => [1]},
+        'attachments.isobsolete' => {value => 0, contains => [1]},
+        'attachments.isprivate'  => {value => 0, contains => [1]},
+        cclist_accessible        => {value => 0, contains => [1]},
+        reporter_accessible      => {value => 0, contains => [1]},
+        'longdescs.count'        => {value => 2, contains => [1]},
+        'longdescs.isprivate'    => {value => 0, contains => [1]},
+        everconfirmed            => {value => 0, contains => [1]},
+        'flagtypes.name'         => {value => 2, contains => [2, 3, 4]},
         GREATERTHAN_OVERRIDE,
       },
     },
@@ -748,21 +748,21 @@ use constant TESTS => {
       contains => [2, 3, 4],
       value    => '<2>',
       override => {
-        'attachments.ispatch'    => {value => 1,     contains => [1]},
-        'attachments.isobsolete' => {value => 1,     contains => [1]},
-        'attachments.isprivate'  => {value => 1,     contains => [1]},
-        cclist_accessible        => {value => 1,     contains => [1]},
-        reporter_accessible      => {value => 1,     contains => [1]},
-        'longdescs.count'        => {value => 3,     contains => [1]},
-        'longdescs.isprivate'    => {value => 1,     contains => [1]},
-        everconfirmed            => {value => 1,     contains => [1]},
-        dependson                => {value => '<3>', contains => [1, 3]},
-        blocked => {contains => [1, 2]},
+        'attachments.ispatch'    => {value    => 1,     contains => [1]},
+        'attachments.isobsolete' => {value    => 1,     contains => [1]},
+        'attachments.isprivate'  => {value    => 1,     contains => [1]},
+        cclist_accessible        => {value    => 1,     contains => [1]},
+        reporter_accessible      => {value    => 1,     contains => [1]},
+        'longdescs.count'        => {value    => 3,     contains => [1]},
+        'longdescs.isprivate'    => {value    => 1,     contains => [1]},
+        everconfirmed            => {value    => 1,     contains => [1]},
+        dependson                => {value    => '<3>', contains => [1, 3]},
+        blocked                  => {contains => [1,    2]},
         GREATERTHAN_OVERRIDE,
       }
     },
   ],
-  matches => [{contains => [1], value => '<1>'},],
+  matches    => [{contains => [1],          value => '<1>'},],
   notmatches => [{contains => [2, 3, 4, 5], value => '<1>'},],
   anyexact =>
     [{contains => [1, 2], value => '<1>, <2>', override => {ANY_OVERRIDE}},],
@@ -820,7 +820,7 @@ use constant TESTS => {
       value    => '<1> <2>',
       override => {
         MULTI_BOOLEAN_OVERRIDE,
-        dependson => {value => '<1> <3>', contains => [1, 3]},
+        dependson         => {value    => '<1> <3>', contains => [1, 3]},
         'longdescs.count' => {contains => [1, 2, 3, 4]},
       },
     },
@@ -970,13 +970,11 @@ use constant INJECTION_BROKEN_FIELD => {
   'longdescs.count' => {
     search      => 1,
     db_skip     => ['Pg'],
-    operator_ok => [
-      qw(allwords allwordssubstr anywordssubstr casesubstring
-        changedbefore changedafter greaterthan greaterthaneq
-        lessthan lessthaneq notregexp notsubstring
-        nowordssubstr regexp substring anywords
-        notequals nowords equals anyexact)
-    ],
+    operator_ok => [qw(allwords allwordssubstr anywordssubstr casesubstring
+      changedbefore changedafter greaterthan greaterthaneq
+      lessthan lessthaneq notregexp notsubstring
+      nowordssubstr regexp substring anywords
+    notequals nowords equals anyexact)],
   },
 };
 
@@ -1223,8 +1221,8 @@ use constant CUSTOM_SEARCH_TESTS => (
     params     => [
       {f => 'bug_id', o => 'equals', v => '<3>'},
       {f => 'OP'},
-      {f => 'OP', j => 'OR'},
-      {f => 'bug_id', o => 'equals', v => '<1>'},
+      {f => 'OP',          j => 'OR'},
+      {f => 'bug_id',      o => 'equals', v => '<1>'},
       {f => 'assigned_to', o => 'equals', v => '<2>'},
       {f => 'CP'},
       {f => 'OP', j => 'OR'},
@@ -1244,8 +1242,8 @@ use constant CUSTOM_SEARCH_TESTS => (
     params     => [
       {f => 'bug_id', o => 'equals', v => '<3>'},
       {f => 'OP'},
-      {f => 'OP', j => 'OR'},
-      {f => 'bug_id', o => 'equals', v => '<1>'},
+      {f => 'OP',          j => 'OR'},
+      {f => 'bug_id',      o => 'equals', v => '<1>'},
       {f => 'assigned_to', o => 'equals', v => '<2>'},
       {f => 'CP'},
       {f => 'OP', j => 'OR'},

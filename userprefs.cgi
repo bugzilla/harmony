@@ -443,7 +443,7 @@ sub SaveEmail {
 
     # The new information given to us by the user.
     my $new_watched_users = join(',', $cgi->param('new_watchedusers')) || '';
-    my @new_watch_names = split(/[,\s]+/, $new_watched_users);
+    my @new_watch_names   = split(/[,\s]+/, $new_watched_users);
     my %new_watch_ids;
 
     foreach my $username (@new_watch_names) {
@@ -649,7 +649,7 @@ sub SaveSavedSearches {
         my $group   = new Bugzilla::Group($group_id);
         my $members = $group->members_non_inherited;
         foreach my $member (@$members) {
-          next if $member->id == $user->id;
+          next                                         if $member->id == $user->id;
           $sth_insert_nl->execute($q->id, $member->id) if !$q->link_in_footer($member);
         }
       }
@@ -688,7 +688,7 @@ sub SaveMFA {
     ThrowUserError('password_incorrect');
   }
 
-  my $mfa = $cgi->param('mfa') // $user->mfa;
+  my $mfa      = $cgi->param('mfa')                   // $user->mfa;
   my $provider = Bugzilla::MFA->new_from($user, $mfa) // return;
 
   my $reason;
@@ -846,7 +846,7 @@ sub DoApiKey {
   my $user = Bugzilla->user;
 
   my $api_keys = Bugzilla::User::APIKey->match({user_id => $user->id});
-  $vars->{api_keys} = $api_keys;
+  $vars->{api_keys}    = $api_keys;
   $vars->{any_revoked} = grep { $_->revoked } @$api_keys;
 }
 

@@ -462,12 +462,13 @@ sub page_before_template {
     admin_log($vars);
   }
   elsif ($page eq 'webhooks_config.html') {
-    if (Bugzilla->params->{webhooks_enabled}){
+    if (Bugzilla->params->{webhooks_enabled}) {
       Bugzilla->user->in_group('admin')
         || ThrowUserError('auth_failure',
         {group => 'admin', action => 'access', object => 'administrative_pages'});
       admin_webhooks($vars);
-    }else{
+    }
+    else {
       ThrowUserError('webhooks_disabled');
     }
   }
@@ -497,9 +498,9 @@ sub db_schema_abstract_schema {
       change_set  => {TYPE => 'VARCHAR(32)',  NOTNULL => 1,},
       routing_key => {TYPE => 'VARCHAR(64)',  NOTNULL => 1,},
       connector   => {TYPE => 'VARCHAR(32)',  NOTNULL => 1,},
-      attempt_ts  => {TYPE => 'DATETIME',},
-      attempts    => {TYPE => 'INT2',         NOTNULL => 1,},
-      last_error  => {TYPE => 'MEDIUMTEXT',},
+      attempt_ts => {TYPE => 'DATETIME',},
+      attempts   => {TYPE => 'INT2', NOTNULL => 1,},
+      last_error => {TYPE => 'MEDIUMTEXT',},
     ],
     INDEXES => [
       push_backlog_idx => {FIELDS => ['message_id', 'connector'], TYPE => 'UNIQUE',},
@@ -507,10 +508,10 @@ sub db_schema_abstract_schema {
   };
   $args->{'schema'}->{'push_backoff'} = {
     FIELDS => [
-      id              => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1,},
-      connector       => {TYPE => 'VARCHAR(32)',  NOTNULL => 1,},
+      id        => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1,},
+      connector => {TYPE => 'VARCHAR(32)',  NOTNULL => 1,},
       next_attempt_ts => {TYPE => 'DATETIME',},
-      attempts        => {TYPE => 'INT2',         NOTNULL => 1,},
+      attempts        => {TYPE => 'INT2', NOTNULL => 1,},
     ],
     INDEXES => [push_backoff_idx => {FIELDS => ['connector'], TYPE => 'UNIQUE',},],
   };
@@ -535,7 +536,7 @@ sub db_schema_abstract_schema {
       push_ts      => {TYPE => 'DATETIME',     NOTNULL => 1,},
       processed_ts => {TYPE => 'DATETIME',     NOTNULL => 1,},
       result       => {TYPE => 'INT1',         NOTNULL => 1,},
-      data         => {TYPE => 'MEDIUMTEXT',},
+      data => {TYPE => 'MEDIUMTEXT',},
     ],
   };
 }

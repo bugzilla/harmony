@@ -191,7 +191,7 @@ sub _fix_encoding {
   return if $part->parts > 1;
 
   # nothing to do if the part already has a charset
-  my $ct = parse_content_type($part->content_type);
+  my $ct      = parse_content_type($part->content_type);
   my $charset = $ct->{attributes}{charset} ? $ct->{attributes}{charset} : '';
   return unless !$charset || $charset eq 'us-ascii';
 

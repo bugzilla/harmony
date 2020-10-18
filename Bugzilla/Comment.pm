@@ -274,7 +274,7 @@ sub collapsed {
     }
   }
   if (@reason) {
-    $self->{collapsed} = 1;
+    $self->{collapsed}        = 1;
     $self->{collapsed_reason} = join(', ', sort @reason);
   }
   return $self->{collapsed};
@@ -340,9 +340,9 @@ sub body_full {
 # Mutators #
 ############
 
-sub set_is_private { $_[0]->set('isprivate',  $_[1]); }
-sub set_type       { $_[0]->set('type',       $_[1]); }
-sub set_extra_data { $_[0]->set('extra_data', $_[1]); }
+sub set_is_private  { $_[0]->set('isprivate',   $_[1]); }
+sub set_type        { $_[0]->set('type',        $_[1]); }
+sub set_extra_data  { $_[0]->set('extra_data',  $_[1]); }
 sub set_is_markdown { $_[0]->set('is_markdown', $_[1]); }
 
 sub add_tag {
@@ -361,7 +361,7 @@ sub remove_tag {
   my ($self, $tag) = @_;
   $tag = $self->_check_tag($tag);
 
-  my $tags = $self->tags;
+  my $tags  = $self->tags;
   my $index = first { lc($tags->[$_]) eq lc($tag) } 0 .. scalar(@$tags) - 1;
   return unless defined $index;
   splice(@$tags, $index, 1);

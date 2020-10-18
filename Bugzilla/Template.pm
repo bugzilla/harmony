@@ -84,7 +84,7 @@ sub _load_constants {
 # If no Accept-Language is present it uses the defined default
 # Templates may also be found in the extensions/ tree
 sub _include_path {
-  my $lang = shift || '';
+  my $lang  = shift || '';
   my $cache = Bugzilla->request_cache;
   $cache->{"template_include_path_$lang"}
     ||= template_include_path({language => $lang});
@@ -99,7 +99,7 @@ sub get_format {
   $format ||= '';
 
   # Security - allow letters and a hyphen only
-  $ctype =~ s/[^a-zA-Z\-]//g;
+  $ctype  =~ s/[^a-zA-Z\-]//g;
   $format =~ s/[^a-zA-Z\-]//g;
 
   $template .= ($format ? "-$format" : "");
@@ -138,7 +138,7 @@ sub get_format {
 sub quoteUrls {
   my ($text, $bug, $comment, $user, $bug_link_func) = @_;
   return $text unless $text;
-  $user ||= Bugzilla->user;
+  $user          ||= Bugzilla->user;
   $bug_link_func ||= \&get_bug_link;
 
   # We use /g for speed, but uris can have other things inside them
@@ -216,6 +216,7 @@ sub quoteUrls {
   $text = html_quote($text);
 
   if ($COLOR_QUOTES) {
+
     # Color quoted text
     $text =~ s~^(&gt;.+)$~<span class="quote">$1</span >~mg;
     $text =~ s~</span >\n<span class="quote">~\n~g;
@@ -346,7 +347,7 @@ sub multiline_sprintf {
   my @parts;
   my @my_sizes = @$sizes;    # Copy this so we don't modify the input array.
   foreach my $string (@$args) {
-    my $size = shift @my_sizes;
+    my $size   = shift @my_sizes;
     my @pieces = split("\n", wrap_hard($string, $size));
     push(@parts, \@pieces);
   }
@@ -613,7 +614,7 @@ sub create {
           my ($context, $isinactive) = @_;
           return sub {
             return $isinactive ? '<span class="bz_inactive">' . $_[0] . '</span>' : $_[0];
-            }
+          }
         },
         1
       ],
@@ -623,7 +624,7 @@ sub create {
           my ($context, $isclosed) = @_;
           return sub {
             return $isclosed ? '<span class="bz_closed">' . $_[0] . '</span>' : $_[0];
-            }
+          }
         },
         1
       ],
@@ -633,7 +634,7 @@ sub create {
           my ($context, $isobsolete) = @_;
           return sub {
             return $isobsolete ? '<span class="bz_obsolete">' . $_[0] . '</span>' : $_[0];
-            }
+          }
         },
         1
       ],
@@ -767,8 +768,8 @@ sub create {
           my ($context, $options) = @_;
           return sub {
             my $buglist = shift;
-            return join(", ",
-              map { get_bug_link($_, $_, $options) } split(/\s*,\s*/, $buglist));
+            return
+              join(", ", map { get_bug_link($_, $_, $options) } split(/\s*,\s*/, $buglist));
           };
         },
         1
@@ -804,10 +805,10 @@ sub create {
       unitconvert => sub {
         my ($data) = @_;
         my $retval = "";
-        my %units = ('KB' => 1024, 'MB' => 1024 * 1024, 'GB' => 1024 * 1024 * 1024,);
+        my %units  = ('KB' => 1024, 'MB' => 1024 * 1024, 'GB' => 1024 * 1024 * 1024,);
 
         if ($data < 1024) {
-          return "$data byte".($data == 1 ? '':'s');
+          return "$data byte" . ($data == 1 ? '' : 's');
         }
         else {
           my $u;

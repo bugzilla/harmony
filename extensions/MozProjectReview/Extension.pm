@@ -153,7 +153,7 @@ sub _file_child_bug {
 
   if ($@ || !($new_bug && $new_bug->{'bug_id'})) {
     push(@$dep_comment, "Error creating $template_suffix review bug");
-    push(@$dep_errors, "$template_suffix : $@") if $@;
+    push(@$dep_errors,  "$template_suffix : $@") if $@;
 
     # Since we performed Bugzilla::Bug::create in an eval block, we
     # need to manually rollback the commit as this is not done

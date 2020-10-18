@@ -34,8 +34,8 @@ use constant MAX_REQUEST_AGE => 90;    # about three months
 # the order of this array determines the order used in email
 use constant FLAG_TYPES => (
   {
-    type => 'review',                  # flag_type.name
-    group => 'everyone', # the user must be a member of this group to receive reminders
+    type  => 'review',                 # flag_type.name
+    group => 'everyone',               # the user must be a member of this group to receive reminders
   },
   {type => 'superview', group => 'everyone',},
   {type => 'feedback',  group => 'everyone',},
@@ -43,7 +43,7 @@ use constant FLAG_TYPES => (
 );
 
 sub REQUESTEE_NAG_SQL {
-  my $dbh = Bugzilla->dbh;
+  my $dbh            = Bugzilla->dbh;
   my @flag_types_sql = map { $dbh->quote($_->{type}) } FLAG_TYPES;
 
   return "
@@ -88,7 +88,7 @@ sub REQUESTEE_NAG_SQL {
 }
 
 sub SETTER_NAG_SQL {
-  my $dbh = Bugzilla->dbh;
+  my $dbh            = Bugzilla->dbh;
   my @flag_types_sql = map { $dbh->quote($_->{type}) } FLAG_TYPES;
 
   return "
@@ -133,7 +133,7 @@ sub SETTER_NAG_SQL {
 }
 
 sub WATCHING_REQUESTEE_NAG_SQL {
-  my $dbh = Bugzilla->dbh;
+  my $dbh            = Bugzilla->dbh;
   my @flag_types_sql = map { $dbh->quote($_->{type}) } FLAG_TYPES;
 
   return "
@@ -185,7 +185,7 @@ sub WATCHING_REQUESTEE_NAG_SQL {
 }
 
 sub WATCHING_SETTER_NAG_SQL {
-  my $dbh = Bugzilla->dbh;
+  my $dbh            = Bugzilla->dbh;
   my @flag_types_sql = map { $dbh->quote($_->{type}) } FLAG_TYPES;
 
   return "

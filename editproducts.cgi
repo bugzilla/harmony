@@ -68,7 +68,7 @@ if ( Bugzilla->params->{'useclassification'}
   else {
     # Only keep classifications containing at least one product
     # which you can administer.
-    my $products = $user->get_products_by_permission('editcomponents');
+    my $products  = $user->get_products_by_permission('editcomponents');
     my %class_ids = map { $_->classification_id => 1 } @$products;
     $class = Bugzilla::Classification->new_from_list([keys %class_ids]);
   }
@@ -106,7 +106,7 @@ if (!$action && !$product_name) {
       @$products = grep { $_->classification_id == $classification->id } @$products;
     }
   }
-  $vars->{'products'} = $products;
+  $vars->{'products'}      = $products;
   $vars->{'showbugcounts'} = $cgi->param('showbugcounts') ? 1 : 0;
 
   $template->process("admin/products/list.html.tmpl", $vars)
@@ -157,16 +157,16 @@ if ($action eq 'new') {
   check_token_data($token, 'add_product');
 
   my %create_params = (
-    classification     => $classification_name,
-    name               => $product_name,
-    description        => scalar $cgi->param('description'),
-    version            => scalar $cgi->param('version'),
-    defaultmilestone   => scalar $cgi->param('defaultmilestone'),
-    isactive           => scalar $cgi->param('is_active'),
-    create_series      => scalar $cgi->param('createseries'),
-    allows_unconfirmed => scalar $cgi->param('allows_unconfirmed'),
+    classification           => $classification_name,
+    name                     => $product_name,
+    description              => scalar $cgi->param('description'),
+    version                  => scalar $cgi->param('version'),
+    defaultmilestone         => scalar $cgi->param('defaultmilestone'),
+    isactive                 => scalar $cgi->param('is_active'),
+    create_series            => scalar $cgi->param('createseries'),
+    allows_unconfirmed       => scalar $cgi->param('allows_unconfirmed'),
     bug_description_template => scalar $cgi->param('bug_description_template'),
-    default_bug_type   => scalar $cgi->param('default_bug_type'),
+    default_bug_type         => scalar $cgi->param('default_bug_type'),
   );
   my $product = Bugzilla::Product->create(\%create_params);
 
@@ -277,16 +277,16 @@ if ($action eq 'edit' || (!$action && $product_name)) {
 if ($action eq 'update') {
   check_token_data($token, 'edit_product');
   my $product_old_name = trim($cgi->param('product_old_name') || '');
-  my $product = $user->check_can_admin_product($product_old_name);
+  my $product          = $user->check_can_admin_product($product_old_name);
 
   $product->set_all({
-    name               => $product_name,
-    description        => scalar $cgi->param('description'),
-    is_active          => scalar $cgi->param('is_active'),
-    allows_unconfirmed => scalar $cgi->param('allows_unconfirmed'),
-    default_milestone  => scalar $cgi->param('defaultmilestone'),
+    name                     => $product_name,
+    description              => scalar $cgi->param('description'),
+    is_active                => scalar $cgi->param('is_active'),
+    allows_unconfirmed       => scalar $cgi->param('allows_unconfirmed'),
+    default_milestone        => scalar $cgi->param('defaultmilestone'),
     bug_description_template => scalar $cgi->param('bug_description_template'),
-    default_bug_type   => scalar $cgi->param('default_bug_type'),
+    default_bug_type         => scalar $cgi->param('default_bug_type'),
   });
 
   my $changes = $product->update();

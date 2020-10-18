@@ -77,7 +77,7 @@ foreach my $module (@{REQUIRED_MODULES()}) {
 $cpanfile .= "\n# Optional\n";
 my %features;
 foreach my $module (@{OPTIONAL_MODULES()}) {
-  next if $module->{package} eq 'mod_perl'; # Skip mod_perl since this would be installed by distro
+  next if $module->{package} eq 'mod_perl';    # Skip mod_perl since this would be installed by distro
   my $current = _check_vers($module);
   if (exists $module->{feature}) {
     foreach my $feature (@{$module->{feature}}) {

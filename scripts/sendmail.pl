@@ -21,7 +21,7 @@ use File::Spec;
 
 BEGIN {
   require lib;
-  my $dir = File::Spec->rel2abs(dirname(__FILE__));
+  my $dir  = File::Spec->rel2abs(dirname(__FILE__));
   my $base = File::Spec->catdir($dir, "..");
   lib->import(
     $base,

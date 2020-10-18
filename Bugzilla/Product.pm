@@ -109,7 +109,7 @@ sub create {
 
   # Create groups and series for the new product, if requested.
   $product->_create_bug_group() if Bugzilla->params->{'makeproductgroups'};
-  $product->_create_series() if $create_series;
+  $product->_create_series()    if $create_series;
 
   Bugzilla::Hook::process('product_end_of_create', {product => $product});
 
@@ -123,14 +123,14 @@ sub create {
 # of products.
 sub preload {
   my ($products, $preload_flagtypes, $flagtypes_params) = @_;
-  my %prods = map { $_->id => $_ } @$products;
+  my %prods    = map { $_->id => $_ } @$products;
   my @prod_ids = keys %prods;
   return unless @prod_ids;
 
   my $dbh = Bugzilla->dbh;
   foreach my $field (qw(component version milestone)) {
     my $classname = "Bugzilla::" . ucfirst($field);
-    my $objects = $classname->match({product_id => \@prod_ids});
+    my $objects   = $classname->match({product_id => \@prod_ids});
 
     # Now populate the products with this set of objects.
     foreach my $obj (@$objects) {
@@ -423,6 +423,7 @@ sub _check_version {
 sub _check_default_bug_type {
   my ($invocant, $type) = @_;
   return $type if Bugzilla::Config::Common::check_bug_type($type) eq '';
+
   # Ignore silently just in case
   return undef;
 }
@@ -533,7 +534,10 @@ sub set_default_bug_type   { $_[0]->set('default_bug_type',   $_[1]); }
 sub set_default_milestone  { $_[0]->set('defaultmilestone',   $_[1]); }
 sub set_is_active          { $_[0]->set('isactive',           $_[1]); }
 sub set_allows_unconfirmed { $_[0]->set('allows_unconfirmed', $_[1]); }
-sub set_bug_description_template { $_[0]->set('bug_description_template', $_[1]); }
+
+sub set_bug_description_template {
+  $_[0]->set('bug_description_template', $_[1]);
+}
 
 sub set_group_controls {
   my ($self, $group, $settings) = @_;
@@ -863,7 +867,7 @@ sub flag_types {
   # We cache flag types to avoid useless calls to get_clusions().
   my $cache = Bugzilla->request_cache->{flag_types_per_product} ||= {};
   $self->{flag_types} = {};
-  my $prod_id = $self->id;
+  my $prod_id   = $self->id;
   my $flagtypes = Bugzilla::FlagType::match({product_id => $prod_id, %$params});
 
   foreach my $type ('bug', 'attachment') {
@@ -918,7 +922,8 @@ sub classification_id  { return $_[0]->{'classification_id'}; }
 sub bug_description_template {
   my $self = shift;
   if (!exists $self->{'bug_description_template'}) {
-    $self->{'bug_description_template'} = Bugzilla->dbh->selectrow_array(
+    $self->{'bug_description_template'}
+      = Bugzilla->dbh->selectrow_array(
       'SELECT bug_description_template FROM products WHERE id = ?',
       undef, $self->id);
   }

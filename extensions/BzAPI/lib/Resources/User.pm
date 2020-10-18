@@ -52,7 +52,7 @@ sub get_user {
   my $params   = Bugzilla->input_params;
 
   return if !exists $$result->{users};
-  my $user = $$result->{users}->[0] || return;
+  my $user   = $$result->{users}->[0] || return;
   my $object = Bugzilla::User->new({id => $user->{id}, cache => 1});
 
   $user = fix_user($user, $object);

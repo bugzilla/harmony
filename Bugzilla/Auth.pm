@@ -92,17 +92,15 @@ sub login {
     my $params = Bugzilla->input_params;
     my $cgi    = Bugzilla->cgi;
     my $uri    = URI->new($cgi->self_url);
-    foreach
-      my $param (qw( Bugzilla_remember GoAheadAndLogIn ))
-    {
+    foreach my $param (qw( Bugzilla_remember GoAheadAndLogIn )) {
       $uri->query_param_delete($param);
     }
     $user->mfa_provider->verify_prompt({
-      user          => $user,
-      type          => $type,
-      reason        => 'Logging in as ' . $user->identity,
-      remember      => $params->{Bugzilla_remember},
-      url           => $uri->as_string,
+      user     => $user,
+      type     => $type,
+      reason   => 'Logging in as ' . $user->identity,
+      remember => $params->{Bugzilla_remember},
+      url      => $uri->as_string,
       postback =>
         {action => 'token.cgi', token_field => 't', fields => {a => 'mfa_l',},}
     });

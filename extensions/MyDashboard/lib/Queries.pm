@@ -245,9 +245,9 @@ sub query_bugs {
 }
 
 sub query_flags {
-  my ($type) = @_;
-  my $user   = Bugzilla->user;
-  my $dbh    = Bugzilla->dbh;
+  my ($type)       = @_;
+  my $user         = Bugzilla->user;
+  my $dbh          = Bugzilla->dbh;
   my $datetime_now = DateTime->now(time_zone => $user->timezone);
 
   ($type ne 'requestee' || $type ne 'requester')
@@ -260,6 +260,7 @@ sub query_flags {
   }
   else {
     $match_params->{'setter_id'} = $user->id;
+
     # Exclude flags without a requestee, such as `in-testsuite?`
     $match_params->{'requestee_id'} = NOT_NULL;
   }

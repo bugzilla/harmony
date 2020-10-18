@@ -105,7 +105,7 @@ sub send {
 sub _get_bug_by_data {
   my ($self, $data) = @_;
   my $bug_data = $self->_get_bug_data($data) || return 0;
-  my $bug = Bugzilla::Bug->new({id => $bug_data->{id}});
+  my $bug      = Bugzilla::Bug->new({id => $bug_data->{id}});
 }
 
 sub _get_bug_data {
