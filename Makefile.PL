@@ -158,15 +158,6 @@ my %optional_features = (
       runtime => {requires => {'File::Which' => 0, 'File::Copy::Recursive' => 0,}}
     },
   },
-  elasticsearch => {
-    description => 'Elasticsearch-powered searches',
-    prereqs     => {
-      runtime => {
-        recommends => {'Term::ProgressBar'     => 0},
-        requires   => {'Search::Elasticsearch' => 0},
-      },
-    },
-  },
   graphical_reports => {
     description => 'Graphical Reports',
     prereqs     => {
@@ -368,19 +359,6 @@ my %test_requires = (
   'Test2::V0'                                                       => 0,
 );
 
-# Core Features
-my @core_features = grep { is_core_feature($_) } keys %optional_features;
-
-$optional_features{core} = {
-  description => 'features that almost everyone needs',
-  prereqs     => {
-    runtime => {
-      requires =>
-        {map { %{$optional_features{$_}{prereqs}{runtime}{requires}} } @core_features},
-    },
-  },
-};
-
 WriteMakefile(
   NAME               => 'Bugzilla',
   AUTHOR             => q{Bugzilla Developers <developers@bugzilla.org>},
@@ -408,7 +386,7 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D core
+GEN_CPANFILE_ARGS = -D better_xff
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
 
@@ -420,19 +398,3 @@ META.yml: Makefile.PL
 MAKE
 }
 
-sub is_core_feature {
-  local $_ = shift;
-  return $OSNAME eq 'linux' if /^linux/;
-  return !m{
-        ^
-        (?: pg
-          | oracle
-          | oauth2_server
-          | sqlite
-          | auth_ldap
-          | auth_radius
-          | smtp_auth
-          | updates)
-        $
-    }mxs;
-}
