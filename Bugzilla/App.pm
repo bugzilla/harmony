@@ -193,7 +193,8 @@ sub setup_routes {
   Bugzilla::App::CGI->setup_routes($r);
   Bugzilla::App::Main->setup_routes($r);
   Bugzilla::App::Users->setup_routes($r);
-  Bugzilla::App::OAuth2::Clients->setup_routes($r);
+  Bugzilla::App::OAuth2::Clients->setup_routes($r)
+    if Bugzilla->has_feature('oauth2_server');
   Bugzilla::App::SES->setup_routes($r);
 
   $r->static_file('/__lbheartbeat__');
