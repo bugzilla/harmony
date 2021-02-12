@@ -253,7 +253,7 @@ my %optional_features = (
     prereqs     =>
       {runtime => {requires => {'Chart::Lines' => 'v2.4.10', GD => '1.20'}}}
   },
-  oauth_server => {
+  oauth2_server => {
     description => 'OAuth2 Server support',
     prereqs     =>
       {runtime => {requires => {'Mojolicious::Plugin::OAuth2::Server' => '0.44'}}},
@@ -368,15 +368,15 @@ my %test_requires = (
   'Test2::V0'                                                       => 0,
 );
 
-# BMO Customization
-my @bmo_features = grep { is_bmo_feature($_) } keys %optional_features;
+# Core Features
+my @core_features = grep { is_core_feature($_) } keys %optional_features;
 
-$optional_features{bmo} = {
-  description => 'features that BMO needs',
+$optional_features{core} = {
+  description => 'features that almost everyone needs',
   prereqs     => {
     runtime => {
       requires =>
-        {map { %{$optional_features{$_}{prereqs}{runtime}{requires}} } @bmo_features},
+        {map { %{$optional_features{$_}{prereqs}{runtime}{requires}} } @core_features},
     },
   },
 };
@@ -408,7 +408,7 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D bmo
+GEN_CPANFILE_ARGS = -D core
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
 
@@ -420,13 +420,14 @@ META.yml: Makefile.PL
 MAKE
 }
 
-sub is_bmo_feature {
+sub is_core_feature {
   local $_ = shift;
   return $OSNAME eq 'linux' if /^linux/;
   return !m{
         ^
         (?: pg
           | oracle
+          | oauth2_server
           | sqlite
           | auth_ldap
           | auth_radius
