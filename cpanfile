@@ -25,7 +25,6 @@ requires 'DBIx::Class';
 requires 'DBIx::Class::Helpers', '== 2.034002';
 requires 'DBIx::Connector';
 requires 'Daemon::Generic';
-requires 'Data::Password::passwdqc', '0.08';
 requires 'DataDog::DogStatsd', '0.05';
 requires 'Date::Format', '2.23';
 requires 'Date::Parse', '2.31';

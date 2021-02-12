@@ -1739,17 +1739,6 @@ DISTRIBUTIONS
       integer 0
       perl 5.006
       strict 0
-  Data-Password-passwdqc-0.09
-    pathname: S/SH/SHERWIN/Data-Password-passwdqc-0.09.tar.gz
-    provides:
-      Data::Password::passwdqc 0.09
-    requirements:
-      Carp 0
-      ExtUtils::MakeMaker 6.30
-      List::MoreUtils 0
-      Moose 0
-      Test::More 0
-      namespace::autoclean 0
   Data-Structure-Util-0.16
     pathname: A/AN/ANDYA/Data-Structure-Util-0.16.tar.gz
     provides:
