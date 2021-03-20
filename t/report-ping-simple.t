@@ -8,6 +8,7 @@ use 5.10.1;
 use strict;
 use warnings;
 use lib qw( . lib local/lib/perl5 );
+BEGIN { plan skip_all => 'test disabled because this code may be removed from bugzilla/harmony' }
 
 BEGIN {
   unlink('data/db/report_ping_simple') if -f 'data/db/report_ping_simple';

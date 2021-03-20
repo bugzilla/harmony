@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use 5.10.1;
 use lib qw( . lib local/lib/perl5 );
+BEGIN { plan skip_all => 'test disabled because this code may be removed from bugzilla/harmony' }
 use Bugzilla;
 
 BEGIN { Bugzilla->extensions }
