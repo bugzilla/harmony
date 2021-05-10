@@ -1477,7 +1477,8 @@ sub install_update_db {
 
     # if there are no groups, then we're creating a database from scratch
     # and there's nothing to migrate
-    my ($group_count) = $dbh->selectrow_array("SELECT COUNT(*) FROM groups");
+    my $q = $dbh->quote_expr;
+    my ($group_count) = $dbh->selectrow_array("SELECT COUNT(*) FROM $q->{groups}");
     if ($group_count) {
 
       # Migrate old product_sec_group mappings from the time this change was made

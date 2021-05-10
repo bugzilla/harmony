@@ -16,8 +16,8 @@ package Bugzilla::DB::Schema::Oracle;
 use 5.10.1;
 use strict;
 use warnings;
+use Moo;
 
-use base qw(Bugzilla::DB::Schema);
 use Carp qw(confess);
 use Bugzilla::Util;
 
@@ -29,14 +29,11 @@ use constant MULTIPLE_FKS_IN_ALTER => 0;
 # 3.2rc2.
 use constant MAX_IDENTIFIER_LEN => 27;
 
+with qw(Bugzilla::DB::Schema);
+
 #------------------------------------------------------------------------------
-sub _initialize {
-
-  my $self = shift;
-
-  $self = $self->SUPER::_initialize(@_);
-
-  $self->{db_specific} = {
+sub _build_db_specific {
+  return {
 
     BOOLEAN => 'integer',
     FALSE   => '0',
@@ -62,12 +59,7 @@ sub _initialize {
     DATETIME => 'date',
     DATE     => 'date',
   };
-
-  $self->_adjust_schema;
-
-  return $self;
-
-}    #eosub--_initialize
+}
 
 #--------------------------------------------------------------------
 

@@ -16,16 +16,14 @@ package Bugzilla::DB::Schema::Pg;
 use 5.10.1;
 use strict;
 use warnings;
+use Moo;
 
-use base qw(Bugzilla::DB::Schema);
 use Storable qw(dclone);
 
+with qw(Bugzilla::DB::Schema);
 #------------------------------------------------------------------------------
-sub _initialize {
-
+before _adjust_schema => sub {
   my $self = shift;
-
-  $self = $self->SUPER::_initialize(@_);
 
   # Remove FULLTEXT index types from the schemas.
   foreach my $table (keys %{$self->{schema}}) {
@@ -36,6 +34,7 @@ sub _initialize {
             if (exists $index->{TYPE} && $index->{TYPE} eq 'FULLTEXT');
         }
       }
+
       foreach my $index (@{$self->{abstract_schema}{$table}{INDEXES}}) {
         if (ref($index) eq 'HASH') {
           delete($index->{TYPE})
@@ -44,8 +43,10 @@ sub _initialize {
       }
     }
   }
+};
 
-  $self->{db_specific} = {
+sub _build_db_specific {
+  return {
 
     BOOLEAN => 'smallint',
     FALSE   => '0',
@@ -71,12 +72,7 @@ sub _initialize {
     DATETIME => 'timestamp(0) without time zone',
     DATE     => 'date',
   };
-
-  $self->_adjust_schema;
-
-  return $self;
-
-}    #eosub--_initialize
+}
 
 #--------------------------------------------------------------------
 

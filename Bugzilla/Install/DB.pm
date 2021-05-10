@@ -1926,11 +1926,12 @@ sub _convert_groups_system_from_groupset {
     }
 
     # Identify admin group.
+    my $q = $dbh->quote_expr;
     my ($admin_gid)
-      = $dbh->selectrow_array("SELECT id FROM groups WHERE name = 'admin'");
+      = $dbh->selectrow_array("SELECT id FROM $q->{groups} WHERE name = 'admin'");
     if (!$admin_gid) {
       $dbh->do(
-        q{INSERT INTO groups (name, description)
+        qq{INSERT INTO $q->{groups} (name, description)
                                    VALUES ('admin', 'Administrators')}
       );
       $admin_gid = $dbh->bz_last_key('groups', 'id');
@@ -2558,8 +2559,9 @@ sub _fix_group_with_empty_name {
   # Rename any group which has an empty name.
   # Note that there can be at most one such group (because of
   # the SQL index on the name column).
+  my $q = $dbh->quote_expr;
   my ($emptygroupid)
-    = $dbh->selectrow_array("SELECT id FROM groups where name = ''");
+    = $dbh->selectrow_array("SELECT id FROM $q->{groups} where name = ''");
   if ($emptygroupid) {
 
     # There is a group with an empty name; find a name to rename it
@@ -2567,7 +2569,7 @@ sub _fix_group_with_empty_name {
     # group_$gid and add _<n> if necessary.
     my $trycount = 0;
     my $trygroupname;
-    my $sth         = $dbh->prepare("SELECT 1 FROM groups where name = ?");
+    my $sth         = $dbh->prepare("SELECT 1 FROM $q->{groups} where name = ?");
     my $name_exists = 1;
 
     while ($name_exists) {
@@ -3010,9 +3012,9 @@ EOT
 # user_group_map), and when we kill derived gruops in the DB.
 sub _rederive_regex_groups {
   my $dbh = Bugzilla->dbh;
-
+  my $q = $dbh->quote_expr;
   my $regex_groups_exist = $dbh->selectrow_array(
-    "SELECT 1 FROM groups WHERE userregexp = '' " . $dbh->sql_limit(1));
+    "SELECT 1 FROM $q->{groups} WHERE userregexp = '' " . $dbh->sql_limit(1));
   return if !$regex_groups_exist;
 
   my $regex_derivations
@@ -3025,12 +3027,12 @@ sub _rederive_regex_groups {
 
   # Re-evaluate all regexps, to keep them up-to-date.
   my $sth = $dbh->prepare(
-    "SELECT profiles.userid, profiles.login_name, groups.id,
-                groups.userregexp, user_group_map.group_id
-           FROM (profiles CROSS JOIN groups)
+    "SELECT $q->{'profiles.userid, profiles.login_name, groups.id,
+                groups.userregexp, user_group_map.group_id'}
+           FROM (profiles CROSS JOIN $q->{groups})
                 LEFT JOIN user_group_map
                        ON user_group_map.user_id = profiles.userid
-                          AND user_group_map.group_id = groups.id
+                          AND user_group_map.group_id = $q->{'groups.id'}
                           AND user_group_map.grant_type = ?
           WHERE userregexp != '' OR user_group_map.group_id IS NOT NULL"
   );
@@ -4225,10 +4227,11 @@ sub _add_restrict_ipaddr {
 
 sub _migrate_group_owners {
   my $dbh = Bugzilla->dbh;
+  my $q   = $dbh->quote_expr;
   return if $dbh->bz_column_info('groups', 'owner_user_id');
   $dbh->bz_add_column('groups', 'owner_user_id', {TYPE => 'INT3'});
   my $nobody = Bugzilla::User->check(Bugzilla->localconfig->nobody_user);
-  $dbh->do('UPDATE groups SET owner_user_id = ?', undef, $nobody->id);
+  $dbh->do("UPDATE $q->{groups} SET owner_user_id = ?", undef, $nobody->id);
 }
 
 sub _migrate_nicknames {

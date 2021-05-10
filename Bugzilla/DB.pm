@@ -33,7 +33,16 @@ use Module::Runtime qw(require_module);
 
 has 'connector' => (is => 'lazy', handles => [qw( dbh )]);
 has 'model'     => (is => 'lazy');
+has 'qe'        => (is => 'lazy', handles => ['quote_expr']);
+
 has [qw(dsn user pass attrs)] => (is => 'ro', required => 1);
+
+sub _build_qe {
+  my ($self) = @_;
+
+  require Bugzilla::DB::QuoteExpression;
+  return Bugzilla::DB::QuoteExpression->new(db => $self, sql_identifier_quote_char => $self->get_info(29));
+}
 
 around 'attrs' => sub {
   my ($method, $self) = @_;
@@ -68,7 +77,14 @@ around 'attrs' => sub {
     $stash->add_symbol(
       $symbol => sub {
         my $self = shift;
-        return $self->dbh->$method(@_);
+        my @args = @_;
+        use Try::Tiny;
+        use Carp;
+        try {
+          $self->dbh->$method(@args);
+        } catch {
+          confess $_;
+        };
       }
     );
   }
@@ -1165,13 +1181,15 @@ sub bz_set_next_serial_value {
 # Schema Information Methods
 #####################################################################
 
-sub _bz_schema {
-  my ($self) = @_;
-  return $self->{private_bz_schema} if exists $self->{private_bz_schema};
-  my @module_parts = split('::', ref $self);
-  my $module_name  = pop @module_parts;
-  $self->{private_bz_schema} = Bugzilla::DB::Schema->new($module_name);
-  return $self->{private_bz_schema};
+has '_bz_schema' => ( is => 'lazy' );
+
+sub _build__bz_schema {
+  my ($self)       = @_;
+  my $db_engine    = (split('::', ref $self))[-1];
+  my $schema_class = "Bugzilla::DB::Schema::$db_engine";
+  require_module $schema_class;
+
+  return $schema_class->new(db => $self);
 }
 
 # _bz_get_initial_schema()
@@ -1563,19 +1581,20 @@ sub _check_references {
   # and we can't use the same table name on both sides of the join.
   # We also can't use the words "table" or "foreign" because those are
   # reserved words.
+  my $q = $self->quote_expr;
   my $bad_values = $self->selectcol_arrayref(
-    "SELECT DISTINCT tabl.$column
-           FROM $table AS tabl LEFT JOIN $foreign_table AS forn
-                ON tabl.$column = forn.$foreign_column
-          WHERE forn.$foreign_column IS NULL
-                AND tabl.$column IS NOT NULL"
+    qq[SELECT DISTINCT $q->{"tabl.$column"}
+           FROM $q->{"$table AS tabl"} LEFT JOIN $q->{"$foreign_table AS forn"}
+                ON $q->{"tabl.$column = forn.$foreign_column"}
+          WHERE $q->{"forn.$foreign_column IS NULL"}
+                AND $q->{"tabl.$column IS NOT NULL"}]
   );
 
   if (@$bad_values) {
     my $delete_action = $fk->{DELETE} || '';
     if ($delete_action eq 'CASCADE') {
       $self->do(
-        "DELETE FROM $table WHERE $column IN (" . join(',', ('?') x @$bad_values) . ")",
+        "DELETE FROM $q->{$table} WHERE $q->{$column} IN (" . join(',', ('?') x @$bad_values) . ")",
         undef, @$bad_values
       );
       if (Bugzilla->usage_mode == USAGE_MODE_CMDLINE) {

@@ -18,6 +18,7 @@ package Bugzilla::DB::Schema;
 use 5.10.1;
 use strict;
 use warnings;
+use Moo;
 
 use Bugzilla::Error;
 use Bugzilla::Hook;
@@ -44,161 +45,8 @@ use Data::Dumper;
 # yet exist. (However, in SQLite it's 1 because SQLite allows that.)
 use constant FK_ON_CREATE => 0;
 
-=head1 NAME
-
-Bugzilla::DB::Schema - Abstract database schema for Bugzilla
-
-=head1 SYNOPSIS
-
-  # Obtain MySQL database schema.
-  # Do not do this. Use Bugzilla::DB instead.
-  use Bugzilla::DB::Schema;
-  my $mysql_schema = new Bugzilla::DB::Schema('Mysql');
-
-  # Recommended way to obtain database schema.
-  use Bugzilla::DB;
-  my $dbh = Bugzilla->dbh;
-  my $schema = $dbh->_bz_schema();
-
-  # Get the list of tables in the Bugzilla database.
-  my @tables = $schema->get_table_list();
-
-  # Get the SQL statements need to create the bugs table.
-  my @statements = $schema->get_table_ddl('bugs');
-
-  # Get the database-specific SQL data type used to implement
-  # the abstract data type INT1.
-  my $db_specific_type = $schema->sql_type('INT1');
-
-=head1 DESCRIPTION
-
-This module implements an object-oriented, abstract database schema.
-It should be considered package-private to the Bugzilla::DB module.
-That means that CGI scripts should never call any function in this
-module directly, but should instead rely on methods provided by
-Bugzilla::DB.
-
-=head1 NEW TO SCHEMA.PM?
-
-If this is your first time looking at Schema.pm, especially if
-you are making changes to the database, please take a look at
-L<https://www.bugzilla.org/docs/developer.html#sql-schema> to learn
-more about how this integrates into the rest of Bugzilla.
-
-=cut
-
 #--------------------------------------------------------------------------
 # Define the Bugzilla abstract database schema and version as constants.
-
-=head1 CONSTANTS
-
-=over
-
-=item C<SCHEMA_VERSION>
-
-The 'version' of the internal schema structure. This version number
-is incremented every time the the fundamental structure of Schema
-internals changes.
-
-This is NOT changed every time a table or a column is added. This
-number is incremented only if the internal structures of this
-Schema would be incompatible with the internal structures of a
-previous Schema version.
-
-In general, unless you are messing around with serialization
-and deserialization of the schema, you don't need to worry about
-this constant.
-
-=begin private
-
-An example of the use of the version number:
-
-Today, we store all individual columns like this:
-
-column_name => { TYPE => 'SOMETYPE', NOTNULL => 1 }
-
-Imagine that someday we decide that NOTNULL => 1 is bad, and we want
-to change it so that the schema instead uses NULL => 0.
-
-But we have a bunch of Bugzilla installations around the world with a
-serialized schema that has NOTNULL in it! When we deserialize that
-structure, it just WILL NOT WORK properly inside of our new Schema object.
-So, immediately after deserializing, we need to go through the hash
-and change all NOTNULLs to NULLs and so on.
-
-We know that we need to do that on deserializing because we know that
-version 1.00 used NOTNULL. Having made the change to NULL, we would now
-be version 1.01.
-
-=end private
-
-=item C<ABSTRACT_SCHEMA>
-
-The abstract database schema structure consists of a hash reference
-in which each key is the name of a table in the Bugzilla database.
-
-The value for each key is a hash reference containing the keys
-C<FIELDS> and C<INDEXES> which in turn point to array references
-containing information on the table's fields and indexes.
-
-A field hash reference should must contain the key C<TYPE>. Optional field
-keys include C<PRIMARYKEY>, C<NOTNULL>, and C<DEFAULT>.
-
-The C<INDEXES> array reference contains index names and information
-regarding the index. If the index name points to an array reference,
-then the index is a regular index and the array contains the indexed
-columns. If the index name points to a hash reference, then the hash
-must contain the key C<FIELDS>. It may also contain the key C<TYPE>,
-which can be used to specify the type of index such as UNIQUE or FULLTEXT.
-
-=back
-
-=head2 Referential Integrity
-
-Bugzilla::DB::Schema supports "foreign keys", a way of saying
-that "Column X may only contain values from Column Y in Table Z".
-For example, in Bugzilla, bugs.resolution should only contain
-values from the resolution.values field.
-
-It does this by adding an additional item to a column, called C<REFERENCES>.
-This is a hash with the following members:
-
-=over
-
-=item C<TABLE>
-
-The table the foreign key points at
-
-=item C<COLUMN>
-
-The column pointed at in that table.
-
-=item C<DELETE>
-
-What to do if the row in the parent table is deleted. Choices are
-C<RESTRICT>, C<CASCADE>, or C<SET NULL>.
-
-C<RESTRICT> means the deletion of the row in the parent table will
-be forbidden by the database if there is a row in I<this> table that
-still refers to it. This is the default, if you don't specify
-C<DELETE>.
-
-C<CASCADE> means that this row will be deleted along with that row.
-
-C<SET NULL> means that the column will be set to C<NULL> when the parent
-row is deleted. Note that this is only valid if the column can actually
-be set to C<NULL>. (That is, the column isn't C<NOT NULL>.)
-
-=item C<UPDATE>
-
-What to do if the value in the parent table is updated. You can set this
-to C<CASCADE> or C<RESTRICT>, which mean the same thing as they do for
-L</DELETE>. This variable defaults to C<CASCADE>, which means "also
-update this column in this table."
-
-=back
-
-=cut
 
 use constant SCHEMA_VERSION => 3;
 use constant ADD_COLUMN     => 'ADD COLUMN';
@@ -1944,138 +1792,59 @@ use constant MULTI_SELECT_VALUE_TABLE => {
   INDEXES => [bug_id_idx => {FIELDS => [qw( bug_id value)], TYPE => 'UNIQUE'},],
 };
 
-#--------------------------------------------------------------------------
 
-=head1 METHODS
+has 'db' => (is => 'ro', required => 1, weak_ref => 1);
 
-Note: Methods which can be implemented generically for all DBs are
-implemented in this module. If needed, they can be overridden with
-DB-specific code in a subclass. Methods which are prefixed with C<_>
-are considered protected. Subclasses may override these methods, but
-other modules should not invoke these methods directly.
+has 'abstract_schema' => (is => 'lazy');
 
-=cut
+sub _build_abstract_schema {
 
-#--------------------------------------------------------------------------
-sub new {
+  # While ABSTRACT_SCHEMA cannot be modified, $abstract_schema can be.
+  # So, we dclone it to prevent anything from mucking with the constant.
+  my $abstract_schema = dclone(ABSTRACT_SCHEMA);
 
-=over
-
-=item C<new>
-
- Description: Public constructor method used to instantiate objects of this
-              class. However, it also can be used as a factory method to
-              instantiate database-specific subclasses when an optional
-              driver argument is supplied.
- Parameters:  $driver (optional) - Used to specify the type of database.
-              This routine C<die>s if no subclass is found for the specified
-              driver.
-              $schema (optional) - A reference to a hash. Callers external
-                  to this package should never use this parameter.
- Returns:     new instance of the Schema class or a database-specific subclass
-
-=cut
-
-  my $this   = shift;
-  my $class  = ref($this) || $this;
-  my $driver = shift;
-
-  if ($driver) {
-    (my $subclass = $driver) =~ s/^(\S)/\U$1/;
-    $class .= '::' . $subclass;
-    try {
-      require_module($class);
-    }
-    catch {
-      die "The $class class could not be found ($subclass not supported?): $_";
-    };
+  # Let extensions add tables, but make sure they can't modify existing
+  # tables. If we don't lock/unlock keys, lock_value complains.
+  lock_keys(%$abstract_schema);
+  foreach my $table (keys %{ABSTRACT_SCHEMA()}) {
+    lock_value(%$abstract_schema, $table) if exists $abstract_schema->{$table};
   }
-  die "$class is an abstract base class. Instantiate a subclass instead."
-    if ($class eq __PACKAGE__);
+  unlock_keys(%$abstract_schema);
+  Bugzilla::Hook::process('db_schema_abstract_schema',
+    {schema => $abstract_schema});
+  unlock_hash(%$abstract_schema);
 
-  my $self = {};
-  bless $self, $class;
-  $self = $self->_initialize(@_);
+  return $abstract_schema;
+}
 
-  return ($self);
+has 'schema' => (is => 'lazy');
+sub _build_schema {
+  my ($self) = @_;
+  return dclone($self->abstract_schema);
+}
 
-}    #eosub--new
+sub BUILD {
+  my $self = shift;
 
-#--------------------------------------------------------------------------
-sub _initialize {
+  $self->_adjust_schema;
+};
 
-=item C<_initialize>
-
- Description: Protected method that initializes an object after
-              instantiation with the abstract schema. All subclasses should
-              override this method. The typical subclass implementation
-              should first call the C<_initialize> method of the superclass,
-              then do any database-specific initialization (especially
-              define the database-specific implementation of the all
-              abstract data types), and then call the C<_adjust_schema>
-              method.
- Parameters:  $abstract_schema (optional) - A reference to a hash. If
-                  provided, this hash will be used as the internal
-                  representation of the abstract schema instead of our
-                  default abstract schema. This is intended for internal
-                  use only by deserialize_abstract.
- Returns:     the instance of the Schema class
-
-=cut
-
-  my $self            = shift;
-  my $abstract_schema = shift;
-
-  if (!$abstract_schema) {
-
-    # While ABSTRACT_SCHEMA cannot be modified, $abstract_schema can be.
-    # So, we dclone it to prevent anything from mucking with the constant.
-    $abstract_schema = dclone(ABSTRACT_SCHEMA);
-
-    # Let extensions add tables, but make sure they can't modify existing
-    # tables. If we don't lock/unlock keys, lock_value complains.
-    lock_keys(%$abstract_schema);
-    foreach my $table (keys %{ABSTRACT_SCHEMA()}) {
-      lock_value(%$abstract_schema, $table) if exists $abstract_schema->{$table};
-    }
-    unlock_keys(%$abstract_schema);
-    Bugzilla::Hook::process('db_schema_abstract_schema',
-      {schema => $abstract_schema});
-    unlock_hash(%$abstract_schema);
-  }
-
-  $self->{schema}          = dclone($abstract_schema);
-  $self->{abstract_schema} = $abstract_schema;
-
-  return $self;
-
-}    #eosub--_initialize
+has 'db_specific' => (is => 'lazy');
 
 #--------------------------------------------------------------------------
 sub _adjust_schema {
 
-=item C<_adjust_schema>
-
- Description: Protected method that alters the abstract schema at
-              instantiation-time to be database-specific. It is a generic
-              enough routine that it can be defined here in the base class.
-              It takes the abstract schema and replaces the abstract data
-              types with database-specific data types.
- Parameters:  none
- Returns:     the instance of the Schema class
-
-=cut
-
   my $self = shift;
+  my $schema = $self->schema;
 
   # The _initialize method has already set up the db_specific hash with
   # the information on how to implement the abstract data types for the
   # instantiated DBMS-specific subclass.
-  my $db_specific = $self->{db_specific};
+  my $db_specific = $self->db_specific;
 
   # Loop over each table in the abstract database schema.
-  foreach my $table (keys %{$self->{schema}}) {
-    my %fields = (@{$self->{schema}{$table}{FIELDS}});
+  foreach my $table (keys %$schema) {
+    my %fields = (@{$schema->{$table}{FIELDS}});
 
     # Loop over the field definitions in each table.
     foreach my $field_def (values %fields) {
@@ -2103,36 +1872,6 @@ sub _adjust_schema {
 
 #--------------------------------------------------------------------------
 sub get_type_ddl {
-
-=item C<get_type_ddl>
-
-=over
-
-=item B<Description>
-
-Public method to convert abstract (database-generic) field specifiers to
-database-specific data types suitable for use in a C<CREATE TABLE> or
-C<ALTER TABLE> SQL statment. If no database-specific field type has been
-defined for the given field type, then it will just return the same field type.
-
-=item B<Parameters>
-
-=over
-
-=item C<$def> - A reference to a hash of a field containing the following keys:
-C<TYPE> (required), C<NOTNULL> (optional), C<DEFAULT> (optional),
-C<PRIMARYKEY> (optional), C<REFERENCES> (optional)
-
-=back
-
-=item B<Returns>
-
-A DDL string suitable for describing a field in a C<CREATE TABLE> or
-C<ALTER TABLE> SQL statement
-
-=back
-
-=cut
 
   my $self  = shift;
   my $finfo = (@_ == 1 && ref($_[0]) eq 'HASH') ? $_[0] : {@_};
@@ -2166,35 +1905,6 @@ C<ALTER TABLE> SQL statement
 
 sub get_fk_ddl {
 
-=item C<_get_fk_ddl>
-
-=over
-
-=item B<Description>
-
-Protected method. Translates the C<REFERENCES> item of a column into SQL.
-
-=item B<Params>
-
-=over
-
-=item C<$table>  - The name of the table the reference is from.
-
-=item C<$column> - The name of the column the reference is from
-
-=item C<$references> - The C<REFERENCES> hashref from a column.
-
-=back
-
-=item B<Returns>
-
-SQL for to define the foreign key, or an empty string if C<$references>
-is undefined.
-
-=back
-
-=cut
-
   my ($self, $table, $column, $references) = @_;
   return "" if !$references;
 
@@ -2204,9 +1914,10 @@ is undefined.
   my $to_column = $references->{COLUMN} || confess "No column in reference";
   my $fk_name = $self->_get_fk_name($table, $column, $references);
 
+  my $q = $self->db->quote_expr;
   return
-      "\n     CONSTRAINT $fk_name FOREIGN KEY ($column)\n"
-    . "     REFERENCES $to_table($to_column)\n"
+      "\n     CONSTRAINT $q->{$fk_name} FOREIGN KEY ($q->{$column})\n"
+    . "     REFERENCES $q->{$to_table}($q->{$to_column})\n"
     . "      ON UPDATE $update ON DELETE $delete";
 }
 
@@ -2240,14 +1951,15 @@ sub get_add_fks_sql {
 
   my @add = $self->_column_fks_to_ddl($table, $column_fks);
 
+  my $q = $self->db->quote_expr;
   my @sql;
   if ($self->MULTIPLE_FKS_IN_ALTER) {
-    my $alter = "ALTER TABLE $table ADD " . join(', ADD ', @add);
+    my $alter = "ALTER TABLE $q->{$table} ADD " . join(', ADD ', @add);
     push(@sql, $alter);
   }
   else {
     foreach my $fk_string (@add) {
-      push(@sql, "ALTER TABLE $table ADD $fk_string");
+      push(@sql, "ALTER TABLE $q->{$table} ADD $fk_string");
     }
   }
   return @sql;
@@ -2273,29 +1985,11 @@ sub get_drop_fk_sql {
 
 sub convert_type {
 
-=item C<convert_type>
-
-Converts a TYPE from the L</ABSTRACT_SCHEMA> format into the real SQL type.
-
-=cut
-
   my ($self, $type) = @_;
   return $self->{db_specific}->{$type} || $type;
 }
 
 sub get_column {
-
-=item C<get_column($table, $column)>
-
- Description: Public method to get the abstract definition of a column.
- Parameters:  $table - the table name
-              $column - a column in the table
- Returns:     a hashref containing information about the column, including its
-              type (C<TYPE>), whether or not it can be null (C<NOTNULL>),
-              its default value if it has one (C<DEFAULT), etc.
-              Returns undef if the table or column does not exist.
-
-=cut
 
   my ($self, $table, $column) = @_;
 
@@ -2310,31 +2004,11 @@ sub get_column {
 
 sub get_table_list {
 
-=item C<get_table_list>
-
- Description: Public method for discovering what tables should exist in the
-              Bugzilla database.
-
- Parameters:  none
-
- Returns:     An array of table names, in alphabetical order.
-
-=cut
-
   my $self = shift;
   return sort keys %{$self->{schema}};
 }
 
 sub get_table_columns {
-
-=item C<get_table_columns>
-
- Description: Public method for discovering what columns are in a given
-              table in the Bugzilla database.
- Parameters:  $table - the table name
- Returns:     array of column names
-
-=cut
 
   my ($self, $table) = @_;
   my @ddl = ();
@@ -2367,18 +2041,6 @@ sub get_create_database_sql {
 
 sub get_table_ddl {
 
-=item C<get_table_ddl>
-
- Description: Public method to generate the SQL statements needed to create
-              the a given table and its indexes in the Bugzilla database.
-              Subclasses may override or extend this method, if needed, but
-              subclasses probably should override C<_get_create_table_ddl>
-              or C<_get_create_index_ddl> instead.
- Parameters:  $table - the table name
- Returns:     an array of strings containing SQL statements
-
-=cut
-
   my ($self, $table) = @_;
   my @ddl = ();
 
@@ -2405,15 +2067,6 @@ sub get_table_ddl {
 
 sub _get_create_table_ddl {
 
-=item C<_get_create_table_ddl>
-
- Description: Protected method to generate the "create table" SQL statement
-              for a given table.
- Parameters:  $table - the table name
- Returns:     a string containing the DDL statement for the specified table
-
-=cut
-
   my ($self, $table) = @_;
 
   my $thash = $self->{schema}{$table};
@@ -2421,10 +2074,11 @@ sub _get_create_table_ddl {
 
   my (@col_lines, @fk_lines);
   my @fields = @{$thash->{FIELDS}};
+  my $q = $self->db->quote_expr;
   while (@fields) {
     my $field = shift(@fields);
     my $finfo = shift(@fields);
-    push(@col_lines, "\t$field\t" . $self->get_type_ddl($finfo));
+    push(@col_lines, "\t$q->{$field}\t" . $self->get_type_ddl($finfo));
     if ($self->FK_ON_CREATE and $finfo->{REFERENCES}) {
       my $fk = $finfo->{REFERENCES};
       my $fk_ddl = $self->get_fk_ddl($table, $field, $fk);
@@ -2433,31 +2087,20 @@ sub _get_create_table_ddl {
   }
 
   my $sql
-    = "CREATE TABLE $table (\n" . join(",\n", @col_lines, @fk_lines) . "\n)";
+    = "CREATE TABLE $q->{$table} (\n" . join(",\n", @col_lines, @fk_lines) . "\n)";
   return $sql;
 
 }
 
 sub _get_create_index_ddl {
 
-=item C<_get_create_index_ddl>
-
- Description: Protected method to generate a "create index" SQL statement
-              for a given table and index.
- Parameters:  $table_name - the name of the table
-              $index_name - the name of the index
-              $index_fields - a reference to an array of field names
-              $index_type (optional) - specify type of index (e.g., UNIQUE)
- Returns:     a string containing the DDL statement
-
-=cut
-
   my ($self, $table_name, $index_name, $index_fields, $index_type) = @_;
 
+  my $q = $self->db->quote_expr;
   my $sql = "CREATE ";
-  $sql .= "$index_type " if ($index_type && $index_type eq 'UNIQUE');
+  $sql .= "$q->{$index_type} " if ($index_type && $index_type eq 'UNIQUE');
   $sql
-    .= "INDEX $index_name ON $table_name \(" . join(", ", @$index_fields) . "\)";
+    .= "INDEX $q->{$index_name} ON $q->{$table_name} \(" . $q->{join(", ", @$index_fields)} . "\)";
 
   return ($sql);
 
@@ -2466,20 +2109,6 @@ sub _get_create_index_ddl {
 #--------------------------------------------------------------------------
 
 sub get_add_column_ddl {
-
-=item C<get_add_column_ddl($table, $column, \%definition, $init_value)>
-
- Description: Generate SQL to add a column to a table.
- Params:      $table - The table containing the column.
-              $column - The name of the column being added.
-              \%definition - The new definition for the column,
-                  in standard C<ABSTRACT_SCHEMA> format.
-              $init_value - (optional) An initial value to set
-                            the column to. Should already be SQL-quoted
-                            if necessary.
- Returns:     An array of SQL statements.
-
-=cut
 
   my ($self, $table, $column, $definition, $init_value) = @_;
   my @statements;
@@ -2504,22 +2133,6 @@ sub get_add_column_ddl {
 
 sub get_add_index_ddl {
 
-=item C<get_add_index_ddl>
-
- Description: Gets SQL for creating an index.
-              NOTE: Subclasses should not override this function. Instead,
-              if they need to specify a custom CREATE INDEX statement,
-              they should override C<_get_create_index_ddl>
- Params:      $table - The name of the table the index will be on.
-              $name  - The name of the new index.
-              $definition - An index definition. Either a hashref
-                            with FIELDS and TYPE or an arrayref
-                            containing a list of columns.
- Returns:     An array of SQL statements that will create the
-              requested index.
-
-=cut
-
   my ($self, $table, $name, $definition) = @_;
 
   my ($index_fields, $index_type);
@@ -2538,24 +2151,6 @@ sub get_add_index_ddl {
 }
 
 sub get_alter_column_ddl {
-
-=item C<get_alter_column_ddl($table, $column, \%definition)>
-
- Description: Generate SQL to alter a column in a table.
-              The column that you are altering must exist,
-              and the table that it lives in must exist.
- Params:      $table - The table containing the column.
-              $column - The name of the column being changed.
-              \%definition - The new definition for the column,
-                  in standard C<ABSTRACT_SCHEMA> format.
-              $set_nulls_to - A value to set NULL values to, if
-                  your new definition is NOT NULL and contains
-                  no DEFAULT, and when there is a possibility
-                  that the column could contain NULLs. $set_nulls_to
-                  should be already SQL-quoted if necessary.
- Returns:     An array of SQL statements.
-
-=cut
 
   my $self = shift;
   my ($table, $column, $new_def, $set_nulls_to) = @_;
@@ -2643,15 +2238,6 @@ sub _set_nulls_sql {
 
 sub get_drop_index_ddl {
 
-=item C<get_drop_index_ddl($table, $name)>
-
- Description: Generates SQL statements to drop an index.
- Params:      $table - The table the index is on.
-              $name  - The name of the index being dropped.
- Returns:     An array of SQL statements.
-
-=cut
-
   my ($self, $table, $name) = @_;
 
   # Although ANSI SQL-92 doesn't specify a method of dropping an index,
@@ -2661,26 +2247,9 @@ sub get_drop_index_ddl {
 
 sub get_drop_column_ddl {
 
-=item C<get_drop_column_ddl($table, $column)>
-
- Description: Generate SQL to drop a column from a table.
- Params:      $table - The table containing the column.
-              $column - The name of the column being dropped.
- Returns:     An array of SQL statements.
-
-=cut
-
   my ($self, $table, $column) = @_;
   return ("ALTER TABLE $table DROP COLUMN $column");
 }
-
-=item C<get_drop_table_ddl($table)>
-
- Description: Generate SQL to drop a table from the database.
- Params:      $table - The name of the table to drop.
- Returns:     An array of SQL statements.
-
-=cut
 
 sub get_drop_table_ddl {
   my ($self, $table) = @_;
@@ -2689,19 +2258,6 @@ sub get_drop_table_ddl {
 
 sub get_rename_column_ddl {
 
-=item C<get_rename_column_ddl($table, $old_name, $new_name)>
-
- Description: Generate SQL to change the name of a column in a table.
-              NOTE: ANSI SQL contains no simple way to rename a column,
-                    so this function is ABSTRACT and must be implemented
-                    by subclasses.
- Params:      $table - The table containing the column to be renamed.
-              $old_name - The name of the column being renamed.
-              $new_name - The name the column is changing to.
- Returns:     An array of SQL statements.
-
-=cut
-
   die "ANSI SQL has no way to rename a column, and your database driver\n"
     . " has not implemented a method.";
 }
@@ -2709,42 +2265,9 @@ sub get_rename_column_ddl {
 
 sub get_rename_table_sql {
 
-=item C<get_rename_table_sql>
-
-=over
-
-=item B<Description>
-
-Gets SQL to rename a table in the database.
-
-=item B<Params>
-
-=over
-
-=item C<$old_name> - The current name of the table.
-
-=item C<$new_name> - The new name of the table.
-
-=back
-
-=item B<Returns>: An array of SQL statements to rename a table.
-
-=back
-
-=cut
-
   my ($self, $old_name, $new_name) = @_;
   return ("ALTER TABLE $old_name RENAME TO $new_name");
 }
-
-=item C<delete_table($name)>
-
- Description: Deletes a table from this Schema object.
-              Dies if you try to delete a table that doesn't exist.
- Params:      $name - The name of the table to delete.
- Returns:     nothing
-
-=cut
 
 sub delete_table {
   my ($self, $name) = @_;
@@ -2758,18 +2281,6 @@ sub delete_table {
 
 sub get_column_abstract {
 
-=item C<get_column_abstract($table, $column)>
-
- Description: A column definition from the abstract internal schema.
-              cross-database format.
- Params:      $table - The name of the table
-              $column - The name of the column that you want
- Returns:     A hash reference. For the format, see the docs for
-              C<ABSTRACT_SCHEMA>.
-              Returns undef if the column or table does not exist.
-
-=cut
-
   my ($self, $table, $column) = @_;
 
   # Prevent a possible dereferencing of an undef hash, if the
@@ -2780,20 +2291,6 @@ sub get_column_abstract {
   }
   return undef;
 }
-
-=item C<get_indexes_on_column_abstract($table, $column)>
-
- Description: Gets a list of indexes that are on a given column.
- Params:      $table - The table the column is on.
-              $column - The name of the column.
- Returns:     Indexes in the standard format of an INDEX
-              entry on a table. That is, key-value pairs
-              where the key is the index name and the value
-              is the index definition.
-              If there are no indexes on that column, we return
-              undef.
-
-=cut
 
 sub get_indexes_on_column_abstract {
   my ($self, $table, $column) = @_;
@@ -2825,17 +2322,6 @@ sub get_indexes_on_column_abstract {
 
 sub get_index_abstract {
 
-=item C<get_index_abstract($table, $index)>
-
- Description: Returns an index definition from the internal abstract schema.
- Params:      $table - The table the index is on.
-              $index - The name of the index.
- Returns:     A hash reference representing an index definition.
-              See the C<ABSTRACT_SCHEMA> docs for details.
-              Returns undef if the index does not exist.
-
-=cut
-
   my ($self, $table, $index) = @_;
 
   # Prevent a possible dereferencing of an undef hash, if the
@@ -2848,32 +2334,10 @@ sub get_index_abstract {
   return undef;
 }
 
-=item C<get_table_abstract($table)>
-
- Description: Gets the abstract definition for a table in this Schema
-              object.
- Params:      $table - The name of the table you want a definition for.
- Returns:     An abstract table definition, or undef if the table doesn't
-              exist.
-
-=cut
-
 sub get_table_abstract {
   my ($self, $table) = @_;
   return $self->{abstract_schema}->{$table};
 }
-
-=item C<add_table($name, \%definition)>
-
- Description: Creates a new table in this Schema object.
-              If you do not specify a definition, we will
-              simply create an empty table.
- Params:      $name - The name for the new table.
-              \%definition (optional) - An abstract definition for
-                  the new table.
- Returns:     nothing
-
-=cut
 
 sub add_table {
   my ($self, $name, $definition) = @_;
@@ -2892,12 +2356,6 @@ sub add_table {
 
 sub rename_table {
 
-=item C<rename_table>
-
-Renames a table from C<$old_name> to C<$new_name> in this Schema object.
-
-=cut
-
 
   my ($self, $old_name, $new_name) = @_;
   my $table = $self->get_table_abstract($old_name);
@@ -2906,16 +2364,6 @@ Renames a table from C<$old_name> to C<$new_name> in this Schema object.
 }
 
 sub delete_column {
-
-=item C<delete_column($table, $column)>
-
- Description: Deletes a column from this Schema object.
- Params:      $table - Name of the table that the column is in.
-                       The table must exist, or we will fail.
-              $column  - Name of the column to delete.
- Returns:     nothing
-
-=cut
 
   my ($self, $table, $column) = @_;
 
@@ -2933,17 +2381,6 @@ sub delete_column {
 
 sub rename_column {
 
-=item C<rename_column($table, $old_name, $new_name)>
-
- Description: Renames a column on a table in the Schema object.
-              The column that you are renaming must exist.
- Params:      $table - The table the column is on.
-              $old_name - The current name of the column.
-              $new_name - The new name of hte column.
- Returns:     nothing
-
-=cut
-
   my ($self, $table, $old_name, $new_name) = @_;
   my $def = $self->get_column_abstract($table, $old_name);
   die "Renaming a column that doesn't exist" if !$def;
@@ -2953,33 +2390,11 @@ sub rename_column {
 
 sub set_column {
 
-=item C<set_column($table, $column, \%new_def)>
-
- Description: Changes the definition of a column in this Schema object.
-              If the column doesn't exist, it will be added.
-              The table that you specify must already exist in the Schema.
-              NOTE: This does not affect the database on the disk.
-              Use the C<Bugzilla::DB> "Schema Modification Methods"
-              if you want to do that.
- Params:      $table - The name of the table that the column is on.
-              $column - The name of the column.
-              \%new_def - The new definition for the column, in
-                  C<ABSTRACT_SCHEMA> format.
- Returns:     nothing
-
-=cut
-
   my ($self, $table, $column, $new_def) = @_;
 
   my $fields = $self->{abstract_schema}{$table}{FIELDS};
   $self->_set_object($table, $column, $new_def, $fields);
 }
-
-=item C<set_fk($table, $column \%fk_def)>
-
-Sets the C<REFERENCES> item on the specified column.
-
-=cut
 
 sub set_fk {
   my ($self, $table, $column, $fk_def) = @_;
@@ -2999,22 +2414,6 @@ sub set_fk {
 }
 
 sub set_index {
-
-=item C<set_index($table, $name, $definition)>
-
- Description: Changes the definition of an index in this Schema object.
-              If the index doesn't exist, it will be added.
-              The table that you specify must already exist in the Schema.
-              NOTE: This does not affect the database on the disk.
-              Use the C<Bugzilla::DB> "Schema Modification Methods"
-              if you want to do that.
- Params:      $table      - The table the index is on.
-              $name       - The name of the index.
-              $definition - A hashref or an arrayref. An index
-                            definition in C<ABSTRACT_SCHEMA> format.
- Returns:     nothing
-
-=cut
 
   my ($self, $table, $name, $definition) = @_;
 
@@ -3051,20 +2450,6 @@ sub _set_object {
   $self->_adjust_schema();
 }
 
-=item C<delete_index($table, $name)>
-
- Description: Removes an index definition from this Schema object.
-              If the index doesn't exist, we will fail.
-              The table that you specify must exist in the Schema.
-              NOTE: This does not affect the database on the disk.
-              Use the C<Bugzilla::DB> "Schema Modification Methods"
-              if you want to do that.
- Params:      $table - The table the index is on.
-              $name  - The name of the index that we're removing.
- Returns:     nothing
-
-=cut
-
 sub delete_index {
   my ($self, $table, $name) = @_;
 
@@ -3080,19 +2465,6 @@ sub delete_index {
 }
 
 sub columns_equal {
-
-=item C<columns_equal($col_one, $col_two)>
-
- Description: Tells you if two columns have entirely identical definitions.
-              The TYPE field's value will be compared case-insensitive.
-              However, all other fields will be case-sensitive.
- Params:      $col_one, $col_two - The columns to compare. Hash
-                  references, in C<ABSTRACT_SCHEMA> format.
- Returns:     C<1> if the columns are identical, C<0> if they are not.
-
-=back
-
-=cut
 
   my $self    = shift;
   my $col_one = dclone(shift);
@@ -3115,25 +2487,6 @@ sub columns_equal {
 }
 
 
-=head1 SERIALIZATION/DESERIALIZATION
-
-=over 4
-
-=item C<serialize_abstract()>
-
- Description: Serializes the "abstract" schema into a format
-              that deserialize_abstract() can read in. This is
-              a method, called on a Schema instance.
- Parameters:  none
- Returns:     A scalar containing the serialized, abstract schema.
-              Do not attempt to manipulate this data directly,
-              as the format may change at any time in the future.
-              The only thing you should do with the returned value
-              is either store it somewhere (coupled with appropriate
-              SCHEMA_VERSION) or deserialize it.
-
-=cut
-
 sub serialize_abstract {
   my ($self) = @_;
 
@@ -3149,23 +2502,8 @@ sub serialize_abstract {
   return Dumper($self->{abstract_schema});
 }
 
-=item C<deserialize_abstract($serialized, $version)>
-
- Description: Used for when you've read a serialized Schema off the disk,
-              and you want a Schema object that represents that data.
- Params:      $serialized - scalar. The serialized data.
-              $version - A number. The "version"
-                  of the Schema that did the serialization.
-                  See the docs for C<SCHEMA_VERSION> for more details.
- Returns:     A Schema object. It will have the methods of (and work
-              in the same fashion as) the current version of Schema.
-              However, it will represent the serialized data instead of
-              ABSTRACT_SCHEMA.
-
-=cut
-
 sub deserialize_abstract {
-  my ($class, $serialized, $version) = @_;
+  my ($self, $serialized, $version) = @_;
 
   my $thawed_hash;
   if ($version < 2) {
@@ -3179,7 +2517,7 @@ sub deserialize_abstract {
 
   # Version 2 didn't have the "created" key for REFERENCES items.
   if ($version < 3) {
-    my $standard = $class->new()->{abstract_schema};
+    my $standard = $self->new(db => $self->db)->{abstract_schema};
     foreach my $table_name (keys %$thawed_hash) {
       my %standard_fields = @{$standard->{$table_name}->{FIELDS} || []};
       my $table           = $thawed_hash->{$table_name};
@@ -3192,132 +2530,19 @@ sub deserialize_abstract {
     }
   }
 
-  return $class->new(undef, $thawed_hash);
+  return $self->new(db => $self->db, abstract_schema => $thawed_hash);
 }
 
 #####################################################################
 # Class Methods
 #####################################################################
 
-=back
-
-=head1 CLASS METHODS
-
-These methods are generally called on the class instead of on a specific
-object.
-
-=over
-
-=item C<get_empty_schema()>
-
- Description: Returns a Schema that has no tables. In effect, this
-              Schema is totally "empty."
- Params:      none
- Returns:     A "empty" Schema object.
-
-=back
-
-=cut
-
 sub get_empty_schema {
-  my ($class) = @_;
-  return $class->deserialize_abstract(Dumper({}), SCHEMA_VERSION);
+  my ($self) = @_;
+  return $self->deserialize_abstract(Dumper({}), SCHEMA_VERSION);
 }
 
 1;
 
 __END__
 
-=head1 ABSTRACT DATA TYPES
-
-The size and range data provided here is only
-intended as a guide.  See your database's Bugzilla
-module (in this directory) for the most up-to-date
-values for these data types.  The following
-abstract data types are used:
-
-=over 4
-
-=item C<BOOLEAN>
-
-Logical value 0 or 1 where 1 is true, 0 is false.
-
-=item C<INT1>
-
-Integer values (-128 - 127 or 0 - 255 unsigned).
-
-=item C<INT2>
-
-Integer values (-32,768 - 32767 or 0 - 65,535 unsigned).
-
-=item C<INT3>
-
-Integer values (-8,388,608 - 8,388,607 or 0 - 16,777,215 unsigned)
-
-=item C<INT4>
-
-Integer values (-2,147,483,648 - 2,147,483,647 or 0 - 4,294,967,295
-unsigned)
-
-=item C<SMALLSERIAL>
-
-An auto-increment L</INT2>
-
-=item C<MEDIUMSERIAL>
-
-An auto-increment L</INT3>
-
-=item C<INTSERIAL>
-
-An auto-increment L</INT4>
-
-=item C<TINYTEXT>
-
-Variable length string of characters up to 255 (2^8 - 1) characters wide.
-
-=item C<MEDIUMTEXT>
-
-Variable length string of characters up to 4000 characters wide.
-May be longer on some databases.
-
-=item C<LONGTEXT>
-
-Variable length string of characters up to 16M (2^24 - 1) characters wide.
-
-=item C<LONGBLOB>
-
-Variable length string of binary data up to 4M (2^32 - 1) bytes wide
-
-=item C<DATETIME>
-
-DATETIME support varies from database to database, however, it's generally
-safe to say that DATETIME entries support all date/time combinations greater
-than 1900-01-01 00:00:00.  Note that the format used is C<YYYY-MM-DD hh:mm:ss>
-to be safe, though it's possible that your database may not require
-leading zeros.  For greatest compatibility, however, please make sure dates
-are formatted as above for queries to guarantee consistent results.
-
-=back
-
-Database-specific subclasses should define the implementation for these data
-types as a hash reference stored internally in the schema object as
-C<db_specific>. This is typically done in overridden L<_initialize> method.
-
-The following abstract boolean values should also be defined on a
-database-specific basis:
-
-=over 4
-
-=item C<TRUE>
-
-=item C<FALSE>
-
-=back
-
-=head1 SEE ALSO
-
-L<Bugzilla::DB>
-
-L<https://www.bugzilla.org/docs/developer.html#sql-schema>
-
-=cut

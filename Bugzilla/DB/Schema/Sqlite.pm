@@ -10,8 +10,9 @@ package Bugzilla::DB::Schema::Sqlite;
 use 5.10.1;
 use strict;
 use warnings;
+use Moo;
 
-use base qw(Bugzilla::DB::Schema);
+with qw(Bugzilla::DB::Schema);
 
 use Bugzilla::Error;
 use Bugzilla::Util qw(generate_random_password);
@@ -20,13 +21,8 @@ use Storable qw(dclone);
 
 use constant FK_ON_CREATE => 1;
 
-sub _initialize {
-
-  my $self = shift;
-
-  $self = $self->SUPER::_initialize(@_);
-
-  $self->{db_specific} = {
+sub _build_db_specific {
+  return {
     BOOLEAN => 'integer',
     FALSE   => '0',
     TRUE    => '1',
@@ -51,11 +47,6 @@ sub _initialize {
     DATETIME => 'DATETIME',
     DATE     => 'DATETIME',
   };
-
-  $self->_adjust_schema;
-
-  return $self;
-
 }
 
 #################################

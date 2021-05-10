@@ -130,10 +130,11 @@ sub _load_from_db {
     # Too large integers make PostgreSQL crash.
     return if $id > MAX_INT_32;
 
+    my $q = $dbh->quote_expr;
     $object_data = $dbh->selectrow_hashref(
       qq{
-            SELECT $columns FROM $table
-             WHERE $id_field = ?}, undef, $id
+            SELECT $q->{$columns} FROM $q->{$table}
+             WHERE $q->{$id_field} = ?}, undef, $id
     );
   }
   else {
@@ -161,8 +162,9 @@ sub _load_from_db {
       push(@values, @{$param->{'values'}});
     }
 
+    my $q = $dbh->quote_expr;
     $object_data
-      = $dbh->selectrow_hashref("SELECT $columns FROM $table WHERE $condition",
+      = $dbh->selectrow_hashref("SELECT $q->{$columns} FROM $q->{$table} WHERE $condition",
       undef, @values);
   }
   return $object_data;
@@ -411,14 +413,15 @@ sub _do_list_select {
   }
 
   if (!$objects) {
-    my $sql = "SELECT $cols FROM $table";
+    my $dbh = Bugzilla->dbh;
+    my $q   = $dbh->quote_expr;
+    my $sql = "SELECT $q->{$cols} FROM $q->{$table}";
     if (defined $where) {
       $sql .= " WHERE $where ";
     }
     $sql .= " ORDER BY $order";
     $sql .= " $postamble" if $postamble;
 
-    my $dbh = Bugzilla->dbh;
 
     # Sometimes the values are tainted, but we don't want to untaint them
     # for the caller. So we copy the array. It's safe to untaint because
@@ -652,8 +655,9 @@ sub any_exist {
   my $class = shift;
   my $table = $class->DB_TABLE;
   my $dbh   = Bugzilla->dbh;
+  my $q = $dbh->quote_expr;
   my $any_exist
-    = $dbh->selectrow_array("SELECT 1 FROM $table " . $dbh->sql_limit(1));
+    = $dbh->selectrow_array("SELECT 1 FROM $q->{$table} " . $dbh->sql_limit(1));
   return $any_exist ? 1 : 0;
 }
 
@@ -750,8 +754,9 @@ sub insert_create_data {
   my $qmarks = '?,' x @field_names;
   chop($qmarks);
   my $table = $class->DB_TABLE;
+  my $q = $dbh->quote_expr;
   $dbh->do(
-    "INSERT INTO $table (" . join(', ', @field_names) . ") VALUES ($qmarks)",
+    "INSERT INTO $q->{$table} (" . $dbh->quote_expr(join(', ', @field_names)) . ") VALUES ($qmarks)",
     undef, @values);
   my $id = $dbh->bz_last_key($table, $class->ID_FIELD);
 

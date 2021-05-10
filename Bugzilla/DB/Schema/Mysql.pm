@@ -16,10 +16,11 @@ package Bugzilla::DB::Schema::Mysql;
 use 5.10.1;
 use strict;
 use warnings;
+use Moo;
 
 use Bugzilla::Error;
 
-use base qw(Bugzilla::DB::Schema);
+extends qw(Bugzilla::DB::Schema);
 
 # This is for column_info_to_column, to know when a tinyint is a
 # boolean and when it's really a tinyint. This only has to be accurate
@@ -87,13 +88,12 @@ use constant REVERSE_MAPPING => {
 };
 
 #------------------------------------------------------------------------------
-sub _initialize {
 
+
+sub _build_db_specific {
   my $self = shift;
 
-  $self = $self->SUPER::_initialize(@_);
-
-  $self->{db_specific} = {
+  return {
 
     BOOLEAN => 'tinyint',
     FALSE   => '0',
@@ -122,11 +122,6 @@ sub _initialize {
     DATETIME        => 'timestamp',
     DATE            => 'date',
   };
-
-  $self->_adjust_schema;
-
-  return $self;
-
 }    #eosub--_initialize
 
 #------------------------------------------------------------------------------
@@ -152,10 +147,11 @@ sub _get_create_index_ddl {
 
   my ($self, $table_name, $index_name, $index_fields, $index_type) = @_;
 
+  my $q = $self->db->quote_expr;
   my $sql = "CREATE ";
   $sql .= "$index_type "
     if ($index_type eq 'UNIQUE' || $index_type eq 'FULLTEXT');
-  $sql .= "INDEX \`$index_name\` ON $table_name \("
+  $sql .= "INDEX $q->{$index_name} ON $q->{$table_name} \("
     . join(", ", @$index_fields) . "\)";
 
   return ($sql);
@@ -189,9 +185,10 @@ sub get_alter_column_ddl {
 
   my @statements;
 
+  my $q = $self->db->quote_expr;
   push(
-    @statements, "UPDATE $table SET $column = $set_nulls_to
-                        WHERE $column IS NULL"
+    @statements, "UPDATE $q->{$table} SET $q->{$column} = $set_nulls_to
+                        WHERE $q->{$column} IS NULL"
   ) if defined $set_nulls_to;
 
   # Calling SET DEFAULT or DROP DEFAULT is *way* faster than calling
@@ -204,11 +201,11 @@ sub get_alter_column_ddl {
     && $self->columns_equal(\%new_defaultless, \%old_defaultless))
   {
     if (!defined $new_def->{DEFAULT}) {
-      push(@statements, "ALTER TABLE $table ALTER COLUMN $column DROP DEFAULT");
+      push(@statements, "ALTER TABLE $q->{$table} ALTER COLUMN $q->{$column} DROP DEFAULT");
     }
     else {
       push(
-        @statements, "ALTER TABLE $table ALTER COLUMN $column
+        @statements, "ALTER TABLE $q->{$table} ALTER COLUMN $q->{$column}
                                SET DEFAULT " . $new_def->{DEFAULT}
       );
     }
@@ -216,15 +213,15 @@ sub get_alter_column_ddl {
   else {
     my $new_ddl = $self->get_type_ddl(\%new_def_copy);
     push(
-      @statements, "ALTER TABLE $table CHANGE COLUMN
-                       $column $column $new_ddl"
+      @statements, "ALTER TABLE $q->{$table} CHANGE COLUMN
+                       $q->{$column} $q->{$column} $new_ddl"
     );
   }
 
   if ($old_def->{PRIMARYKEY} && !$new_def->{PRIMARYKEY}) {
 
     # Dropping a PRIMARY KEY needs an explicit DROP PRIMARY KEY
-    push(@statements, "ALTER TABLE $table DROP PRIMARY KEY");
+    push(@statements, "ALTER TABLE $q->{$table} DROP PRIMARY KEY");
   }
 
   return @statements;
@@ -233,7 +230,8 @@ sub get_alter_column_ddl {
 sub get_drop_fk_sql {
   my ($self, $table, $column, $references) = @_;
   my $fk_name = $self->_get_fk_name($table, $column, $references);
-  my @sql     = ("ALTER TABLE $table DROP FOREIGN KEY $fk_name");
+  my $q       = $self->db->quote_expr;
+  my @sql     = ("ALTER TABLE $q->{$table} DROP FOREIGN KEY $q->{$fk_name}");
   my $dbh     = Bugzilla->dbh;
 
   # MySQL requires, and will create, an index on any column with
@@ -261,18 +259,18 @@ sub get_rename_indexes_ddl {
   my ($self, $table, %indexes) = @_;
   my @keys = keys %indexes or return ();
 
-  my $sql = "ALTER TABLE $table ";
+  my $q = $self->db->quote_expr;
+  my $sql = "ALTER TABLE $q->{$table} ";
 
   foreach my $old_name (@keys) {
     my $name = $indexes{$old_name}->{NAME};
     my $type = $indexes{$old_name}->{TYPE};
     $type ||= 'INDEX';
-    my $fields = join(',', @{$indexes{$old_name}->{FIELDS}});
+    my $fields = $self->db->quote_expr(join(',', @{$indexes{$old_name}->{FIELDS}}));
 
     # $old_name needs to be escaped, sometimes, because it was
     # a reserved word.
-    $old_name = '`' . $old_name . '`';
-    $sql .= " ADD $type $name ($fields), DROP INDEX $old_name,";
+    $sql .= " ADD $type $q->{$name} ($fields), DROP INDEX $q->{$old_name},";
   }
 
   # Remove the last comma.
@@ -282,7 +280,8 @@ sub get_rename_indexes_ddl {
 
 sub get_set_serial_sql {
   my ($self, $table, $column, $value) = @_;
-  return ("ALTER TABLE $table AUTO_INCREMENT = $value");
+  my $q = $self->db->quote_expr;
+  return ("ALTER TABLE $q->{$table} AUTO_INCREMENT = $value");
 }
 
 # Converts a DBI column_info output to an abstract column definition.
@@ -420,7 +419,8 @@ sub get_rename_column_ddl {
 
   # MySQL doesn't like having the PRIMARY KEY statement in a rename.
   $def =~ s/PRIMARY KEY//i;
-  return ("ALTER TABLE $table CHANGE COLUMN $old_name $new_name $def");
+  my $q = $self->db->quote_expr;
+  return ("ALTER TABLE $q->{$table} CHANGE COLUMN $q->{$old_name} $q->{$new_name} $def");
 }
 
 sub get_type_ddl {
