@@ -84,16 +84,17 @@ sub parse_expr_10 {
     sub { $self->parse_case },
     sub {
       my $val     = $self->parse_expr_9;
-      my $min_max = $self->maybe(sub {
+      my $args = $self->maybe(sub {
+        my $not = $self->maybe_expect(qr/NOT/i);
         $self->expect(qr/BETWEEN/i);
         $self->commit;
         my $min = $self->parse_expr_9;
         $self->expect(qr/AND/i);
         $self->commit;
         my $max = $self->parse_expr_9;
-        [$min, $max];
+        [$not ? "NOT BETWEEN" : "BETWEEN", $min, $max];
       });
-      defined($min_max) ? ["between", $val, @$min_max] : $val;
+      defined($args) ? ["between", $val, @$args] : $val;
     }
   );
 }
@@ -524,9 +525,9 @@ sub _to_string_else {
 }
 
 sub _to_string_between {
-  my ($self, $val, $min, $max) = @_;
+  my ($self, $val, $op, $min, $max) = @_;
 
-  sprintf "%s BETWEEN %s AND %s", $self->to_string($val), $self->to_string($min),
+  sprintf "%s $op %s AND %s", $self->to_string($val), $self->to_string($min),
     $self->to_string($max);
 }
 

@@ -174,4 +174,7 @@ foreach my $method (@sql_methods) {
   }
 }
 
+is $mysql_parse->("x BETWEEN y AND z"), "`x` BETWEEN `y` AND `z`";
+is $mysql_parse->("x NOT BETWEEN y AND z"), "`x` NOT BETWEEN `y` AND `z`";
+
 done_testing;
