@@ -24,6 +24,10 @@ use Bugzilla::Test::Util qw(create_user create_oauth_client);
 use Test2::V0;
 use Test::Mojo;
 
+if (!Bugzilla->has_feature('oauth2_server')) {
+  skip_all("oauth2_server feature not available");
+}
+
 my $oauth_login    = 'oauth@mozilla.bugs';
 my $oauth_password = 'password123456789!';
 my $referer        = Bugzilla->localconfig->urlbase;
