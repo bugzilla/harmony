@@ -90,6 +90,7 @@ my %set_params = (
   mail_delivery_method       => 'Test',
   maxattachmentsize          => 256,
   defaultpriority            => 'Highest',     # BMO CHANGE
+  defaultseverity            => '--',          # BMO CHANGE
   timetrackinggroup          => 'editbugs',    # BMO CHANGE
   letsubmitterchoosepriority => 1,             # BMO CHANGE
   createemailregexp          => '.*',          # BMO CHANGE
@@ -368,7 +369,7 @@ my %field_values = (
   'short_desc'   => 'This is a testing bug only',
   'product'      => 'TestProduct',
   'op_sys'       => 'Linux',
-  'bug_severity' => 'normal',
+  'bug_severity' => '--',
   'groups'       => [],
 );
 
@@ -546,7 +547,7 @@ foreach my $product (@products) {
 
       Bugzilla::User->create({
         login_name    => $watch_user,
-        cryptpassword => Bugzilla->passwdqc->generate_password(),
+        cryptpassword => "password1",
         disable_mail  => 1,
       });
 

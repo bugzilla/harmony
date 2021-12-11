@@ -329,6 +329,8 @@ sub FILESYSTEM {
   # The name of each file, pointing at its default permissions and
   # default contents.
   my %create_files = (
+    "__lbheartbeat__" => {perms => CGI_READ, contents => 'httpd OK'},
+
     "$datadir/extensions/additional" => {perms => CGI_READ, contents => ''},
 
     # We create this file so that it always has the right owner
@@ -417,7 +419,7 @@ sub update_filesystem {
   # Delete old files that no longer need to exist
 
   # 2001-04-29 jake@bugzilla.org - Remove oldemailtech
-  #   http://bugzilla.mozilla.org/show_bugs.cgi?id=71552
+  #   http://bugzilla.mozilla.org/show_bug.cgi?id=71552
   if (-d 'shadow') {
     print "Removing shadow directory...\n";
     rmtree("shadow");

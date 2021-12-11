@@ -358,12 +358,14 @@
         <li>A b[% %]ug in a MantisBT installation.</li>
         <li>A b[% %]ug on sourceforge.net.</li>
         <li>An issue/pull request on github.com.</li>
+        <li>An issue/merge request on a GitLab system.</li>
         <li>A question on support.mozilla.org.</li>
         <li>An Aha feature on aha.io.</li>
         <li>An issue on webcompat.com.</li>
         <li>A request on ServiceNow.</li>
         <li>A ticket on hellosplat.com.</li>
         <li>A revision, support ticket, or task in Phabricator.</li>
+        <li>A Mozilla Sentry issue.</li>
       </ul>
     [% ELSIF reason == 'id' %]
       There is no valid [% terms.bug %] id in that URL.
@@ -1855,6 +1857,14 @@
   [% ELSIF error == "unknown_tab" %]
     [% title = "Unknown Tab" %]
     <code>[% current_tab_name FILTER html %]</code> is not a legal tab name.
+
+  [% ELSIF error == "validation" %]
+    <p>Some fields failed validation.</p>
+    <ul>
+        [% FOREACH f IN v.failed %]
+        <li>[% f FILTER html %]: [% v.error(f).join(", ") FILTER html %]</li>
+        [% END %]
+    </ul>
 
   [% ELSIF error == "value_inactive" %]
     [% title = "Value is Not Active" %]

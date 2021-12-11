@@ -147,7 +147,7 @@ $group->update();
 
 my @users = (
   {
-    login    => 'nobody@mozilla.org',
+    login    => Bugzilla->localconfig->nobody_user,
     realname => 'Nobody; OK to take it and work on it',
     password => '*'
   },
@@ -232,7 +232,7 @@ my @products = (
       name        => 'General',
       description => 'For bugs in Firefox which do not fit into '
         . 'other more specific Firefox components',
-      initialowner   => 'nobody@mozilla.org',
+      initialowner   => Bugzilla->localconfig->nobody_user,
       initialqaowner => '',
       initial_cc     => [],
       watch_user     => 'general@firefox.bugs'
@@ -251,7 +251,7 @@ my @products = (
       description =>
         'This is the component for issues specific to bugzilla.mozilla.org '
         . 'that do not belong in other components.',
-      initialowner   => 'nobody@mozilla.org',
+      initialowner   => Bugzilla->localconfig->nobody_user,
       initialqaowner => '',
       initial_cc     => [],
       watch_user     => 'general@bugzilla.bugs'
@@ -498,7 +498,7 @@ my %set_params = (
   mail_delivery_method => 'Test',
   mailfrom             => '"Bugzilla@Mozilla" <bugzilla-daemon@mozilla.org>',
   maintainer           => 'bugzilla-admin@mozilla.org',
-  maxattachmentsize    => '10240',
+  maxattachmentsize    => '4096',
   maxusermatches       => '100',
   mostfreqthreshold    => '5',
   mybugstemplate       => 'buglist.cgi?bug_status=UNCONFIRMED&amp;bug_status=NEW'

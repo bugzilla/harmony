@@ -19,6 +19,8 @@ use Mojo::JSON qw(decode_json);
 use Scalar::Util qw(blessed);
 use Scope::Guard;
 
+our $cleanup_guard;
+
 sub register {
   my ($self, $app, $conf) = @_;
 
@@ -36,10 +38,15 @@ sub register {
   }
 
   $app->hook(
-    before_dispatch => sub {
-      my ($c) = @_;
+    around_dispatch => sub {
+      my ($next, $c) = @_;
       Log::Log4perl::MDC->put(request_id => $c->req->request_id);
-      $c->stash->{cleanup_guard} = Scope::Guard->new(\&Bugzilla::cleanup);
+
+      # Below we localize a package scoped variable, and put a scope guard in it
+      # this means the cleanup routine will be called when this around_dispatch
+      # hook returns. We do this to avoid having to handle any exceptions.
+      # Think of this as like a "defer cleanup()" in the Go language.
+      local $cleanup_guard = Scope::Guard->new(\&Bugzilla::cleanup);
 
       # Ensure the request_cache is always cleared prior to every request,
       # regardless of routing or Bugzilla::App wrapping.
@@ -48,6 +55,12 @@ sub register {
       # We also need to clear CGI's globals.
       CGI::initialize_globals();
       Bugzilla->usage_mode(USAGE_MODE_MOJO);
+
+      # This is used by Bugzilla::Util::remote_ip().
+      state $better_xff = Bugzilla->has_feature('better_xff');
+      Bugzilla->request_cache->{remote_ip} = $better_xff ? $c->forwarded_for : $c->tx->remote_address;
+
+      $next->();
     }
   );
 
@@ -72,6 +85,16 @@ sub register {
 
       my $name = sprintf '%s.%s.tmpl', $options->{template}, $options->{format};
       my $template = Bugzilla->template;
+      if ($options->{variant}) {
+        my $name_variant = sprintf '%s.%s+%s.tmpl', $options->{template}, $options->{format}, $options->{variant};
+        WARN("loading $name_variant");
+        my $rendered = $template->process($name_variant, \%params, $output);
+        return if $rendered;
+
+        my $error = $template->error;
+        die $error unless $error->type eq 'file' && $error->info =~ /not found/;
+      }
+      WARN("loading $name");
       $template->process($name, \%params, $output) or die $template->error;
     }
   );

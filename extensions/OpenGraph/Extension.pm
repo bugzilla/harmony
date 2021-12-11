@@ -17,4 +17,10 @@ use base qw(Bugzilla::Extension);
 
 our $VERSION = '1';
 
+sub config_add_panels {
+  my ($self, $args) = @_;
+  my $modules = $args->{panel_modules};
+  $modules->{OpenGraph} = "Bugzilla::Extension::OpenGraph::Config";
+}
+
 __PACKAGE__->NAME;

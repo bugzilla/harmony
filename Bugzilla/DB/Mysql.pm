@@ -332,10 +332,7 @@ sub bz_setup_database {
   if ($self->utf8_charset eq 'utf8mb4') {
     my %global = map {@$_}
       @{$self->selectall_arrayref(q(SHOW GLOBAL VARIABLES LIKE 'innodb_%'))};
-    my $utf8mb4_supported
-      = $global{innodb_file_format} eq 'Barracuda'
-      && $global{innodb_file_per_table} eq 'ON'
-      && $global{innodb_large_prefix} eq 'ON';
+    my $utf8mb4_supported = 1;
 
     die install_string('mysql_innodb_settings') unless $utf8mb4_supported;
 
@@ -731,6 +728,18 @@ sub bz_setup_database {
       $self->bz_drop_index_raw('series', 'series_creator_idx');
     }
   }
+}
+
+sub bz_server_version {
+  my ($self) = @_;
+  my $version = $self->SUPER::bz_server_version();
+
+  warn "VERSION: $version";
+  if ($version =~ /MariaDB/) {
+    (undef, $version) = split(/-/, $version);
+  }
+
+  return $version;
 }
 
 # When you import a MySQL 3/4 mysqldump into MySQL 5, columns that
