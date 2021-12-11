@@ -329,15 +329,7 @@ sub do_ssl_redirect_if_required {
 
 # Returns the real remote address of the client,
 sub remote_ip {
-  if (($ENV{SERVER_SOFTWARE} // '') eq 'Bugzilla::App::CGI') {
-    my $c = $Bugzilla::App::CGI::C or LOGDIE("Cannot find controller!");
-    state $better_xff = Bugzilla->has_feature('better_xff');
-    return $better_xff ? $c->forwarded_for : $c->tx->remote_address;
-  }
-  else {
-    WARN("remote_ip() called outside CGI controller!");
-    return "";
-  }
+  return Bugzilla->request_cache->{remote_ip};
 }
 
 sub validate_ip {
@@ -920,7 +912,7 @@ sub detect_encoding {
   # Encode::Detect sometimes mis-detects UTF-8 as Windows-1252
   if ($encoding && $encoding eq 'cp1252') {
     my $decoder = guess_encoding($data, ('utf8', 'cp1252'));
-    $encoding = $decoder->name if ref $decoder;
+    $encoding = ref $decoder ? $decoder->name : 'utf8'; # Fall back to utf8 if guess_encoding fails
   }
 
   return $encoding;

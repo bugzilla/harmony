@@ -344,6 +344,7 @@ sub bounty_attachment {
 }
 
 sub _attachment_is_bounty_attachment {
+  # Keep this in sync with Bugzilla/Attachment.pm
   my ($attachment) = @_;
 
   return 0 unless $attachment->filename eq 'bugbounty.data';
@@ -971,7 +972,8 @@ sub object_end_of_create {
     # Add default searches to new user's footer
     my $dbh = Bugzilla->dbh;
 
-    my $sharer = Bugzilla::User->new({name => 'nobody@mozilla.org'}) or return;
+    my $sharer = Bugzilla::User->new({name => Bugzilla->localconfig->nobody_user})
+      or return;
     my $group = Bugzilla::Group->new({name => 'everyone'}) or return;
 
     foreach my $definition (@default_named_queries) {
@@ -987,7 +989,7 @@ sub object_end_of_create {
     # Log real IP addresses for auditing
     Bugzilla->audit(sprintf(
       '%s <%s> created bug %s',
-      Bugzilla->user->login, remote_ip(), $args->{object}->id
+      Bugzilla->user->login, remote_ip() // '[undef]', $args->{object}->id
     ));
   }
 }
@@ -1011,7 +1013,7 @@ sub _bug_reporters_hw_os {
 sub _bug_is_unassigned {
   my ($self) = @_;
   my $assignee = $self->assigned_to->login;
-  return $assignee eq 'nobody@mozilla.org' || $assignee =~ /@(?!invalid).+\.bugs$/;
+  return $assignee eq Bugzilla->localconfig->nobody_user || $assignee =~ /@(?!invalid).+\.bugs$/;
 }
 
 sub _bug_has_current_patch {
@@ -1191,7 +1193,7 @@ sub object_start_of_update {
 
   # and the assignee isn't a real person
   return
-    unless $new_bug->assigned_to->login eq 'nobody@mozilla.org'
+    unless $new_bug->assigned_to->login eq Bugzilla->localconfig->nobody_user
     || $new_bug->assigned_to->login =~ /@(?!invalid).+\.bugs$/;
 
   # and the user can set the status to NEW
@@ -1926,7 +1928,8 @@ sub _post_employee_incident_bug {
   my ($investigate_bug, $ssh_key_bug);
   my $old_user = Bugzilla->user;
   eval {
-    Bugzilla->set_user(Bugzilla::User->new({name => 'nobody@mozilla.org'}));
+    Bugzilla->set_user(Bugzilla::User->new(
+      {name => Bugzilla->localconfig->nobody_user}));
     my $new_user = Bugzilla->user;
 
     # HACK: User needs to be in the editbugs and primary bug's group to allow
@@ -2236,18 +2239,6 @@ sub _file_child_bug {
   Bugzilla->error_mode($old_error_mode);
 }
 
-sub _pre_fxos_feature {
-  my ($self, $args) = @_;
-  my $cgi    = Bugzilla->cgi;
-  my $user   = Bugzilla->user;
-  my $params = $args->{params};
-
-  $params->{keywords} = 'foxfood';
-  $params->{keywords} .= ',feature'
-    if ($cgi->param('feature_type') // '') eq 'new';
-  $params->{bug_status} = $user->in_group('canconfirm') ? 'NEW' : 'UNCONFIRMED';
-}
-
 sub _add_attachment {
   my ($self, $args, $attachment_args) = @_;
 
@@ -2367,9 +2358,6 @@ sub bug_before_create {
 
     # map renamed groups
     $params->{groups} = [_map_groups($params->{groups})];
-  }
-  if ((Bugzilla->cgi->param('format') // '') eq 'fxos-feature') {
-    $self->_pre_fxos_feature($args);
   }
 }
 
@@ -2493,7 +2481,9 @@ sub _group_always_settable {
 }
 
 sub _default_security_group {
-  return $_[0]->default_security_group_obj->name;
+  my $security_group = $_[0]->default_security_group_obj;
+
+  return defined($security_group) ? $security_group->name : undef;
 }
 
 sub _default_security_group_obj {
@@ -2524,12 +2514,6 @@ sub install_filesystem {
   my $files          = $args->{files};
   my $create_files   = $args->{create_files};
   my $extensions_dir = bz_locations()->{extensionsdir};
-  $create_files->{__lbheartbeat__} = {
-    perms => Bugzilla::Install::Filesystem::WS_SERVE,
-    overwrite => 1,            # the original value for this was wrong, overwrite it
-    contents  => 'httpd OK',
-  };
-
 
   # version.json needs to have a source attribute pointing to
   # our repository. We already have this information in the (static)
@@ -2645,19 +2629,6 @@ sub _split_crash_signature {
   my $crash_signature = $bug->cf_crash_signature // return;
   return [grep {/\S/}
       extract_multiple($crash_signature, [sub { extract_bracketed($_[0], '[]') }])];
-}
-
-sub enter_bug_entrydefaultvars {
-  my ($self, $args) = @_;
-  my $vars = $args->{vars};
-  my $cgi  = Bugzilla->cgi;
-  return unless my $format = $cgi->param('format');
-
-  if ($format eq 'fxos-feature') {
-    $vars->{feature_type} = $cgi->param('feature_type');
-    $vars->{description}  = $cgi->param('description');
-    $vars->{discussion}   = $cgi->param('discussion');
-  }
 }
 
 sub _fetch_product_version_file {

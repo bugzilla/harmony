@@ -25,7 +25,8 @@ use Bugzilla::App::API;
 use Bugzilla::App::BouncedEmails;
 use Bugzilla::App::CGI;
 use Bugzilla::App::Main;
-use Bugzilla::App::OAuth2::Clients;
+use Bugzilla::App::Users;
+use if Bugzilla->has_feature('oauth2_server'), 'Bugzilla::App::OAuth2::Clients';
 use Bugzilla::App::SES;
 use Bugzilla::App::Static;
 use Mojo::Loader qw( find_modules );
@@ -51,7 +52,9 @@ sub startup {
     unless $ENV{BUGZILLA_DISABLE_SIZELIMIT};
   $self->plugin('ForwardedFor') if Bugzilla->has_feature('better_xff');
   $self->plugin('Bugzilla::App::Plugin::Helpers');
-  $self->plugin('Bugzilla::App::Plugin::OAuth2');
+  if (Bugzilla->has_feature('oauth2_server')) {
+    $self->plugin('Bugzilla::App::Plugin::OAuth2');
+  }
 
   push @{$self->commands->namespaces}, 'Bugzilla::App::Command';
   push @{$self->renderer->paths}, @{ Bugzilla::Template::_include_path() };
@@ -68,7 +71,8 @@ sub startup {
       # If that is the case, we just log the error and continue on.
       try {
         my $regexp = Bugzilla->params->{block_user_agent};
-        if ($regexp && $c->req->headers->user_agent =~ /$regexp/) {
+        my $user_agent = $c->req->headers->user_agent // '';
+        if ($regexp && $user_agent =~ /$regexp/) {
           my $msg = "Contact " . Bugzilla->params->{maintainer};
           $c->respond_to(
             json => {json => {error => $msg}, status => 400},
@@ -188,7 +192,9 @@ sub setup_routes {
   Bugzilla::App::BouncedEmails->setup_routes($r);
   Bugzilla::App::CGI->setup_routes($r);
   Bugzilla::App::Main->setup_routes($r);
-  Bugzilla::App::OAuth2::Clients->setup_routes($r);
+  Bugzilla::App::Users->setup_routes($r);
+  Bugzilla::App::OAuth2::Clients->setup_routes($r)
+    if Bugzilla->has_feature('oauth2_server');
   Bugzilla::App::SES->setup_routes($r);
 
   $r->static_file('/__lbheartbeat__');
