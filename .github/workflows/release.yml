@@ -40,7 +40,7 @@ jobs:
         run: |
           perl Makefile.PL
           #make cpanfile GEN_CPANFILE_ARGS='-A'
-          perl -I$GITHUB_WORKSPACE/.github/cpm/lib/perl5 $GITHUB_WORKSPACE/.github/cpm/bin/cpm install \
+          perl ./cpm.fatpack install \
           && tar -C $GITHUB_WORKSPACE \
               --exclude 'local/cache/*' \
               --exclude 'local/man/*' \
