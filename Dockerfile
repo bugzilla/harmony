@@ -52,7 +52,13 @@ RUN apt-get update \
 
 COPY . /opt/bugzilla
 COPY --from=builder /opt/bugzilla/local /opt/bugzilla/local
-RUN perl checksetup.pl --no-database --default-localconfig --no-templates
+RUN dd if=/dev/urandom bs=12 count=1 | base64 > admin-password.txt && echo "Generated admin password: $(cat admin-password.txt)"
+RUN { \
+    printf '$answer{"urlbase"} = "http://localhost/";\n' ; \
+    printf '$answer{"db_driver"} = "sqlite";\n' ; \
+    printf '$answer{"ADMIN_EMAIL"} = "bugzilla-admin\\@bugzilla.local";\n' ; \
+    printf '$answer{"ADMIN_PASSWORD"} = "%s";\n' "$(cat admin-password.txt)" ; \
+    }  | perl checksetup.pl --default-localconfig --no-templates /dev/stdin
 
 VOLUME ["/opt/bugzilla/data", "/opt/bugzilla/graphs"]
 
