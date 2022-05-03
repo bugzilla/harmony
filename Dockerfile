@@ -1,39 +1,66 @@
-FROM mozillabteam/bmo-perl-slim:20200505.1
+FROM perl:5.32-slim AS builder
 
 ENV DEBIAN_FRONTEND noninteractive
-
-ARG CI
-ARG CIRCLE_SHA1
-ARG CIRCLE_BUILD_URL
-
-ENV CI=${CI}
-ENV CIRCLE_BUILD_URL=${CIRCLE_BUILD_URL}
-ENV CIRCLE_SHA1=${CIRCLE_SHA1}
-
 ENV LOG4PERL_CONFIG_FILE=log4perl-json.conf
 
-RUN apt-get install -y rsync
+RUN apt-get update
+RUN apt-get install -y \
+    apt-file \
+    build-essential \
+    cmake \
+    curl \
+    default-libmysqlclient-dev \
+    git \
+    libcairo-dev \
+    libexpat-dev \
+    libgd-dev \
+    libssl-dev \
+    openssl \
+    zlib1g-dev
+
+RUN cpanm --notest --quiet App::cpm Module::CPANfile Carton::Snapshot
 
 # we run a loopback logging server on this TCP port.
 ENV LOGGING_PORT=5880
 
-ENV LOCALCONFIG_ENV=1
+WORKDIR /opt/bugzilla
+COPY cpanfile cpanfile.snapshot /opt/bugzilla/
+RUN cpm install
 
-WORKDIR /app
 
-COPY . /app
+RUN apt-file update
+RUN find local -name '*.so' -exec ldd {} \; \
+    | egrep -v 'not.found|not.a.dynamic.executable' \
+    | awk '$3 {print $3}' \
+    | sort -u \
+    | xargs -IFILE apt-file search -l FILE \
+    | sort -u > PACKAGES
 
-RUN chown -R app.app /app && \
-    perl -I/app -I/app/local/lib/perl5 -c -E 'use Bugzilla; BEGIN { Bugzilla->extensions }' && \
-    perl -c /app/scripts/entrypoint.pl
+FROM perl:5.32-slim
 
-USER app
+WORKDIR /opt/bugzilla
+COPY --from=builder /opt/bugzilla/PACKAGES /PACKAGES
+RUN apt-get update \
+    && apt-get install -y \
+       curl \
+       git \
+       graphviz \
+       libcap2-bin \
+       rsync \
+       $(cat /PACKAGES) \
+    && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /PACKAGES
 
-RUN perl checksetup.pl --no-database --default-localconfig && \
-    rm -rf /app/data /app/localconfig && \
-    mkdir /app/data
+COPY . /opt/bugzilla
+COPY --from=builder /opt/bugzilla/local /opt/bugzilla/local
+RUN dd if=/dev/urandom bs=12 count=1 | base64 > admin-password.txt && echo "Generated admin password: $(cat admin-password.txt)"
+RUN { \
+    printf '$answer{"urlbase"} = "http://localhost/";\n' ; \
+    printf '$answer{"db_driver"} = "sqlite";\n' ; \
+    printf '$answer{"ADMIN_EMAIL"} = "bugzilla-admin\\@bugzilla.local";\n' ; \
+    printf '$answer{"ADMIN_REALNAME"} = "Administrator";\n' ; \
+    printf '$answer{"ADMIN_PASSWORD"} = "%s";\n' "$(cat admin-password.txt)" ; \
+    }  | perl checksetup.pl --default-localconfig --no-templates /dev/stdin
 
-EXPOSE 8000
+VOLUME ["/opt/bugzilla/data", "/opt/bugzilla/graphs"]
 
-ENTRYPOINT ["/app/scripts/entrypoint.pl"]
-CMD ["httpd"]
+ENTRYPOINT ["/opt/bugzilla/bugzilla.pl"]
