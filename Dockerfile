@@ -57,6 +57,7 @@ RUN { \
     printf '$answer{"urlbase"} = "http://localhost/";\n' ; \
     printf '$answer{"db_driver"} = "sqlite";\n' ; \
     printf '$answer{"ADMIN_EMAIL"} = "bugzilla-admin\\@bugzilla.local";\n' ; \
+    printf '$answer{"ADMIN_REALNAME"} = "Administrator";\n' ; \
     printf '$answer{"ADMIN_PASSWORD"} = "%s";\n' "$(cat admin-password.txt)" ; \
     }  | perl checksetup.pl --default-localconfig --no-templates /dev/stdin
 
