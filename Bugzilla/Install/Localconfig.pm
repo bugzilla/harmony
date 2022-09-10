@@ -43,7 +43,7 @@ our @EXPORT_OK = qw(
 );
 
 # might want to change this for upstream
-use constant ENV_PREFIX => 'BMO_';
+use constant ENV_PREFIX => 'BZ_';
 use constant PARAM_OVERRIDE =>
   qw( use_mailer_queue mail_delivery_method shadowdb shadowdbhost shadowdbport shadowdbsock );
 

@@ -81,6 +81,7 @@ WORKDIR /app
 COPY --from=builder /app/PACKAGES /app/PACKAGES
 RUN apt-get update -y && apt-get install -y $(cat PACKAGES) 
 COPY --from=builder /app/local /app/local
+COPY --from=builder /app/MYMETA.* /app/
 COPY ./ /app/
 env LOCALCONFIG_ENV 1
 ENTRYPOINT ["perl", "bugzilla.pl"]

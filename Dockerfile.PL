@@ -36,6 +36,7 @@ say $fh q{RUN apt-get update -y && apt-get install -y $(cat PACKAGES) };
 # several lines should be merged together, and we need to make sure to clean up
 # the apt package cache after installing packages to maintain a small image size
 say $fh q{COPY --from=builder /app/local /app/local};
+say $fh q{COPY --from=builder /app/MYMETA.* /app/};
 say $fh q{COPY ./ /app/};
 
 say $fh q{env LOCALCONFIG_ENV 1};
