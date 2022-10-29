@@ -4,22 +4,21 @@
 #
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
-package Bugzilla::Elastic::Role::HasClient;
+
+package Bugzilla::Extension::OpenGraph::Config;
 
 use 5.10.1;
-use Moo::Role;
-use Search::Elasticsearch;
+use strict;
+use warnings;
 
+use Bugzilla::Config::Common;
 
-has 'client' => (is => 'lazy');
-
-sub _build_client {
-  my ($self) = @_;
-
-  return Search::Elasticsearch->new(
-    nodes    => [split(/\s+/, Bugzilla->params->{elasticsearch_nodes})],
-    cxn_pool => 'Sniff',
-  );
-}
+use constant get_param_list => (
+  {
+    name    => 'opengraph_image',
+    type    => 't',
+    default => ''
+  },
+);
 
 1;

@@ -3,12 +3,14 @@
 name: Release Tests
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# events but only for the main branch
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -28,14 +30,26 @@ jobs:
           key: ${{ runner.os }}-ubuntu-20.04
           restore-keys: |
             ${{ runner.os }}-ubuntu-20.04
-      - name: apt-get install
+      - name: apt install
         run: |
+          sudo apt-get update
+          sudo apt-get -y dist-upgrade
           sudo apt-get install --ignore-hold --allow-downgrades -y \
-              build-essential curl libssl-dev zlib1g-dev openssl \
-              libexpat-dev cmake git libcairo-dev libgd-dev \
-              default-libmysqlclient-dev unzip wget libgd3=2.2.5-5.2ubuntu2
+           apache2 \
+           mariadb-client-10.3 \
+           netcat \
+           build-essential \
+           libapache2-mod-perl2 \
+           libapache2-mod-perl2-dev \
+           perlmagick \
+           graphviz \
+           curl libssl-dev zlib1g-dev openssl \
+           libexpat-dev cmake git libcairo-dev \
+           unzip wget 
       - name: cpm install
         run: |
+          perl Makefile.PL
+          #make cpanfile GEN_CPANFILE_ARGS='-A'
           perl -I$GITHUB_WORKSPACE/.github/cpm/lib/perl5 $GITHUB_WORKSPACE/.github/cpm/bin/cpm install \
           && tar -C $GITHUB_WORKSPACE \
               --exclude 'local/cache/*' \
