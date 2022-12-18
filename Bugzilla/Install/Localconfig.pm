@@ -57,7 +57,7 @@ use constant LOCALCONFIG_VARS => (
   {name => 'webservergroup',  default => \&_sensible_group,},
   {name => 'use_suexec',      default => 0,},
   {name => 'db_driver',       default => 'mysql',},
-  {name => 'db_host',         default => 'localhost',},
+  {name => 'db_host',         default => '127.0.0.1',},
   {name => 'db_name',         default => 'bugs',},
   {
 
