@@ -31,7 +31,7 @@ Things to check:
 
 # Merge or Re-Apply the Email Code from 5.0
 
-Harmony is descended from Bugzilla 4.2.  The email mechanism used in 4.2
+Harmony is a descendant of Bugzilla 4.2.  The email mechanism used in 4.2
 depends on Perl modules that no longer have upstream support. BMO maintained
 their own bugfixes to those modules, but that’s not something we want to do
 upstream.  Version 5.0 rewrote the email code to use currently-supported Perl
