@@ -559,7 +559,7 @@ use constant DB_MODULE => {
   # MariaDB is a drop-in replacement for MySQL and works with Bugzilla
   'mariadb' => {
     db         => 'Bugzilla::DB::Mysql',
-    db_version => '10.0',
+    db_version => '10.0.5',
     dbd        => {
       package => 'DBD-mysql',
       module  => 'DBD::mysql',
