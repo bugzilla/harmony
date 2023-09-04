@@ -551,7 +551,7 @@ use constant DB_MODULE => {
 
       # For UTF-8 support. 4.001 makes sure that blobs aren't
       # marked as UTF-8.
-      version => '4.001',
+      version => '4.032',
     },
     name => 'MySQL'
   },
@@ -569,7 +569,7 @@ use constant DB_MODULE => {
 
       # For UTF-8 support. 4.001 makes sure that blobs aren't
       # marked as UTF-8.
-      version => '4.001',
+      version => '4.032',
     },
     name => 'MariaDB'
   },
