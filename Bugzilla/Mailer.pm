@@ -22,7 +22,7 @@ use Bugzilla::Util;
 
 use Date::Format qw(time2str);
 
-use Email::Address;
+use Email::Address::XS;
 use Email::MIME;
 use Encode qw(encode);
 use Encode::MIME::Header;
@@ -130,8 +130,8 @@ sub MessageToMTA {
 
     # We want to make sure that we pass *only* an email address.
     if ($from) {
-      my ($email_obj) = Email::Address->parse($from);
-      if ($email_obj) {
+      my ($email_obj) = Email::Address::XS->parse($from);
+      if ($email_obj->is_valid) {
         my $from_email = $email_obj->address;
         push(@args, "-f$from_email") if $from_email;
       }
@@ -173,9 +173,10 @@ sub MessageToMTA {
 
   try {
     my $to         = $email->header('to') or die qq{Unable to find "To:" address\n};
-    my @recipients = Email::Address->parse($to);
+    my @recipients = Email::Address::XS->parse($to);
     die qq{Unable to parse "To:" address - $to\n} unless @recipients;
     die qq{Did not expect more than one "To:" address in $to\n} if @recipients > 1;
+    die qq{Invalid address in "To:" address - $to\n} if !$recipients[0]->is_valid;
     my $recipient = $recipients[0];
     my $badhosts  = Bugzilla::Bloomfilter->lookup("badhosts");
     if ($badhosts && $badhosts->test($recipient->host)) {

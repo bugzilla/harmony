@@ -22,7 +22,7 @@ requires 'DateTime::TimeZone', '2.11';
 requires 'Devel::NYTProf', '6.04';
 requires 'Digest::SHA', '5.47';
 requires 'EV', '4.0';
-requires 'Email::Address';
+requires 'Email::Address::XS', '1.05';
 requires 'Email::MIME', '1.904';
 requires 'Email::Send', '1.911';
 requires 'FFI::Platypus';
