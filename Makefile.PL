@@ -233,6 +233,13 @@ my %optional_features = (
     prereqs     =>
       {runtime => {requires => {'MIME::Parser' => '5.406', 'XML::Twig' => 0}}},
   },
+  mariadb => {
+    description => 'MariaDB database support',
+    prereqs     => {
+      runtime =>
+        {requires => {'DBD::Mariadb' => '1.0', 'DateTime::Format::MySQL' => '0.06'}}
+    }
+  },
   mysql => {
     description => 'MySQL database support',
     prereqs     => {
@@ -387,7 +394,7 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D better_xff -D mysql -D jsonrpc -D xmlrpc -D documentation -D pg
+GEN_CPANFILE_ARGS = -D better_xff -D mariadb -D jsonrpc -D xmlrpc -D documentation -D pg
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
 
