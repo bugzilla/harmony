@@ -43,7 +43,7 @@ our @EXPORT_OK = qw(
 );
 
 # might want to change this for upstream
-use constant ENV_PREFIX => 'BMO_';
+use constant ENV_PREFIX => 'BZ_';
 use constant PARAM_OVERRIDE =>
   qw( use_mailer_queue mail_delivery_method shadowdb shadowdbhost shadowdbport shadowdbsock );
 
@@ -57,7 +57,7 @@ use constant LOCALCONFIG_VARS => (
   {name => 'webservergroup',  default => \&_sensible_group,},
   {name => 'use_suexec',      default => 0,},
   {name => 'db_driver',       default => 'mysql',},
-  {name => 'db_host',         default => 'localhost',},
+  {name => 'db_host',         default => '127.0.0.1',},
   {name => 'db_name',         default => 'bugs',},
   {
 
