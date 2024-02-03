@@ -11,7 +11,7 @@ requires 'Crypt::DES';
 requires 'Crypt::DES_EDE3';
 requires 'Crypt::OpenPGP', '1.12';
 requires 'Crypt::SMIME';
-requires 'DBD::mysql', '4.037';
+requires 'DBD::MariaDB';
 requires 'DBI', '1.614';
 requires 'DBIx::Class';
 requires 'DBIx::Class::Helpers', '2.034002';

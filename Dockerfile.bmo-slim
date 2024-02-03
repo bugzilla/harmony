@@ -6,7 +6,7 @@ RUN apt-get install -y \
     build-essential \
     cmake \
     curl \
-    default-libmysqlclient-dev \
+    libmariadbclient-dev \
     git \
     libcairo-dev \
     libexpat-dev \
@@ -19,9 +19,9 @@ RUN cpanm --notest --quiet App::cpm Module::CPANfile Carton::Snapshot
 
 WORKDIR /app
 
-COPY cpanfile cpanfile.snapshot /app/
+COPY cpanfile /app/
 
-RUN cpm install
+RUN cpm install --show-build-log-on-failure
 # secure mail loop fixes
 RUN cpm install http://s3.amazonaws.com/moz-devservices-bmocartons/third-party/Crypt-OpenPGP-1.15.tar.gz
 
