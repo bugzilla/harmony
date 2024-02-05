@@ -11,10 +11,10 @@ defaults:
       name: install dependencies
       command: |
         apk update && apk add py-pip
-        pip install "docker-compose==1.23.2"
+        pip install "docker-compose"
 
   docker_image: &docker_image
-    image: docker:18.09.3-git
+    image: docker:default
 
   build_image: &build_image
     run:
@@ -48,7 +48,7 @@ jobs:
       - *docker_image
     steps:
       - setup_remote_docker:
-          version: 18.09.3
+          version: default
           docker_layer_caching: true
       - checkout
       - *build_image
@@ -112,7 +112,7 @@ jobs:
       - *docker_image
     steps:
       - setup_remote_docker:
-          version: 18.09.3
+          version: default
           docker_layer_caching: true
       - checkout
       - *build_image
@@ -148,7 +148,7 @@ jobs:
       - *docker_image
     steps:
       - setup_remote_docker:
-          version: 18.09.3
+          version: default
           docker_layer_caching: true
       - checkout
       - *build_image
@@ -175,7 +175,7 @@ jobs:
       - *docker_image
     steps:
       - setup_remote_docker:
-          version: 18.09.3
+          version: default
           docker_layer_caching: true
       - checkout
       - *build_image
@@ -199,7 +199,7 @@ jobs:
       - *docker_image
     steps:
       - setup_remote_docker:
-          version: 18.09.3
+          version: default
           docker_layer_caching: true
       - checkout
       - *build_image
@@ -223,7 +223,7 @@ jobs:
       - *docker_image
     steps:
       - setup_remote_docker:
-          version: 18.09.3
+          version: default
           docker_layer_caching: true
       - checkout
       - *build_image
