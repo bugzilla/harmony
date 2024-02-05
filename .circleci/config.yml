@@ -6,12 +6,6 @@
 version: 2.1
 
 defaults:
-  install_deps: &install_deps
-    run:
-      name: install dependencies
-      command: |
-        apk update && apk add py-pip
-
   docker_image: &docker_image
     image: cimg/base:current
 
@@ -51,7 +45,6 @@ jobs:
           docker_layer_caching: true
       - checkout
       - *build_image
-      - *install_deps
       - run: |
           [[ -d build_info ]] || mkdir build_info
       - attach_workspace:
@@ -151,7 +144,6 @@ jobs:
           docker_layer_caching: true
       - checkout
       - *build_image
-      - *install_deps
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
@@ -178,7 +170,6 @@ jobs:
           docker_layer_caching: true
       - checkout
       - *build_image
-      - *install_deps
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
@@ -202,7 +193,6 @@ jobs:
           docker_layer_caching: true
       - checkout
       - *build_image
-      - *install_deps
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
@@ -226,7 +216,6 @@ jobs:
           docker_layer_caching: true
       - checkout
       - *build_image
-      - *install_deps
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
