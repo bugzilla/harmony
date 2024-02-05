@@ -1,4 +1,4 @@
-FROM mozillabteam/bmo-perl-slim:20200505.1
+FROM bugzilla/bugzilla-perl-slim:20240203.1
 
 ENV DEBIAN_FRONTEND noninteractive
 
