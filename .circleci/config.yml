@@ -11,10 +11,9 @@ defaults:
       name: install dependencies
       command: |
         apk update && apk add py-pip
-        pip install "docker-compose"
 
   docker_image: &docker_image
-    image: cimg/base:2022.06
+    image: cimg/base:current
 
   build_image: &build_image
     run:
