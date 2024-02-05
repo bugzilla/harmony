@@ -51,17 +51,17 @@ jobs:
           at: /tmp/bzbuild/build_info
       - run: |
           docker compose -f docker-compose.test.yml run --name version_json --entrypoint true bmo.test
-          docker cp version_json:/tmp/bzbuild/version.json build_info/version.json
+          docker cp version_json:/app/version.json build_info/version.json
           docker rm version_json
       - run:
           name: build push data
           command: |
             docker compose -f docker-compose.test.yml run --name push_data bmo.test push_data
-            docker cp push_data:/tmp/bzbuild/build_info/blog.push.txt build_info/blog.push.txt
-            docker cp push_data:/tmp/bzbuild/build_info/bug.push.txt build_info/bug.push.txt
-            docker cp push_data:/tmp/bzbuild/build_info/email.push.txt build_info/email.push.txt
-            docker cp push_data:/tmp/bzbuild/build_info/tag.txt build_info/tag.txt
-            docker cp push_data:/tmp/bzbuild/build_info/wiki.push.txt build_info/wiki.push.txt
+            docker cp push_data:/app/build_info/blog.push.txt build_info/blog.push.txt
+            docker cp push_data:/app/build_info/bug.push.txt build_info/bug.push.txt
+            docker cp push_data:/app/build_info/email.push.txt build_info/email.push.txt
+            docker cp push_data:/app/build_info/tag.txt build_info/tag.txt
+            docker cp push_data:/app/build_info/wiki.push.txt build_info/wiki.push.txt
             docker rm push_data
       - run:
           name: only publish if tag exists
