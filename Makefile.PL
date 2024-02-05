@@ -237,7 +237,7 @@ my %optional_features = (
     description => 'MariaDB database support',
     prereqs     => {
       runtime =>
-        {requires => {'DBD::Mariadb' => '1.0', 'DateTime::Format::MySQL' => '0.06'}}
+        {requires => {'DBD::MariaDB' => 0, 'DateTime::Format::MySQL' => '0.06'}}
     }
   },
   mysql => {
