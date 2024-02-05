@@ -29,7 +29,7 @@ defaults:
 
   store_log: &store_log
     store_artifacts:
-      path: /tmp/bugzilla.log
+      path: /tmp/bzbuild/bugzilla.log
       destination: bugzilla.log
 
   main_filters: &main_filters
@@ -42,7 +42,7 @@ defaults:
 jobs:
   build_info:
     parallelism: 1
-    working_directory: /tmp
+    working_directory: /tmp/bzbuild
     docker:
       - *docker_image
     steps:
@@ -55,20 +55,20 @@ jobs:
       - run: |
           [[ -d build_info ]] || mkdir build_info
       - attach_workspace:
-          at: /tmp/build_info
+          at: /tmp/bzbuild/build_info
       - run: |
           docker compose -f docker-compose.test.yml run --name version_json --entrypoint true bmo.test
-          docker cp version_json:/tmp/version.json build_info/version.json
+          docker cp version_json:/tmp/bzbuild/version.json build_info/version.json
           docker rm version_json
       - run:
           name: build push data
           command: |
             docker compose -f docker-compose.test.yml run --name push_data bmo.test push_data
-            docker cp push_data:/tmp/build_info/blog.push.txt build_info/blog.push.txt
-            docker cp push_data:/tmp/build_info/bug.push.txt build_info/bug.push.txt
-            docker cp push_data:/tmp/build_info/email.push.txt build_info/email.push.txt
-            docker cp push_data:/tmp/build_info/tag.txt build_info/tag.txt
-            docker cp push_data:/tmp/build_info/wiki.push.txt build_info/wiki.push.txt
+            docker cp push_data:/tmp/bzbuild/build_info/blog.push.txt build_info/blog.push.txt
+            docker cp push_data:/tmp/bzbuild/build_info/bug.push.txt build_info/bug.push.txt
+            docker cp push_data:/tmp/bzbuild/build_info/email.push.txt build_info/email.push.txt
+            docker cp push_data:/tmp/bzbuild/build_info/tag.txt build_info/tag.txt
+            docker cp push_data:/tmp/bzbuild/build_info/wiki.push.txt build_info/wiki.push.txt
             docker rm push_data
       - run:
           name: only publish if tag exists
@@ -98,15 +98,15 @@ jobs:
             fi
             echo yes > build_info/only_version_changed.txt
       - persist_to_workspace:
-          root: /tmp/build_info
+          root: /tmp/bzbuild/build_info
           paths: ["*.txt"]
       - store_artifacts:
-          path: /tmp/build_info
+          path: /tmp/bzbuild/build_info
       - *store_log
 
   build:
     parallelism: 1
-    working_directory: /tmp
+    working_directory: /tmp/bzbuild
     docker:
       - *docker_image
     steps:
@@ -116,7 +116,7 @@ jobs:
       - checkout
       - *build_image
       - attach_workspace:
-          at: /tmp/build_info
+          at: /tmp/bzbuild/build_info
       - deploy:
           command: |
             [[ -n "$DOCKERHUB_REPO" && -n "$DOCKER_USER" && -n "$DOCKER_PASS" ]] || exit 0
@@ -142,7 +142,7 @@ jobs:
 
   test_sanity:
     parallelism: 1
-    working_directory: /tmp
+    working_directory: /tmp/bzbuild
     docker:
       - *docker_image
     steps:
@@ -155,7 +155,7 @@ jobs:
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
-          at: /tmp/build_info
+          at: /tmp/bzbuild/build_info
       - run:
           name: run sanity tests
           command: |
@@ -164,12 +164,12 @@ jobs:
               test_sanity $(circleci tests glob 't/*.t' 'extensions/*/t/*.t' | \
               circleci tests split) | tee artifacts/$CIRCLE_JOB.txt
       - store_artifacts:
-          path: /tmp/artifacts
+          path: /tmp/bzbuild/artifacts
       - *store_log
 
   test_webservices:
     parallelism: 1
-    working_directory: /tmp
+    working_directory: /tmp/bzbuild
     docker:
       - *docker_image
     steps:
@@ -182,18 +182,18 @@ jobs:
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
-          at: /tmp/build_info
+          at: /tmp/bzbuild/build_info
       - run: |
           [[ -f build_info/only_version_changed.txt ]] && exit 0
           docker compose -f docker-compose.test.yml run bmo.test test_webservices | \
             tee artifacts/$CIRCLE_JOB.txt
       - store_artifacts:
-          path: /tmp/artifacts
+          path: /tmp/bzbuild/artifacts
       - *store_log
 
   test_selenium:
     parallelism: 1
-    working_directory: /tmp
+    working_directory: /tmp/bzbuild
     docker:
       - *docker_image
     steps:
@@ -206,18 +206,18 @@ jobs:
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
-          at: /tmp/build_info
+          at: /tmp/bzbuild/build_info
       - run: |
           [[ -f build_info/only_version_changed.txt ]] && exit 0
           docker compose -f docker-compose.test.yml run bmo.test test_selenium | \
             tee artifacts/$CIRCLE_JOB.txt
       - store_artifacts:
-          path: /tmp/artifacts
+          path: /tmp/bzbuild/artifacts
       - *store_log
 
   test_bmo:
     parallelism: 1
-    working_directory: /tmp
+    working_directory: /tmp/bzbuild
     docker:
       - *docker_image
     steps:
@@ -230,7 +230,7 @@ jobs:
       - run: |
           [[ -d artifacts ]] || mkdir artifacts
       - attach_workspace:
-          at: /tmp/build_info
+          at: /tmp/bzbuild/build_info
       - run: |
           [[ -f build_info/only_version_changed.txt ]] && exit 0
           docker compose -f docker-compose.test.yml run bmo.test test_bmo -q -f t/bmo/*.t
