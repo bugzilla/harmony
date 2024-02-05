@@ -14,7 +14,7 @@ defaults:
         pip install "docker-compose"
 
   docker_image: &docker_image
-    image: docker:default
+  image: cimg/base:2022.06
 
   build_image: &build_image
     run:
