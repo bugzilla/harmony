@@ -56,7 +56,7 @@ use constant LOCALCONFIG_VARS => (
   {name => 'create_htaccess', default => 1,},
   {name => 'webservergroup',  default => \&_sensible_group,},
   {name => 'use_suexec',      default => 0,},
-  {name => 'db_driver',       default => 'mysql',},
+  {name => 'db_driver',       default => 'sqlite',},
   {name => 'db_host',         default => 'localhost',},
   {name => 'db_name',         default => 'bugs',},
   {
@@ -95,7 +95,7 @@ use constant LOCALCONFIG_VARS => (
   {name => 'size_limit',          default => 750000,},
   {name => 'memcached_servers',   default => '',},
   {name => 'memcached_namespace', default => "bugzilla:",},
-  {name => 'urlbase',             default => '',},
+  {name => 'urlbase',             default => 'http://127.0.0.1:3001/'},
   {name => 'canonical_urlbase',   lazy => 1},
   {name => 'nobody_user',         default => 'nobody@mozilla.org'},
   {name => 'attachment_base',     default => '',},
@@ -243,7 +243,7 @@ sub update_localconfig {
     $value = undef
       if ($name eq 'site_wide_secret' and defined $value and length($value) == 256);
 
-    if (!defined $value) {
+    if (!defined $value && $name ne 'canonical_urlbase') {
       push(@new_vars, $name);
       $var->{default} = &{$var->{default}} if ref($var->{default}) eq 'CODE';
       if (exists $answer->{$name}) {
