@@ -51,7 +51,7 @@ copyright = u'2024, The Bugzilla Team'
 # built documents.
 #
 # The short X.Y version.
-version = '6.0'
+version = 'Unknown'
 # The full version, including alpha/beta/rc tags.
 release = 'Harmony'
 
