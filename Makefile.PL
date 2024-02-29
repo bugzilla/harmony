@@ -386,9 +386,8 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D better_xff -D mysql -D jsonrpc -D xmlrpc
 cpanfile: MYMETA.json
-\t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
+\tPERL_HASH_SEED=0 \$(PERLRUN) gen-cpanfile.pl
 
 META.json: Makefile.PL
 \tmake distmeta 2>&1 /dev/null; mv */META.json .
