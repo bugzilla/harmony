@@ -246,7 +246,7 @@ sub assert_database {
   my $any_f = Future->wait_any($repeat, $timeout);
   return $any_f->transform(
     done => sub {return},
-    fail => sub {"unable to connect to $dsn as $lc->{db_user}"},
+    fail => sub {"unable to connect to $dsn as $lc->{db_user}: " . DBI->errstr()},
   );
 }
 

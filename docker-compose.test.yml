@@ -6,7 +6,9 @@ version: '3'
 
 services:
   bmo.test:
-    image: bmo
+    build: &bmo_build
+      context: .
+      dockerfile: Dockerfile
     command: dev_httpd
     tmpfs:
       - /tmp
