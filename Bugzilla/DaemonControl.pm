@@ -222,6 +222,8 @@ sub assert_connect {
 }
 
 sub assert_database {
+  my $assert_dbierr = "";
+  my $assert_dbierrstr = "";
   my $loop = IO::Async::Loop->new;
   my $lc   = Bugzilla::Install::Localconfig::read_localconfig();
 
@@ -232,10 +234,22 @@ sub assert_database {
   my $dsn    = "dbi:mysql:database=$lc->{db_name};host=$lc->{db_host}";
   my $repeat = repeat {
     $loop->delay_future(after => 0.25)->then(sub {
+      my $attrs = {RaiseError => 0, PrintError => 0};
+      my ($ssl_ca_file, $ssl_ca_path, $ssl_cert, $ssl_key, $ssl_pubkey) =
+        @$lc{qw(db_mysql_ssl_ca_file db_mysql_ssl_ca_path
+                db_mysql_ssl_client_cert db_mysql_ssl_client_key db_mysql_ssl_get_pubkey)};
+      if ($ssl_ca_file || $ssl_ca_path || $ssl_cert || $ssl_key || $ssl_pubkey) {
+        $attrs->{'mysql_ssl'}               = 1;
+        $attrs->{'mysql_ssl_ca_file'}       = $ssl_ca_file if $ssl_ca_file;
+        $attrs->{'mysql_ssl_ca_path'}       = $ssl_ca_path if $ssl_ca_path;
+        $attrs->{'mysql_ssl_client_cert'}   = $ssl_cert    if $ssl_cert;
+        $attrs->{'mysql_ssl_client_key'}    = $ssl_key     if $ssl_key;
+        $attrs->{'mysql_get_server_pubkey'} = $ssl_pubkey  if $ssl_pubkey;
+      }
       my $dbh
-        = DBI->connect($dsn, $lc->{db_user}, $lc->{db_pass},
-        {RaiseError => 0, PrintError => 0},
-        );
+        = DBI->connect($dsn, $lc->{db_user}, $lc->{db_pass}, $attrs);
+      $assert_dbierr = DBI->err() || 0;
+      $assert_dbierrstr = DBI->errstr() || '';
       Future->wrap($dbh);
     });
   }
@@ -246,7 +260,7 @@ sub assert_database {
   my $any_f = Future->wait_any($repeat, $timeout);
   return $any_f->transform(
     done => sub {return},
-    fail => sub {"unable to connect to $dsn as $lc->{db_user}"},
+    fail => sub {"unable to connect to $dsn as $lc->{db_user}: $assert_dbierr: $assert_dbierrstr"},
   );
 }
 
