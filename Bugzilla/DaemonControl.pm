@@ -15,7 +15,7 @@ use Bugzilla::Constants qw(bz_locations);
 use Cwd qw(realpath);
 use English qw(-no_match_vars $PROGRAM_NAME);
 use File::Spec::Functions qw(catfile catdir);
-use Future::Utils qw(repeat try_repeat);
+use Future::Utils qw(repeat try_repeat_until_success);
 use Future;
 use IO::Async::Loop;
 use IO::Async::Process;
@@ -222,7 +222,6 @@ sub assert_connect {
 }
 
 sub assert_database {
-  my $assert_dbierr = "";
   my $assert_dbierrstr = "";
   my $loop = IO::Async::Loop->new;
   my $lc   = Bugzilla::Install::Localconfig::read_localconfig();
@@ -232,9 +231,9 @@ sub assert_database {
   }
 
   my $dsn    = "dbi:mysql:database=$lc->{db_name};host=$lc->{db_host}";
-  my $repeat = repeat {
+  my $repeat = try_repeat_until_success {
     $loop->delay_future(after => 0.25)->then(sub {
-      my $attrs = {RaiseError => 0, PrintError => 0};
+      my $attrs = {RaiseError => 1, PrintError => 1};
       my ($ssl_ca_file, $ssl_ca_path, $ssl_cert, $ssl_key, $ssl_pubkey) =
         @$lc{qw(db_mysql_ssl_ca_file db_mysql_ssl_ca_path
                 db_mysql_ssl_client_cert db_mysql_ssl_client_key db_mysql_ssl_get_pubkey)};
@@ -246,21 +245,24 @@ sub assert_database {
         $attrs->{'mysql_ssl_client_key'}    = $ssl_key     if $ssl_key;
         $attrs->{'mysql_get_server_pubkey'} = $ssl_pubkey  if $ssl_pubkey;
       }
-      my $dbh
+      my $dbh;
+      eval {
+        $dbh
         = DBI->connect($dsn, $lc->{db_user}, $lc->{db_pass}, $attrs);
-      $assert_dbierr = DBI->err() || 0;
+      };
+      if ($!) { $assert_dbierrstr = $@; die $@; }
       $assert_dbierrstr = DBI->errstr() || '';
+      die "$assert_dbierrstr" if $assert_dbierrstr;
       Future->wrap($dbh);
     });
-  }
-  until => sub { defined shift->get };
+  };
 
   my $timeout
     = $loop->timeout_future(after => 20)->else_fail('assert_database timeout');
   my $any_f = Future->wait_any($repeat, $timeout);
   return $any_f->transform(
     done => sub {return},
-    fail => sub {"unable to connect to $dsn as $lc->{db_user}: $assert_dbierr: $assert_dbierrstr"},
+    fail => sub {"unable to connect to $dsn as $lc->{db_user}: $assert_dbierrstr"},
   );
 }
 
