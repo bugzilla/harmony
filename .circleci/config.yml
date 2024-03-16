@@ -90,9 +90,9 @@ jobs:
               exit 0
             fi
             echo yes > build_info/only_version_changed.txt
-      - persist_to_workspace:
-          root: /tmp/bzbuild/build_info
-          paths: ["*.txt"]
+#      - persist_to_workspace:
+#          root: /tmp/bzbuild/build_info
+#          paths: ["*.txt"]
       - store_artifacts:
           path: /tmp/bzbuild/build_info
       - *store_log
