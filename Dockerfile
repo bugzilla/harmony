@@ -1,4 +1,4 @@
-FROM bugzilla/bugzilla-perl-slim:20240314.1
+FROM bugzilla/bugzilla-perl-slim:20240315.1
 
 ENV DEBIAN_FRONTEND noninteractive
 

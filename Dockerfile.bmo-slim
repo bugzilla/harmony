@@ -18,14 +18,12 @@ RUN apt-get install -y \
 # The Perl image is based on Debian, which doesn't have MySQL 8, and the
 # current DBD::mysql required MySQL 8 libraries to build, so we have
 # to get the client libraries from mysql.com
-#RUN curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 | gpg --dearmor -o /usr/share/keyrings/mysql-8.0.gpg
-#RUN curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2022 | gpg --dearmor -o /usr/share/keyrings/mysql-8.0.gpg
-RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5072E1F5
-RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3A79BD29
-RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys B7B3B788A8D3785C
-RUN echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/mysql-8.0.gpg] http://repo.mysql.com/apt/debian/ bookworm mysql-8.0' > /etc/apt/sources.list.d/mysql-8.0.list
-RUN apt-get update && \
-    apt-get install -y libmysqlclient-dev mysql-community-client-plugins
+RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5072E1F5 \
+ && gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3A79BD29 \
+ && gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys B7B3B788A8D3785C \
+ && echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/mysql-8.0.gpg] http://repo.mysql.com/apt/debian/ bookworm mysql-8.0' > /etc/apt/sources.list.d/mysql-8.0.list
+RUN apt-get update \
+ && apt-get install -y libmysqlclient-dev
 
 RUN cpanm --notest --quiet App::cpm Module::CPANfile Carton::Snapshot
 
@@ -52,14 +50,14 @@ ENV DEBIAN_FRONTEND noninteractive
 COPY --from=builder /app/local /app/local
 COPY --from=builder /app/PACKAGES /app/PACKAGES
 
-RUN apt-get update && \
-    apt-get install -y gnupg
-RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5072E1F5
-RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3A79BD29
-RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys B7B3B788A8D3785C
-RUN echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/mysql-8.0.gpg] http://repo.mysql.com/apt/debian/ bookworm mysql-8.0' > /etc/apt/sources.list.d/mysql-8.0.list
-RUN apt-get update && \
-    apt-get install -y libmysqlclient-dev mysql-community-client-plugins
+RUN apt-get update \
+ && apt-get install -y gnupg
+RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5072E1F5 \
+ && gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3A79BD29 \
+ && gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys B7B3B788A8D3785C \
+ && echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/mysql-8.0.gpg] http://repo.mysql.com/apt/debian/ bookworm mysql-8.0' > /etc/apt/sources.list.d/mysql-8.0.list
+#RUN apt-get update \
+# && apt-get install -y libmysqlclient-dev
 
 RUN apt-get update \
     && apt-get install -y \
