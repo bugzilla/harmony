@@ -17,7 +17,7 @@ defaults:
           --build-arg CI="$CI" \
           --build-arg CIRCLE_SHA1="$CIRCLE_SHA1" \
           --build-arg CIRCLE_BUILD_URL="$CIRCLE_BUILD_URL" \
-          -t bmo .
+          -t bmo.test .
       environment:
         DOCKER_BUILDKIT: 1
 
