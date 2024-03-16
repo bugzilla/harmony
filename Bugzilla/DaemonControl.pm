@@ -232,9 +232,10 @@ sub assert_database {
   my $dsn    = "dbi:mysql:database=$lc->{db_name};host=$lc->{db_host}";
   my $repeat = repeat {
     $loop->delay_future(after => 0.25)->then(sub {
+      # TODO: the SSL params probably need to come from the environment
       my $dbh
         = DBI->connect($dsn, $lc->{db_user}, $lc->{db_pass},
-        {RaiseError => 0, PrintError => 0},
+        {RaiseError => 0, PrintError => 0, mysql_ssl => 1, mysql_get_server_pubkey => 1},
         );
       Future->wrap($dbh);
     });
