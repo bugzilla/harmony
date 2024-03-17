@@ -8,8 +8,8 @@ RUN apt-get update \
     unzip wget
 
 # The Perl image is based on Debian, which doesn't have MySQL 8, and the
-# current DBD::mysql required MySQL 8 libraries to build, so we have
-# to get the client libraries from mysql.com 
+# current DBD::mysql requires MySQL 8 libraries to build, so we have
+# to get the client libraries from mysql.com
 RUN gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5072E1F5 \
  && gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3A79BD29 \
  && gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mysql-8.0.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys B7B3B788A8D3785C \
