@@ -222,6 +222,7 @@ jobs:
           at: /tmp/bzbuild/build_info
       - run: |
           [[ -f build_info/only_version_changed.txt ]] && exit 0
+          docker compose -f docker-compose.test.yml build
           docker compose -f docker-compose.test.yml run bmo.test test_bmo -q -f t/bmo/*.t
       - *store_log
 
