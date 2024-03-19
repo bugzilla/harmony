@@ -1,12 +1,12 @@
 {
-    "name": "bugzilla.mozilla.org (BMO)",
-    "description": "Bugzilla based bug tracking system used by various Mozilla projects.",
+    "name": "Bugzilla Harmony",
+    "description": "The software solution designed to drive software development, which lets you plan, organize and release software on your own teams' schedule.",
     "repository": {
-        "url": "https://github.com/bugzilla/bugzilla",
+        "url": "https://github.com/bugzilla/harmony",
         "license": "MPL2",
         "type": "git",
-        "clone": "https://github.com/bugzilla/bugzilla.git",
-        "tests": "https://treeherder.mozilla.org/#/jobs?repo=bmo-master"
+        "clone": "https://github.com/bugzilla/harmony.git",
+        "tests": "https://app.circleci.com/pipelines/github/bugzilla/harmony"
     },
     "keywords": [
         "CSS",
@@ -24,10 +24,5 @@
         "list": "https://bugzilla.mozilla.org/buglist.cgi?bug_status=NEW&product=Bugzilla",
         "report": "https://bugzilla.mozilla.org/enter_bug.cgi?product=Bugzilla",
         "mentored": "https://bugzilla.mozilla.org/buglist.cgi?f1=bug_mentor&o1=isnotempty&bug_status=NEW&product=Bugzilla"
-    },
-    "urls": {
-        "prod": "https://bugzilla.mozilla.org",
-        "stage": "https://bugzilla.allizom.org",
-        "dev": "https://bugzilla-dev.allizom.org"
     }
 }
