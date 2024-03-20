@@ -229,7 +229,7 @@ sub assert_database {
   for my $var (qw(db_driver db_name db_host db_user db_pass)) {
     return $loop->new_future->die("$var is not set!") unless $lc->{$var};
   }
-  my ($db_driver) = (DB_MODULE->{$lc->{db_driver}}->{db} =~ m/::([^:]+)$/);
+  my ($db_driver) = (DB_MODULE->{$lc->{db_driver}}->{dbd}->{module} =~ m/::([^:]+)$/);
 
   my $dsn    = "dbi:$db_driver:database=$lc->{db_name};host=$lc->{db_host}";
   my $repeat = try_repeat_until_success {
