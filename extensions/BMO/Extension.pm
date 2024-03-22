@@ -1477,7 +1477,9 @@ sub install_update_db {
 
     # if there are no groups, then we're creating a database from scratch
     # and there's nothing to migrate
-    my ($group_count) = $dbh->selectrow_array("SELECT COUNT(*) FROM groups");
+    my ($group_count)
+      = $dbh->selectrow_array(
+      "SELECT COUNT(*) FROM " . $dbh->quote_identifier('groups'));
     if ($group_count) {
 
       # Migrate old product_sec_group mappings from the time this change was made
@@ -2797,6 +2799,17 @@ sub app_startup {
     }
   );
 
+  # In previous versions of bugzilla, an .htaccess file was used to redirect
+  # urls (often in the form of form:name or form.name) to different .cgi
+  # endpoints.
+  #
+  # Since the port to Mojolicious, we do this by adding additional routes.
+  # This is accomplished with a placeholder that we consistently prefix with
+  # REWRITE_, and as you can see below is followed by an arrayref mapping the
+  # (arbitrary) name to a regular expression and a destination.
+  #
+  # The REWRITE_ prefix is only significant because it is removed from the fake
+  # CGI environment in Bugzilla::App::CGI 
   $r->any('/:REWRITE_itrequest' => [REWRITE_itrequest => qr{form[\.:]itrequest}])
     ->to('CGI#enter_bug_cgi' =>
       {'product' => 'Infrastructure & Operations', 'format' => 'itrequest'});
