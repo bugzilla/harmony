@@ -16,7 +16,7 @@ use parent qw(Email::Sender::Transport::Sendmail);
 use Email::Sender::Failure;
 
 sub send_email {
-  my ($class, $message, $envelope) = @_;
+  my ($self, $email, $envelope) = @_;
 
   my $pipe = $self->_sendmail_pipe($envelope);
 
