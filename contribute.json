@@ -6,8 +6,8 @@
         "license": "MPL2",
         "type": "git",
         "clone": "https://github.com/bugzilla/harmony.git",
-        "tests": "https://app.circleci.com/pipelines/github/bugzilla/harmony"
-    },
+        "tests": "https://github.com/bugzilla/harmony/actions"
+    }, 
     "keywords": [
         "CSS",
         "HTML",
