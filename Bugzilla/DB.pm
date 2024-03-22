@@ -1333,12 +1333,6 @@ sub bz_rollback_transaction {
 # Subclass Helpers
 #####################################################################
 
-sub _build_model {
-  my ($self) = @_;
-  require Bugzilla::Model;
-  Bugzilla::Model->connect($self->dsn, $self->user, $self->pass, $self->attrs);
-}
-
 sub _build_connector {
   my ($self) = @_;
   my ($dsn, $user, $pass, $override_attrs)
@@ -1565,7 +1559,11 @@ sub _check_references {
   # reserved words.
   my $bad_values = $self->selectcol_arrayref(
     "SELECT DISTINCT tabl.$column
-           FROM $table AS tabl LEFT JOIN $foreign_table AS forn
+           FROM "
+      . $self->quote_identifier($table)
+      . " AS tabl LEFT JOIN "
+      . $self->quote_identifier($foreign_table)
+      . " AS forn
                 ON tabl.$column = forn.$foreign_column
           WHERE forn.$foreign_column IS NULL
                 AND tabl.$column IS NOT NULL"
@@ -1575,7 +1573,10 @@ sub _check_references {
     my $delete_action = $fk->{DELETE} || '';
     if ($delete_action eq 'CASCADE') {
       $self->do(
-        "DELETE FROM $table WHERE $column IN (" . join(',', ('?') x @$bad_values) . ")",
+        "DELETE FROM "
+          . $self->quote_identifier($table)
+          . " WHERE $column IN ("
+          . join(',', ('?') x @$bad_values) . ")",
         undef, @$bad_values
       );
       if (Bugzilla->usage_mode == USAGE_MODE_CMDLINE) {
@@ -1596,7 +1597,9 @@ sub _check_references {
     }
     elsif ($delete_action eq 'SET NULL') {
       $self->do(
-        "UPDATE $table SET $column = NULL
+            "UPDATE "
+          . $self->quote_identifier($table)
+          . " SET $column = NULL
                         WHERE $column IN ("
           . join(',', ('?') x @$bad_values) . ")", undef, @$bad_values
       );

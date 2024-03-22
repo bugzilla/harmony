@@ -90,7 +90,7 @@ my %requires = (
   'Scope::Guard'               => '0.21',
   'Sereal'                     => '4.004',
   'Sub::Quote'                 => '2.005000',
-  'Template'                   => '2.24',
+  'Template'                   => '3.008',
   'Text::CSV_XS'               => '1.26',
   'Throwable'                  => '0.200013',
   'Type::Tiny'                 => '1.004004',
@@ -236,7 +236,7 @@ my %optional_features = (
     description => 'MySQL database support',
     prereqs     => {
       runtime =>
-        {requires => {'DBD::mysql' => '4.037', 'DateTime::Format::MySQL' => '0.06'}}
+        {requires => {'DBD::mysql' => '5.003', 'DateTime::Format::MySQL' => '0.06'}}
     }
   },
   new_charts => {
@@ -386,7 +386,7 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D better_xff -D mysql -D jsonrpc -D xmlrpc
+GEN_CPANFILE_ARGS = -D better_xff -D mysql -D jsonrpc -D xmlrpc -D documentation -D pg
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
 
