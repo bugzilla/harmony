@@ -57,6 +57,7 @@ my %requires = (
   'Devel::NYTProf'             => '6.04',
   'Digest::SHA'                => '5.47',
   'EV'                         => '4.0',
+  'Email::Address::XS'         => '1.05',
   'Email::MIME'                => '1.904',
   'Email::Sender'              => '2.600',
   'FFI::Platypus'              => 0,
