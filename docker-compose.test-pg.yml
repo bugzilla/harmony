@@ -15,11 +15,11 @@ services:
       - /run
     environment:
       - 'BMO_inbound_proxies=*'
+      - BMO_db_driver=pg
       - BMO_db_host=bmo.db
       - BMO_db_name=bugs
       - BMO_db_pass=bugs
       - BMO_db_user=bugs
-      - BMO_db_mysql_ssl_get_pubkey=1
       - BMO_memcached_namespace=bugzilla
       - BMO_memcached_servers=memcached:11211
       - BMO_ses_username=ses@mozilla.bugs
@@ -27,8 +27,8 @@ services:
       - BMO_urlbase=AUTOMATIC
       - BUGZILLA_ALLOW_INSECURE_HTTP=1
       - BZ_ANSWERS_FILE=/app/conf/checksetup_answers.txt
-      - BZ_QA_ANSWERS_FILE=/app/.github/checksetup_answers.txt
-      - BZ_QA_CONF_FILE=/app/.github/selenium_test.conf
+      - BZ_QA_ANSWERS_FILE=/app/.circleci/checksetup_answers.txt
+      - BZ_QA_CONF_FILE=/app/.circleci/selenium_test.conf
       - BZ_QA_CONFIG=1
       - CI=${CI}
       - CIRCLE_SHA1=${CIRCLE_SHA1}
@@ -46,16 +46,15 @@ services:
       - selenium
 
   bmo.db:
-    image: mysql:8
+    image: postgres:9.0
     tmpfs:
       - /tmp
     logging:
       driver: "none"
     environment:
-      - MYSQL_DATABASE=bugs
-      - MYSQL_USER=bugs
-      - MYSQL_PASSWORD=bugs
-      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+      - POSTGRES_DB=bugs
+      - POSTGRES_USER=bugs
+      - POSTGRES_PASSWORD=bugs
 
   memcached:
     image: memcached:latest
@@ -67,4 +66,4 @@ services:
       - "5900:5900"
 
 volumes:
-  bmo-mysql-db:
+  bmo-pg-db:
