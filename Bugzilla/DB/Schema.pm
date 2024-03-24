@@ -973,6 +973,20 @@ use constant ABSTRACT_SCHEMA => {
     ],
   },
 
+  profile_emails => {
+    FIELDS => {
+      user_id => {
+        TYPE       => 'INT3',
+        NOTNULL    => 1,
+        REFERENCES => {TABLE => 'profiles', COLUMN => 'userid', DELETE => 'CASCADE'}
+      },
+      email => { TYPE => 'varchar(255)', NOTNULL => 1, },
+      is_confirmed => {TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'FALSE'},
+      is_primary   => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      bounce_count => {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0},
+    },
+  },
+
   profile_search => {
     FIELDS => [
       id      => {TYPE => 'INTSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
