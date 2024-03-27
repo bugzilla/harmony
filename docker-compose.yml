@@ -22,6 +22,7 @@ services:
       - BMO_db_name=bugs
       - BMO_db_pass=bugs
       - BMO_db_user=bugs
+      - BMO_db_mysql_ssl_get_pubkey=1
       - BMO_memcached_namespace=bugzilla
       - BMO_memcached_servers=memcached:11211
       - BMO_ses_username=ses@mozilla.bugs
@@ -32,70 +33,73 @@ services:
       - HTTP_BACKEND=morbo
       - LOCALCONFIG_ENV=1
       - LOG4PERL_CONFIG_FILE=log4perl-docker.conf
-      - MOJO_LISTEN=http://*:80
-      - PORT=80
+      - MOJO_LISTEN=http://*:8000
+      - PORT=8000
     depends_on:
       - bmo.db
       - memcached
-      - tinyproxy
+#      - tinyproxy
+    ports:
+      - "8000:8000"
 
-  bmo.jobqueue:
-    build: *bmo_build
-    command: jobqueue
-    volumes:
-      - bmo-data-dir:/app/data
-    tmpfs:
-      - /tmp
-      - /run
-    environment: *bmo_env
-    restart: always
-    depends_on:
-      - bmo.db
-      - memcached
+#  bmo.jobqueue:
+#    build: *bmo_build
+#    command: jobqueue
+#    volumes:
+#      - bmo-data-dir:/app/data
+#    tmpfs:
+#      - /tmp
+#      - /run
+#    environment: *bmo_env
+#    restart: always
+#    depends_on:
+#      - bmo.db
+#      - memcached
 
-  bmo.feed:
-    build: *bmo_build
-    command:
-      - perl
-      - extensions/PhabBugz/bin/phabbugz_feed.pl
-      - start
-      - '-d'
-      - '-f'
-    volumes:
-      - bmo-data-dir:/app/data
-    tmpfs:
-      - /tmp
-      - /run
-    environment: *bmo_env
-    restart: always
-    depends_on:
-      - bmo.db
-      - memcached
+#  bmo.feed:
+#    build: *bmo_build
+#    command:
+#      - perl
+#      - extensions/PhabBugz/bin/phabbugz_feed.pl
+#      - start
+#      - '-d'
+#      - '-f'
+#    volumes:
+#      - bmo-data-dir:/app/data
+#    tmpfs:
+#      - /tmp
+#      - /run
+#    environment: *bmo_env
+#    restart: always
+#    depends_on:
+#      - bmo.db
+#      - memcached
 
-  bmo.pushd:
-    build: *bmo_build
-    command:
-      - perl
-      - extensions/Push/bin/bugzilla-pushd.pl
-      - start
-      - '-d'
-      - '-f'
-    volumes:
-      - bmo-data-dir:/app/data
-    tmpfs:
-      - /tmp
-      - /run
-    environment: *bmo_env
-    restart: always
-    depends_on:
-      - bmo.db
-      - memcached
+#  bmo.pushd:
+#    build: *bmo_build
+#    command:
+#      - perl
+#      - extensions/Push/bin/bugzilla-pushd.pl
+#      - start
+#      - '-d'
+#      - '-f'
+#    volumes:
+#      - bmo-data-dir:/app/data
+#    tmpfs:
+#      - /tmp
+#      - /run
+#    environment: *bmo_env
+#    restart: always
+#    depends_on:
+#      - bmo.db
+#      - memcached
 
   bmo.db:
-    image: mysql:8
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql8
     volumes:
       - bmo-mysql-db:/var/lib/mysql
-      - ./docker/mysql:/etc/mysql/conf.d
     tmpfs:
       - /tmp
     logging:
@@ -109,12 +113,12 @@ services:
   memcached:
     image: memcached:latest
 
-  tinyproxy:
-    build:
-      context: docker/tinyproxy
-      dockerfile: ./Dockerfile
-    ports:
-      - "1080:1080"
+#  tinyproxy:
+#    build:
+#      context: docker/tinyproxy
+#      dockerfile: ./Dockerfile
+#    ports:
+#      - "1080:1080"
 
 volumes:
   bmo-mysql-db:
