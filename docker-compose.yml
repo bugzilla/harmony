@@ -27,7 +27,7 @@ services:
       - BMO_memcached_servers=memcached:11211
       - BMO_ses_username=ses@mozilla.bugs
       - BMO_ses_password=password123456789!
-      - BMO_urlbase=http://bmo.test/
+      - BMO_urlbase=http://127.0.0.1:8080/
       - BUGZILLA_ALLOW_INSECURE_HTTP=1
       - BZ_ANSWERS_FILE=/app/conf/checksetup_answers.txt
       - HTTP_BACKEND=morbo
