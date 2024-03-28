@@ -35,5 +35,5 @@ jobs:
       - name: Build the Docker images
         run: docker compose -f docker-compose.test.yml build
       - name: Run bmo specific tests
-        run: docker-compose -f docker-compose.test.yml run -e CI=1 bugzilla6.test test_bugzilla6 -q -f t/bmo/*.t
+        run: docker-compose -f docker-compose.test.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
