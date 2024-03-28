@@ -5,20 +5,20 @@
 version: '3.6'
 
 services:
-  bmo.test:
-    build: &bmo_build
+  bugzilla6.web:
+    build: &bz_build
       context: .
       dockerfile: Dockerfile
     command: dev_httpd
     volumes:
-      - bmo-data-dir:/app/data
+      - bugzilla6-data-dir:/app/data
       - .:/mnt/sync
     tmpfs:
       - /tmp
       - /run
-    environment: &bmo_env
+    environment: &bz_env
       - 'BMO_inbound_proxies=*'
-      - BMO_db_host=bmo.db
+      - BMO_db_host=bugzilla6.db
       - BMO_db_name=bugs
       - BMO_db_pass=bugs
       - BMO_db_user=bugs
@@ -36,28 +36,28 @@ services:
       - MOJO_LISTEN=http://*:8000
       - PORT=8000
     depends_on:
-      - bmo.db
+      - bugzilla6.db
       - memcached
 #      - tinyproxy
     ports:
       - "8000:8000"
 
-#  bmo.jobqueue:
-#    build: *bmo_build
+#  bugzilla6.jobqueue:
+#    build: *bz_build
 #    command: jobqueue
 #    volumes:
-#      - bmo-data-dir:/app/data
+#      - bugzilla6-data-dir:/app/data
 #    tmpfs:
 #      - /tmp
 #      - /run
-#    environment: *bmo_env
+#    environment: *bz_env
 #    restart: always
 #    depends_on:
-#      - bmo.db
+#      - bugzilla6.db
 #      - memcached
 
-#  bmo.feed:
-#    build: *bmo_build
+#  bugzilla6.feed:
+#    build: *bz_build
 #    command:
 #      - perl
 #      - extensions/PhabBugz/bin/phabbugz_feed.pl
@@ -65,18 +65,18 @@ services:
 #      - '-d'
 #      - '-f'
 #    volumes:
-#      - bmo-data-dir:/app/data
+#      - bugzilla6-data-dir:/app/data
 #    tmpfs:
 #      - /tmp
 #      - /run
-#    environment: *bmo_env
+#    environment: *bz_env
 #    restart: always
 #    depends_on:
-#      - bmo.db
+#      - bugzilla6.db
 #      - memcached
 
-#  bmo.pushd:
-#    build: *bmo_build
+#  bugzilla6.pushd:
+#    build: *bz_build
 #    command:
 #      - perl
 #      - extensions/Push/bin/bugzilla-pushd.pl
@@ -84,22 +84,22 @@ services:
 #      - '-d'
 #      - '-f'
 #    volumes:
-#      - bmo-data-dir:/app/data
+#      - bugzilla6-data-dir:/app/data
 #    tmpfs:
 #      - /tmp
 #      - /run
-#    environment: *bmo_env
+#    environment: *bz_env
 #    restart: always
 #    depends_on:
-#      - bmo.db
+#      - bugzilla6.db
 #      - memcached
 
-  bmo.db:
+  bugzilla6.db:
     build:
       context: .
       dockerfile: Dockerfile.mysql8
     volumes:
-      - bmo-mysql-db:/var/lib/mysql
+      - bugzilla6-mysql-db:/var/lib/mysql
     tmpfs:
       - /tmp
     logging:
@@ -121,5 +121,5 @@ services:
 #      - "1080:1080"
 
 volumes:
-  bmo-mysql-db:
-  bmo-data-dir:
+  bugzilla6-mysql-db:
+  bugzilla6-data-dir:
