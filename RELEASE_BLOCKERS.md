@@ -12,9 +12,7 @@ function in MySQL 8 due to the word "groups" becoming a reserved word.
 
 We need to make Bugzilla work on MySQL 8+.
 
-I believe the code I wrote over a year ago could allow us to support mysql 8,
-and that's in [this
-branch](https://github.com/bugzilla/harmony/blob/dylan/mysql-8)
+**[COMPLETED]**
 
 # Upgrade Path from 4.4, 5.0, 5.2, and 5.1
 
@@ -36,6 +34,8 @@ depends on Perl modules that no longer have upstream support. BMO maintained
 their own bugfixes to those modules, but that’s not something we want to do
 upstream.  Version 5.0 rewrote the email code to use currently-supported Perl
 modules.  That needs to be ported into Harmony.
+
+**[COMPLETED]**
 
 # Postgresql Compatibility
 
@@ -85,13 +85,16 @@ were dropped or new features being picked up when compared to version 5.2.
 
 - Start with an empty list.
 - Go through [Harmony's commit
-  logs](https://github.com/bugzilla/harmony/commits/main) going all the way
-  back to Version 4.2, and make note of anything new/changed that's release-note
-  worthy.
+  logs](https://github.com/bugzilla/harmony/compare/3a0affd238cd65bc8c40e316ab20663f3110cee9...main)
+  going all the way back to Version 4.2 (the commit log at the link starts at
+  the diverging commit between the two branches), and make note of anything
+  new/changed that's release-note worthy.
 - Go through [5.2's commit
-  logs](https://github.com/bugzilla/bugzilla/commits/5.2) goinng all the way
-  back to Version 4.2
+  logs](https://github.com/bugzilla/bugzilla/compare/3a0affd238cd65bc8c40e316ab20663f3110cee9...5.2)
+  goinng all the way back to Version 4.2 (the commit log at the link starts at
+  the diverging commit between the two branches)
   - anything new/changed that is already on the list needs to be removed from
     the list (because 5.2 already had it, so it's not a change)
   - anything new/changed that is NOT already on your list needs to be added to
-    the list as a removed feature
+    the list as a removed feature. We need to make note of these in case of
+    anything important that should be backported to Harmony before release.
