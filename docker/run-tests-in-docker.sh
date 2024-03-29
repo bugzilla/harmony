@@ -57,7 +57,8 @@ if [ "$1" == "pg" ]; then
 fi
 $DOCKER compose -f $DOCKER_COMPOSE_FILE build
 if [ $? == 0 ]; then
-    $DOCKER compose -f $DOCKER_COMPOSE_FILE run bmo.test test_bmo -q -f t/bmo/*.t
+    $DOCKER compose -f $DOCKER_COMPOSE_FILE run --rm --name bugzilla6.test bugzilla6.test test_bmo -q -f t/bmo/*.t
+    $DOCKER compose -f $DOCKER_COMPOSE_FILE stop
 else
     echo "docker compose build failed."
 fi
