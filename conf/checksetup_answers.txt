@@ -1,4 +1,4 @@
-$answer{'ADMIN_EMAIL'}          = 'admin@bmo.test';
+$answer{'ADMIN_EMAIL'}          = 'admin@bugzilla.test';
 $answer{'ADMIN_OK'}             = 'Y';
 $answer{'ADMIN_PASSWORD'}       = 'password01!';
 $answer{'passwdqc_min'}         = '8, 8, 8, 8, 8';
@@ -26,5 +26,5 @@ $answer{'default_bug_type'}     = '--';
 $answer{'defaultpriority'}      = '--';
 $answer{'defaultseverity'}      = 'normal';
 $answer{'skin'}                 = 'Mozilla';
-$answer{'docs_urlbase'}         = 'https://bmo.readthedocs.io/en/latest/';
+$answer{'docs_urlbase'}         = 'https://bugzilla.readthedocs.io/en/latest/';
 $answer{'db_mysql_ssl_get_pubkey'} = 1;

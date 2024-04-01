@@ -123,7 +123,7 @@ sub cmd_dev_httpd {
     run(
       'perl', 'scripts/generate_bmo_data.pl',
       '--param' => 'use_mailer_queue=0',
-      'admin@bmo.test'
+      'admin@bugzilla.test'
     );
   }
 

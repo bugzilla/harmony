@@ -18,7 +18,7 @@ Settings](https://support.mozilla.org/en-US/kb/connection-settings-firefox).
 The procedure should be similar for other browsers.
 
 After that, you should be able to visit <http://bmo.test/> from your
-browser. You can login as <admin@bmo.test> with the password
+browser. You can login as <admin@bugzilla.test> with the password
 `password01!`.
 
 If you want to update the code running in the web container, you do not
