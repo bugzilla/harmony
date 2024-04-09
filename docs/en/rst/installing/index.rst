@@ -2,6 +2,10 @@
 
 .. _installing:
 
+.. This section, as is, is copied over from the mainline Bugzilla 
+   install documentation. Remove this comment once this has been 
+   updated for Harmony.
+
 ==================================
 Installation and Maintenance Guide
 ==================================
