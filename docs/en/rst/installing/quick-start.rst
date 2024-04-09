@@ -20,7 +20,8 @@ Install the OS
 ==============
 
 Get `Ubuntu Server 22.04 LTS <https://www.ubuntu.com/download/server>`_
-and follow the `installation instructions <https://www.ubuntu.com/download/server/install-ubuntu-server>`_.
+and follow the `installation instructions 
+<https://www.ubuntu.com/download/server/install-ubuntu-server>`_.
 Here are some tips:
 
 * You do not need an encrypted lvm group, root or home directory.
