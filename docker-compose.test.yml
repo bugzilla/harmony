@@ -44,6 +44,7 @@ services:
 
   bugzilla6.mysql8:
     build:
+      context: .
       dockerfile: docker/images/Dockerfile.mysql8
     tmpfs:
       - /tmp
