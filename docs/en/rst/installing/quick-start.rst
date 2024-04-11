@@ -8,7 +8,9 @@ those who are able to choose their environment. It creates a system using
 Ubuntu Linux 22.04 LTS, Apache and MariaDB. It requires a little familiarity
 with Linux and the command line.
 
-
+.. warning:: Harmony CPAN libraries have major changes from previous
+  versions of Bugzilla. The libraries are now installed through the ``cpan``
+  command instead as Debian packages.
 
 Running On Your Own Hardware
 ============================
@@ -60,13 +62,13 @@ instance, an SSD is preferred.
 Root Access 
 -----------
 
-Depending on your provider, you may be creating a user in the _sudoers_ group,
+Depending on your provider, you may be creating a user in the ``sudoers`` group,
 or providing a public key to a SSH certificate you create on your computer which
 will you allow you to connect to the VPS as root, which you will need in the
 following steps.
 
 .. warning:: Do not set a password for root on your VPS server. Either use an SSH
-   key to connect as root, or log in as an unprivileged user in the _sudoers_ 
+   key to connect as root, or log in as an unprivileged user in the ``sudoers`` 
    group.
 
 Become root
@@ -91,9 +93,6 @@ As root, run the following commands:
 :command:`make cpanfile GEN_CPANFILE_ARGS="-D better_xff -D jsonrpc -D xmlrpc -D mysql"`
 
 :command:`carton install`
-
-.. warning:: The Harmony version's CPAN libraries have changed from previous
-  versions of Bugzilla. 
 
 The ``carton`` command will take some time to run. You can set up the database while it runs in another 
 terminal session.
