@@ -186,7 +186,7 @@ Run the :file:`checksetup.pl` script again to set up the database.
   There's an option to promote an existing account to an administrator, 
   but it doesn't create an account. And you need an admin user to to able
   to log in to set up email for account creation.
-  
+
 Start Server
 ============
 
@@ -266,22 +266,28 @@ the following parameters in the :guilabel:`Required Settings` section:
 
 Click :guilabel:`Save Changes` at the bottom of the page.
 
-There are several ways to get Bugzilla to send email. The easiest is to
-use Gmail, so we do that here so you have it working. Visit
-https://gmail.com and create a new Gmail account for your Bugzilla to use.
-Then, open the :guilabel:`Email` section of the Parameters using the link
-in the left column, and set the following parameter values:
+In order to send bugmail and enable signups for users, you must have:
+
+* A domain that your Bugzilla instance will send mail from. 
+* An SMTP host
+
+The first is usually the domain or subdomain of your Bugzilla hostname. 
+You will need to set up MX records for the host or service
+at the domain name service provider for that domain, please check with
+your email provider's documentation.
+
+The second is a SMTP server you or your organization uses, or a mail
+delivery service such as SendGrid or MailGun.
+
+To configure your Bugzilla installation to send mail, open the Email section 
+of the Parameters using the link in the left column, and set the following values:
 
 * :param:`mail_delivery_method`: :paramval:`SMTP`
-* :param:`mailfrom`: :paramval:`new_gmail_address@gmail.com`
-* :param:`smtpserver`: :paramval:`smtp.gmail.com:465`
-* :param:`smtp_username`: :paramval:`new_gmail_address@gmail.com`
-* :param:`smtp_password`: :paramval:`new_gmail_password`
+* :param:`mailfrom`: :paramval:`user@domain`
+* :param:`smtpserver`: :paramval:`smtp.hostname:465`
+* :param:`smtp_username`: :paramval:`username`
+* :param:`smtp_password`: :paramval:`password`
 * :param:`smtp_ssl`: :paramval:`On`
 
 Click :guilabel:`Save Changes` at the bottom of the page.
-
-.. todo:: 
-  This may no longer work because Google may treat the account as a
-  spam relay. An alternative would be a SendGrid or MailGun account.
 
