@@ -182,8 +182,11 @@ Run the :file:`checksetup.pl` script again to set up the database.
 :command:`./checksetup.pl`
 
 .. todo::
-  ./checksetup.pl does not ask for an admin account address and password
-
+  ./checksetup.pl does not ask for an admin account address and password.
+  There's an option to promote an existing account to an administrator, 
+  but it doesn't create an account. And you need an admin user to to able
+  to log in to set up email for account creation.
+  
 Start Server
 ============
 
