@@ -19,8 +19,8 @@ Ubuntu 22.04 LTS Server requires a 64-bit processor.
 Bugzilla itself has no prerequisites beyond that, although you should pick
 reliable hardware. 
 
-.. note:: 
-  **ToDo**: What is reliable hardware?
+.. todo:: 
+  What is reliable hardware?
 
 Install the OS
 --------------
@@ -50,7 +50,8 @@ ssh to the machine as the 'bugzilla' user, or start a console. Then:
 Running on a VPS (Virtual Private Server)
 =========================================
 
-.. Also need sizing for this
+.. todo::
+  Also need sizing for this
 
 Creating a VPS
 --------------
@@ -163,13 +164,13 @@ Now you can edit the ``localconfig`` created in the previous step.
 
 You will need to set the following values:
 
-.. note:: 
-  **ToDo**: is ``$webservergroup`` still needed?
+.. todo:: 
+  is ``$webservergroup`` still needed?
 
 * :param:`$db_pass`:
   :paramval:`the password for the bugs user you created in MariaDB a few steps ago`
 * :param:`$urlbase`:
-  :paramval:`http://localhost/bugzilla/` or :paramval:`http://<ip address>/bugzilla/`
+  :paramval:`http://localhost:3001/` or :paramval:`http://<ip address>:3001/`
 * :param:`$urlbase_cannonical`:
   :paramval:`the value you set in $urlbase`
 
@@ -180,19 +181,28 @@ Run the :file:`checksetup.pl` script again to set up the database.
 
 :command:`./checksetup.pl`
 
-.. note::
-  When I run ``checksetup.pl`` the second time, I'm not asked for a
-  email address, name and password for the first administrator account.
-  Is this a BMO-ism?
+.. todo::
+  ./checksetup.pl does not ask for an admin account address and password
 
-It will ask you to give an email address, name and password for the
-first Bugzilla account to be created, which will be an administrator.
-Write down the email address and password you set.
+Start Server
+============
+
+The server is started using the ``bugzilla.pl`` script.
+
+:command:`./bugzilla.pl daemon`
+
+Will start start Bugzilla as a web app on port 3001.
 
 Test Server
 ===========
 
-:command:`./testserver.pl http://localhost/bugzilla`
+.. todo::
+  Is this still relevant? I see errors for:
+  TEST-WARNING Failed to find the GID for the 'httpd' process, unable to validate webservergroup.
+  Use of uninitialized value $response in pattern match (m//) at ./testserver.pl line 105.
+  Use of uninitialized value $response in pattern match (m//) at ./testserver.pl line 108.
+
+:command:`./testserver.pl http://localhost:3001/bugzilla`
 
 All the tests should pass. You will get a warning about failing to run
 ``gdlib-config``; just ignore it.
@@ -204,7 +214,7 @@ Access Via Web Browser
 
 Access the front page:
 
-:command:`lynx http://localhost/bugzilla`
+:command:`lynx http://localhost:3001/`
 
 It's not really possible to use Bugzilla for real through Lynx, but you
 can view the front page to validate visually that it's up and running.
@@ -212,7 +222,7 @@ can view the front page to validate visually that it's up and running.
 You might well need to configure your DNS such that the server has, and
 is reachable by, a name rather than IP address. Doing so is out of scope
 of this document. In the mean time, it is available on your local network
-at ``http://<ip address>/bugzilla``, where ``<ip address>`` is (unless you
+at ``http://<ip address>/``, where ``<ip address>`` is (unless you
 have a complex network setup) the address starting with 192 or 10 displayed 
 when you run :command:`hostname -I`.
 
@@ -247,7 +257,7 @@ Click the :guilabel:`Parameters` link on the page it gives you, and set
 the following parameters in the :guilabel:`Required Settings` section:
 
 * :param:`urlbase`:
-  :paramval:`http://<servername>/bugzilla/` or :paramval:`http://<ip address>/bugzilla/`
+  :paramval:`http://<servername>/` or :paramval:`http://<ip address>/`
 * :param:`ssl_redirect`:
   :paramval:`on` if you set up an SSL certificate
 
@@ -268,4 +278,7 @@ in the left column, and set the following parameter values:
 
 Click :guilabel:`Save Changes` at the bottom of the page.
 
-And you're all ready to go. :-)
+.. todo:: 
+  This may no longer work because Google may treat the account as a
+  spam relay. An alternative would be a SendGrid or MailGun account.
+
