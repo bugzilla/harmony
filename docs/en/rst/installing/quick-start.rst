@@ -8,9 +8,9 @@ those who are able to choose their environment. It creates a system using
 Ubuntu Linux 22.04 LTS, Apache and MariaDB. It requires a little familiarity
 with Linux and the command line.
 
-.. warning:: Harmony CPAN libraries have major changes from previous
-  versions of Bugzilla. The libraries are now installed through the ``cpan``
-  command instead as Debian packages.
+.. note:: Harmony's dependencies have major changes from previous
+  versions of Bugzilla. The libraries are now installed as local 
+  Perl modules via ``carton`` instead as system-wide Debian packages.
 
 Running On Your Own Hardware
 ============================
@@ -19,7 +19,8 @@ Ubuntu 22.04 LTS Server requires a 64-bit processor.
 Bugzilla itself has no prerequisites beyond that, although you should pick
 reliable hardware. 
 
-.. What is reliable hardware?
+.. note:: 
+  **ToDo**: What is reliable hardware?
 
 Install the OS
 --------------
@@ -84,18 +85,9 @@ or logging in as root using a SSH key.
 Install Prerequisites
 =====================
 
-As root, run the following commands:
+As root, run the following:
 
-:command:`apt install git nano build-essential mariadb-server perlmagick graphviz python3-sphinx rst2pdf carton`
-
-:command:`perl Makefile.PL`
-
-:command:`make cpanfile GEN_CPANFILE_ARGS="-D better_xff -D jsonrpc -D xmlrpc -D mysql"`
-
-:command:`carton install`
-
-The ``carton`` command will take some time to run. You can set up the database while it runs in another 
-terminal session.
+:command:`apt install git nano build-essential mariadb-server libmariadb-dev perlmagick graphviz python3-sphinx rst2pdf carton`
 
 Configure MariaDB
 =================
@@ -139,28 +131,41 @@ Get it from our Git repository:
 
 :command:`git clone https://github.com/bugzilla/harmony.git bugzilla`
 
+Install Bugzilla
+================
+
+In the same directory you cloned Bugzilla to, run:
+
+:command:`perl Makefile.PL`
+
+:command:`make cpanfile GEN_CPANFILE_ARGS="-D better_xff -D jsonrpc -D xmlrpc -D mysql"`
+
+:command:`carton install`
+
+The ``carton`` command will take some time to run. 
+
 Check Setup
 ===========
 
 Bugzilla comes with a :file:`checksetup.pl` script which helps with the
 installation process. It will need to be run twice. The first time, it
 generates a config file (called :file:`localconfig`) for the database
-access information, and the second time (step 10)
-it uses the info you put in the config file to set up the database.
-
-:command:`cd /var/www/webapps/bugzilla`
+access information.
 
 :command:`./checksetup.pl`
 
 Edit :file:`localconfig`
 ========================
 
+Now you can edit the ``localconfig`` created in the previous step.
+
 :command:`nano localconfig`
 
 You will need to set the following values:
 
-* :param:`$webservergroup`:
-  :paramval:`www-data`
+.. note:: 
+  **ToDo**: is ``$webservergroup`` still needed?
+
 * :param:`$db_pass`:
   :paramval:`the password for the bugs user you created in MariaDB a few steps ago`
 * :param:`$urlbase`:
@@ -175,7 +180,12 @@ Run the :file:`checksetup.pl` script again to set up the database.
 
 :command:`./checksetup.pl`
 
-It will ask you to give an email address, real name and password for the
+.. note::
+  When I run ``checksetup.pl`` the second time, I'm not asked for a
+  email address, name and password for the first administrator account.
+  Is this a BMO-ism?
+
+It will ask you to give an email address, name and password for the
 first Bugzilla account to be created, which will be an administrator.
 Write down the email address and password you set.
 
