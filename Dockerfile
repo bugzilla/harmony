@@ -1,4 +1,5 @@
-FROM bugzilla/bugzilla-perl-slim-mysql8:20240410.1
+ARG BZDB="-mysql8"
+FROM bugzilla/bugzilla-perl-slim${BZDB}:20240410.1
 
 ENV DEBIAN_FRONTEND noninteractive
 
