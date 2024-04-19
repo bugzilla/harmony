@@ -3,7 +3,7 @@ FROM bugzilla/bugzilla-perl-slim:20240410.1 AS builder
 RUN apt-get update \
  && apt-get dist-upgrade -y \
  && apt-get install -y \
-    default-libmysql-client \
+    libmariadb-dev \
     apt-file \
     build-essential \
     cmake \
@@ -51,7 +51,7 @@ RUN apt-get update \
 
 RUN apt-get update \
     && apt-get install -y \
-       libmariadb-client \
+       mariadb-client \
        $(cat /app/PACKAGES) \
     && rm -rf /var/cache/apt/* /var/lib/apt/lists/*
 

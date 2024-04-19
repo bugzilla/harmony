@@ -17,6 +17,7 @@ services:
       - /run
     environment:
       - 'BMO_inbound_proxies=*'
+      - BMO_db_driver=mariadb
       - BMO_db_host=bugzilla6.mariadb106
       - BMO_db_name=bugs
       - BMO_db_pass=bugs
@@ -44,17 +45,18 @@ services:
       - memcached
       - selenium
 
-  bugzilla6.maria106:
+  bugzilla6.mariadb106:
     image: mariadb:10.6
     tmpfs:
       - /tmp
     logging:
       driver: "none"
     environment:
-      - MYSQL_DATABASE=bugs
-      - MYSQL_USER=bugs
-      - MYSQL_PASSWORD=bugs
-      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+      - MARIADB_DATABASE=bugs
+      - MARIADB_ROOT_PASSWORD=bugs
+      - MARIADB_USER=bugs
+      - MARIADB_PASSWORD=bugs
+      - MARIADB_ALLOW_EMPTY_PASSWORD=1
 
   memcached:
     image: memcached:latest

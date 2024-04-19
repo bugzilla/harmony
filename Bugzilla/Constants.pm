@@ -553,9 +553,10 @@ use constant DB_MODULE => {
     name => 'MySQL'
   },
 
-  # MariaDB is a drop-in replacement for MySQL and works with Bugzilla
+  # MariaDB used to be a drop-in replacement for MySQL but now it
+  # isn't so we have a separate driver
   'mariadb' => {
-    db         => 'Bugzilla::DB::Mysql',
+    db         => 'Bugzilla::DB::MariaDB',
     db_version => '10.0.5',
     dbd        => {
       package => 'DBD-MariaDB',
