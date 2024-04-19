@@ -90,8 +90,8 @@ As root, run the following:
 
 :command:`apt install git nano build-essential mariadb-server libmariadb-dev perlmagick graphviz python3-sphinx rst2pdf carton`
 
-Configure MariaDB
-=================
+Configure MySQL
+===============
 
 The following instructions use the simple :file:`nano` editor you installed 
 in the previous step, but use any text editor you are comfortable with.
@@ -110,16 +110,16 @@ Create a database ``bugs`` for Bugzilla:
 
 :command:`mysql -u root -e "CREATE DATABASE IF NOT EXISTS bugs CHARACTER SET = 'utf8'"`
 
-Then, add a user to MariaDB for Bugzilla to use:
+Then, add a user to MySQL for Bugzilla to use:
 
 :command:`mysql -u root -e "GRANT ALL PRIVILEGES ON bugs.* TO bugs@localhost IDENTIFIED BY '$db_pass'"`
 
 Replace ``$db_pass`` with a strong password you have generated. Write it down.
 You should make ``$db_pass`` different to your password.
 
-Restart MariaDB:
+Restart MySQL:
 
-:command:`service mariadb restart`
+:command:`service mysql restart`
 
 Download Bugzilla
 =================
@@ -171,7 +171,7 @@ You will need to set the following values:
   :paramval:`the password for the bugs user you created in MariaDB a few steps ago`
 * :param:`$urlbase`:
   :paramval:`http://localhost:3001/` or :paramval:`http://<ip address>:3001/`
-* :param:`$urlbase_cannonical`:
+* :param:`$canonical_urlbase`:
   :paramval:`the value you set in $urlbase`
 
 Check Setup (again)
