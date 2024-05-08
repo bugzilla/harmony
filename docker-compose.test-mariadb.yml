@@ -41,9 +41,12 @@ services:
       - TWD_HOST=selenium
       - TWD_PORT=4444
     depends_on:
-      - bugzilla6.mariadb106
-      - memcached
-      - selenium
+      memcached:
+        condition: service_started
+      selenium:
+        condition: service_started
+      bugzilla6.mariadb106:
+        condition: service_healthy
 
   bugzilla6.mariadb106:
     image: mariadb:10.6
@@ -56,7 +59,12 @@ services:
       - MARIADB_ROOT_PASSWORD=bugs
       - MARIADB_USER=bugs
       - MARIADB_PASSWORD=bugs
-      - MARIADB_ALLOW_EMPTY_PASSWORD=1
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   memcached:
     image: memcached:latest
