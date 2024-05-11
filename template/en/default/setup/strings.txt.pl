@@ -25,7 +25,7 @@ happens when you are not running checksetup.pl as ##root##. To see the
 problem we ran into, run: ##command##
 END
   bad_executable              => 'not a valid executable: ##bin##',
-  blacklisted                 => '(blacklisted)',
+  blocklisted                 => '(blocklisted)',
   bz_schema_exists_before_220 => <<'END',
 You are upgrading from a version before 2.20, but the bz_schema table
 already exists. This means that you restored a mysqldump into the Bugzilla
@@ -222,6 +222,10 @@ END
 If you want to use the "Difference Between Two Patches" feature of the
 Patch Viewer, please specify the full path to the "interdiff" executable
 here.
+END
+  localconfig_logging_method => <<'END',
+This option specifies the method to use to log any errors or debug messages
+create by Bugzilla. This will use the configuration found in conf/log4perl-{logging_method}.conf so anything listed there is valid. Examples are 'syslog', 'docker', 'file', and 'json'.
 END
   localconfig_memcached_servers => <<'END',
 If this option is set, Bugzilla will integrate with Memcached.
