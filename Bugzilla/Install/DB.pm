@@ -916,7 +916,7 @@ sub _update_flagtypes_id {
   foreach my $fix (@fixes) {
     my $def = $dbh->bz_column_info($fix->{table}, $fix->{column});
     if ($def->{TYPE} eq 'INT2') {
-      warn "Dropping $fix->{table}\n";
+      warn "Dropping foreign keys on $fix->{table}\n";
       $dbh->bz_drop_related_fks($fix->{table}, $fix->{column});
       $def->{TYPE} = 'INT3';
       $dbh->bz_alter_column($fix->{table}, $fix->{column}, $def);
