@@ -54,6 +54,8 @@ sub db_schema_abstract_schema {
 }
 
 sub install_update_db {
+  my $dbh   = Bugzilla->dbh;
+
   # Bug 1634711 - justdave@bugzilla.org
   my $def = $dbh->bz_column_info('flagtype_comments', 'type_id');
   if ($def->{TYPE} eq 'INT2') {
