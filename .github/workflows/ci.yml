@@ -52,8 +52,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install docker-compose docker.io
-        run: sudo apt update && sudo apt install -y docker-compose
+      - name: Install docker-compose
+        run: sudo apt update && sudo apt install -y docker-compose docker.io
       - name: Build the Docker images
         run: docker-compose -f docker-compose.test-pg.yml build
       - name: Run bmo specific tests
