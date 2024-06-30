@@ -409,6 +409,12 @@ META.json: Makefile.PL
 
 META.yml: Makefile.PL
 \tmake distmeta 2>&1 /dev/null; mv */META.yml .
+cpm.fatpack:
+\tmkdir -p build_cpm
+\tcd build_cpm && cpanm -Llocal App::cpm Carton::Snapshot
+\trm -f build_cpm/cpm.fatpack
+\tcd build_cpm && fatpack-simple local/bin/cpm
+\tmv build_cpm/cpm.fatpack .
 MAKE
 }
 
