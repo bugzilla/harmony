@@ -702,7 +702,7 @@ Advanced
 ========
 
 inbound_proxies
-    When inbound traffic to Bugzilla goes through a proxy, Bugzilla thinks that the IP address of the proxy is the IP address of every single user. If you enter a comma-separated list of IPs in this parameter, then Bugzilla will trust any ``X-Forwarded-For`` header sent from those IPs, and use the value of that header as the end user's IP address.
+    When inbound traffic to Bugzilla goes through a proxy, Bugzilla thinks that the IP address of the proxy is the IP address of every single user. If you enter a comma-separated list of IPs in this parameter, then Bugzilla will trust any ``X-Forwarded-For`` header sent from those IPs, and use the value of that header as the end user's IP address. This can be set to "*" if bugzilla will *always* be behind a proxy, in this case it will trust ``X-Forwarded-For`` implicitly.
 
 proxy_url
     If this Bugzilla installation is behind a proxy, enter the proxy
