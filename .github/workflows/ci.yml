@@ -49,7 +49,7 @@ jobs:
         run: docker compose -f docker-compose.test-mariadb.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_pg:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
