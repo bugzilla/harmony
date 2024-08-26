@@ -84,13 +84,19 @@ END_HTML
 
   $converter->contents_page_start($contents_start);
   $converter->contents_page_end("</body></html>");
-  $converter->add_css('./../../../style.css');
+  if (exists($::ENV{'READTHEDOCS'})) {
+    $converter->add_css('./../../style.css');
+  } else {
+    $converter->add_css('./../../../../style.css');
+  }
   $converter->javascript_flurry(0);
   $converter->css_flurry(0);
-  mkdir("html");
-  mkdir("html/api");
-  $converter->batch_convert(['../../'], 'html/api/');
+  make_path('html/integrating/api');
+  $converter->batch_convert(['../../'], 'html/integrating/api');
 
+  if (exists($::ENV{'READTHEDOCS'})) {
+    copy('../style.css', 'html/style.css') or die "Copy failed: $!";
+  }
   print "\n";
 }
 
