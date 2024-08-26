@@ -35,7 +35,7 @@ use lib qw(.. ../lib lib ../local/lib/perl5);
 use Cwd;
 use File::Copy::Recursive qw(rcopy);
 use File::Find;
-use File::Path qw(rmtree);
+use File::Path qw(rmtree make_path);
 use File::Which qw(which);
 use Pod::Simple;
 
