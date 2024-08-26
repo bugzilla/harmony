@@ -11,7 +11,7 @@ build:
       - cp -rp docs/en/html/integrating/api/ "$READTHEDOCS_OUTPUT/html/integrating/api"
       - cp -p docs/en/html/style.css "$READTHEDOCS_OUTPUT/html/"
 sphinx:
-  configuration docs/en/rst/conf.py
+  configuration: docs/en/rst/conf.py
 python:
   install:
     - requirements: docs/requirements.txt
