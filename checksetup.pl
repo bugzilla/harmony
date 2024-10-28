@@ -134,6 +134,11 @@ exit 0 if $switch{'check-modules'};
 # then instead of our nice normal checksetup message, the user would
 # get a cryptic Perl error about the missing module.
 
+print "About to try loading Bugzilla.\n";
+print "If you get an error such as\n";
+print "\"Compilation failed in require at " . __FILE__ . " line " . (__LINE__ + 3) . "\" below,\n";
+print "please re-run checksetup.pl.\n\n";
+
 require Bugzilla;
 require Bugzilla::User;
 
