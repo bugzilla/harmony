@@ -1,5 +1,5 @@
 ![Banner](images/banner.png)
-# Bugzilla Harmony [![CI Status](https://github.com/bugzilla/harmony/workflows/Release%20Tests/badge.svg)](https://github.com/bugzilla/harmony/actions?query=workflow%3A%22Release+Tests%22) [![New Issue on Bugzilla](https://img.shields.io/badge/new%20issue-on%20bugzilla-blueviolet?style=flat)](https://bugzilla.mozilla.org/enter_bug.cgi?product=Bugzilla&format=__default__ "Report a new issue") [![Chat on Matrix](https://img.shields.io/badge/chat-on%20matrix-blue?style=flat&icon=matrix)](https://matrix.to/#/#bugzilla:mozilla.org)
+# Bugzilla Harmony [![CI Status](https://github.com/bugzilla/harmony/workflows/Release%20Tests/badge.svg)](https://github.com/bugzilla/harmony/actions?query=workflow%3A%22Release+Tests%22) [![New Issue on Bugzilla](https://img.shields.io/badge/new%20issue-on%20bugzilla-blueviolet?style=flat)](https://bugzilla.mozilla.org/enter_bug.cgi?product=Bugzilla&version=Harmony&format=__default__ "Report a new issue") [![Chat on Matrix](https://img.shields.io/badge/chat-on%20matrix-blue?style=flat&icon=matrix)](https://matrix.to/#/#bugzilla:mozilla.org)
 
 **Web based general purpose defect tracking software that helps to drive
 software development.**
@@ -43,7 +43,7 @@ For other ways of installing Bugzilla, refer to our
 ## Reporting Bugs
 
 You can report bugs on the
-[Mozilla Bugzilla](https://bugzilla.mozilla.org/enter_bug.cgi?product=Bugzilla&format=__default__)
+[Mozilla Bugzilla](https://bugzilla.mozilla.org/enter_bug.cgi?product=Bugzilla&version=Harmony&format=__default__)
 
 ## Community
 
