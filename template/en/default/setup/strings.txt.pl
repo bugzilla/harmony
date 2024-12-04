@@ -179,6 +179,10 @@ can be obtained by listing Bugzilla/DB directory - every module corresponds
 to one supported database and the name of the module (before ".pm")
 corresponds to a valid value for this variable.
 END
+  localconfig_db_service => <<'END',
+The name of the service defining the database connection
+parameters. Replaces db_host, db_user, db_name.
+END
   localconfig_db_host => <<'END',
 The DNS name or IP address of the host that the database server runs on.
 END
