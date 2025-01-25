@@ -98,6 +98,11 @@ sub MessageToMTA {
   $email->header_set('MIME-Version', '1.0')
     if !$email->header('MIME-Version');
 
+  # We ensure there's a Message-ID header set otherwise some mailsystems
+  # treat us as spam. 
+  $email->header_set('Message-ID', build_message_id())
+    if !$email->header('Message-ID');
+  
   # Encode the headers correctly in quoted-printable
   foreach my $header ($email->header_names) {
     $header = lc $header;
@@ -270,4 +275,23 @@ sub build_thread_marker {
   return $threadingmarker;
 }
 
+# Builds Message-ID header
+sub build_message_id {
+  my ($user_id) = @_;
+
+  if (!defined $user_id) {
+    $user_id = Bugzilla->user->id;
+  }
+
+  my $sitespec = '@' . Bugzilla->params->{'urlbase'};
+  $sitespec =~ s/:\/\//\./;               # Make the protocol look like part of the domain
+  $sitespec =~ s/^([^:\/]+):(\d+)/$1/;    # Remove a port number, to relocate
+  if ($2) {
+    $sitespec = "-$2$sitespec";           # Put the port number back in, before the '@'
+  }
+
+  my $rand_bits  = generate_random_password(10);
+  my $message_id = "<bugzilla-$user_id-$rand_bits$sitespec>";
+  return $message_id;
+}
 1;
