@@ -84,6 +84,7 @@ sub SaveAccount {
   my $oldpassword    = $cgi->param('old_password');
   my $pwd1           = $cgi->param('new_password1');
   my $pwd2           = $cgi->param('new_password2');
+  my $new_login = clean_text(scalar $cgi->param('new_login'));
   my $new_login_name = trim($cgi->param('new_login_name'));
   my @mfa_events;
 
@@ -120,7 +121,20 @@ sub SaveAccount {
       }
     }
   }
-
+  
+  if ($user->authorizer->can_change_login
+        && $new_login
+        && $user->login ne $new_login)
+  {
+ 
+        if ($new_login =~ /@/)
+        {
+            ThrowUserError("login_at_sign_disallowed");
+        }
+ 
+        $user->set_login($new_login);
+  }
+ 
   if ( $user->authorizer->can_change_email
     && Bugzilla->params->{"allowemailchange"}
     && $new_login_name)

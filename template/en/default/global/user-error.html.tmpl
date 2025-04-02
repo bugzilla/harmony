@@ -1239,6 +1239,19 @@
     [% title = "Login Name Required" %]
     You must enter a login name when requesting to change your password.
 
+  [% ELSIF error == "login_at_sign_disallowed" %]
+    [% title = "Illegal Character in Login" %]
+    New login names may not contain the "@" sign
+ 
+  [% ELSIF error == "login_change_during_email_change" %]
+    [% title = "Login Change Not Permitted" %]
+    You may not change your login name while you are in the middle of the
+    process of changing your email address.
+ 
+  [% ELSIF error == "login_illegal_character" %]
+    [% title = "Illegal Character In Login" %]
+    Login names are not allowed to contain space characters.
+
   [% ELSIF error == "login_required_for_pronoun" %]
     [% title = "Login Name Required" %]
     You can't use %user% without being logged in, because %user% refers
