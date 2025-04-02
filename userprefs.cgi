@@ -131,6 +131,10 @@ sub SaveAccount {
         {
             ThrowUserError("login_at_sign_disallowed");
         }
+
+        if (Bugzilla::Token::HasEmailChangeToken($user->id)) {
+            ThrowUserError("login_change_during_email_change");
+        }
  
         $user->set_login($new_login);
   }
