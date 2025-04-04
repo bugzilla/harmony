@@ -326,8 +326,13 @@ sub check_login_name_for_creation {
   my ($invocant, $name) = @_;
   $name = trim($name);
   $name || ThrowUserError('user_login_required');
-  validate_email_syntax($name)
-    || ThrowUserError('illegal_email_address', {addr => $name});
+
+  # No whitespace
+  $name !~ /\s/ || ThrowUserError('login_illegal_character');
+
+  # We set the max length to 127 to ensure logins aren't truncated when
+  # inserted into the tokens.eventdata field.
+  length($name) <= 127 or ThrowUserError('login_too_long');
 
   # Check the name if it's a new user, or if we're changing the name.
   if (!ref($invocant) || $invocant->login ne $name) {
