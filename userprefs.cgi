@@ -135,42 +135,10 @@ sub SaveAccount {
         if (Bugzilla::Token::HasEmailChangeToken($user->id)) {
             ThrowUserError("login_change_during_email_change");
         }
- 
+
         $user->set_login($new_login);
   }
  
-  if ( $user->authorizer->can_change_email
-    && Bugzilla->params->{"allowemailchange"}
-    && $new_login_name)
-  {
-    if ($user->login ne $new_login_name) {
-      $oldpassword || ThrowUserError("old_password_required");
-
-      # Block multiple email changes for the same user.
-      if (Bugzilla::Token::HasEmailChangeToken($user->id)) {
-        ThrowUserError("email_change_in_progress");
-      }
-
-      # Before changing an email address, confirm one does not exist.
-      validate_email_syntax($new_login_name)
-        || ThrowUserError('illegal_email_address', {addr => $new_login_name});
-      is_available_username($new_login_name)
-        || ThrowUserError("account_exists", {email => $new_login_name});
-
-      if ($user->mfa) {
-        push @mfa_events,
-          {
-          type   => 'set_login',
-          reason => 'changing your email address',
-          login  => $new_login_name,
-          };
-      }
-      else {
-        Bugzilla::Token::IssueEmailChangeToken($user, $new_login_name);
-        $vars->{email_changes_saved} = 1;
-      }
-    }
-  }
 
   $user->set_name($cgi->param('realname'));
   $user->update({keep_session => 1, keep_tokens => 1});
