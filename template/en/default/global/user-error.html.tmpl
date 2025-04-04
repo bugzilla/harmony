@@ -1261,6 +1261,10 @@
     [%# Used for non-web-based LOGIN_REQUIRED situations. %]
     You must log in before using this part of [% terms.Bugzilla %].
 
+  [% ELSIF error == "login_too_long" %]
+    [% title = "Login Too Long" %]
+    Your login name is too long. It cannot exceed 127 characters.
+
   [% ELSIF error == "mfa_prevents_login" %]
     Unable to log in with [% provider FILTER html %] because two-factor
     authentication is enabled on your account.<br>
