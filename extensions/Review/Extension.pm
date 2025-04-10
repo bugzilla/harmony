@@ -708,7 +708,7 @@ sub webservice {
 
 sub user_preferences {
   my ($self, $args) = @_;
-  return unless $args->{current_tab} eq 'account' && $args->{save_changes};
+  return unless $args->{current_tab} eq 'email' && $args->{save_changes};
 
   my $input    = Bugzilla->input_params;
   my $settings = Bugzilla->user->settings;
