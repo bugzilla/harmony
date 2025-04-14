@@ -60,6 +60,39 @@
       [% END %]
 
       [% IF can_change.size %]
+
+        [% IF user.authorizer.can_change_email && Param('allowemailchange') %]
+          [% IF login_change_date %]
+            [% IF new_login_name %]
+              <tr>
+                <th align="right">Pending email address:</th>
+                <td>[% new_login_name FILTER html %]</td>
+              </tr>
+              <tr>
+                <th align="right">Change request expires:</th>
+                <td>[% login_change_date FILTER time %]</td>
+              </tr>
+            [% ELSE %]
+              <tr>
+                <th align="right">Confirmed email address:</th>
+                <td>[% user.login FILTER html %]</td>
+              </tr>
+              <tr>
+                <th align="right">Completion date:</th>
+                <td>[% login_change_date FILTER time %]</td>
+              </tr>
+            [% END %]
+          [% ELSE %]
+            <tr>
+              <th align="right">Primary email address:</th>
+              <td>
+                <input size="35" name="new_login_name" id="new_login_name">
+                [% INCLUDE "mfa/protected.html.tmpl" %]
+              </td>
+            </tr>
+          [% END %]
+        [% END %]
+
         <tr>
           <td></td>
           <td><hr></td>
