@@ -65,7 +65,7 @@
           [% IF login_change_date %]
             [% IF new_login_name %]
               <tr>
-                <th align="right">Pending email address:</th>
+                <th align="right">Pending primary email address:</th>
                 <td>[% new_login_name FILTER html %]</td>
               </tr>
               <tr>
@@ -74,7 +74,7 @@
               </tr>
             [% ELSE %]
               <tr>
-                <th align="right">Confirmed email address:</th>
+                <th align="right">Confirmed primary email address:</th>
                 <td>[% user.login FILTER html %]</td>
               </tr>
               <tr>
@@ -91,6 +91,13 @@
               </td>
             </tr>
           [% END %]
+            <tr>
+              <th align="right">Secondary email address:</th>
+              <td>
+                <input size="35" name="new_login_name" id="new_login_name">
+                [% INCLUDE "mfa/protected.html.tmpl" %]
+              </td>
+            </tr>
         [% END %]
 
         <tr>
