@@ -86,7 +86,9 @@
             <tr>
               <th align="right">Primary email address:</th>
               <td>
-                <input size="35" name="new_login_name" id="new_login_name">
+                <input size="35" name="new_login_name" id="new_login_name"> 
+		<input type="checkbox" id="notify_primary_email" name="notify_primary_email" value="1">
+		<label for="notify_primary_email"> Receive all notifications </label>
                 [% INCLUDE "mfa/protected.html.tmpl" %]
               </td>
             </tr>
@@ -95,6 +97,8 @@
               <th align="right">Secondary email address:</th>
               <td>
                 <input size="35" name="new_login_name" id="new_login_name">
+		<input type="checkbox" id="notify_secondary_email" name="notify_secondary_email" value="1">
+		<label for="notify_secondary_email"> Receive all notifications </label>
                 [% INCLUDE "mfa/protected.html.tmpl" %]
               </td>
             </tr>
