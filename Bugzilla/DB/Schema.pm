@@ -1026,6 +1026,7 @@ use constant ABSTRACT_SCHEMA => {
       },
       email            => {TYPE => 'varchar(255)', NOTNULL => 1},
       is_primary_email => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      notify           => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
       last_modified    => {TYPE => 'DATETIME', NOTNULL => 1},
     ],
     INDEXES => [
