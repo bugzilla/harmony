@@ -1,3 +1,4 @@
+$answer{'ADMIN_LOGIN_NAME'}     = 'admin_bmo_test';
 $answer{'ADMIN_EMAIL'}          = 'admin@bmo.test';
 $answer{'ADMIN_OK'}             = 'Y';
 $answer{'ADMIN_PASSWORD'}       = 'password01!';
