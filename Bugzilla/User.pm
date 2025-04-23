@@ -16,12 +16,14 @@ use Bugzilla::Util;
 use Bugzilla::Constants;
 use Bugzilla::Search::Recent;
 use Bugzilla::User::Setting;
+use Bugzilla::User::Email;
 use Bugzilla::Product;
 use Bugzilla::Classification;
 use Bugzilla::Field;
 use Bugzilla::Group;
 use Bugzilla::Hook;
 use Bugzilla::BugUserLastVisit;
+
 
 use DateTime::TimeZone;
 use List::Util qw(max);
@@ -2587,6 +2589,17 @@ sub create {
     = _generate_nickname($params->{realname}, $params->{login_name}, 0);
   my $user = $class->SUPER::create($params);
 
+  # Create a user email account
+  my $email_data = {
+    user_id          => $user->id,
+    email            => $params->{admin_email},
+    is_primary_email => 1,
+    notify           => 1,
+    last_modified    => Bugzilla::Util::DateTime::now(),
+  };
+
+  my $user_email = Bugzilla::User::Email->create($email_data);
+  
   # Turn on all email for the new user
   require Bugzilla::BugMail;
   my %relationships = Bugzilla::BugMail::relationships();
