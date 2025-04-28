@@ -24,6 +24,22 @@
   # new_login_name:    string. The user's new Bugzilla login whilst not confirmed. (optional)
   #%]
 
+<script [% script_nonce FILTER none %]>
+<!--
+function addEmailField() {
+  const container = document.getElementById('email-fields');
+  const input = document.createElement('input');
+  input.type = 'email';
+  input.name = 'email[]';
+  input.placeholder = 'Enter email address';
+  input.required = true;
+  container.appendChild(input);
+  container.appendChild(document.createElement('br'));
+}
+// -->
+</script>
+
+
 [%# BMO - add hook for displaying user-profile link %]
 [% Hook.process('start') %]
 
@@ -84,24 +100,16 @@
             [% END %]
           [% ELSE %]
             <tr>
-              <th align="right">Primary email address:</th>
+              <th align="right" valign="top">Email addresses:</th>
               <td>
-                <input size="35" name="new_login_name" id="new_login_name"> 
-		<input type="checkbox" id="notify_primary_email" name="notify_primary_email" value="1">
-		<label for="notify_primary_email"> Receive all notifications </label>
+		<div id="email-fields">                
+		<input size="35" name="email[]" id="new_login_name"> 
+		</div>
+                <button type="button" onclick="addEmailField()">Add another email</button><br><br>
                 [% INCLUDE "mfa/protected.html.tmpl" %]
               </td>
             </tr>
           [% END %]
-            <tr>
-              <th align="right">Secondary email address:</th>
-              <td>
-                <input size="35" name="new_login_name" id="new_login_name">
-		<input type="checkbox" id="notify_secondary_email" name="notify_secondary_email" value="1">
-		<label for="notify_secondary_email"> Receive all notifications </label>
-                [% INCLUDE "mfa/protected.html.tmpl" %]
-              </td>
-            </tr>
         [% END %]
 
         <tr>
