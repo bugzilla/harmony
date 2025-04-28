@@ -23,19 +23,93 @@
   # login_change_date: string. The date the email change will be complete. (optional)
   # new_login_name:    string. The user's new Bugzilla login whilst not confirmed. (optional)
   #%]
-
+<style>
+ .email-field {
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    input[type="email"] {
+      box-sizing: border-box;
+    }
+    .delete-btn {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 0.9em;
+      border-radius: 4px;
+    }
+    .delete-btn:hover {
+      background: #ff1a1a;
+    }
+    .fade-out {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+</style>
 <script [% script_nonce FILTER none %]>
 <!--
+let emailFieldCount = 1;
+const maxEmailFields = 3;
+
 function addEmailField() {
-  const container = document.getElementById('email-fields');
-  const input = document.createElement('input');
-  input.type = 'email';
-  input.name = 'email[]';
-  input.placeholder = 'Enter email address';
-  input.required = true;
-  container.appendChild(input);
-  container.appendChild(document.createElement('br'));
+  if (emailFieldCount < maxEmailFields) {
+    const container = document.getElementById('email-fields');
+    const firstFieldDiv = container.querySelector('.email-field');
+
+    // Clone the email field div
+    const newFieldDiv = firstFieldDiv.cloneNode(true);
+    const newInput = newFieldDiv.querySelector('input');
+
+    newInput.value = '';
+
+    const placeholders = [
+      "Enter email address",          // 1st
+      "Enter second email address",   // 2nd
+      "Enter third email address"     // 3rd
+    ];
+    newInput.placeholder = placeholders[emailFieldCount];
+
+    // Add delete button if missing
+    if (!newFieldDiv.querySelector('.delete-btn')) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.onclick = function() {
+        // Add animation class
+        newFieldDiv.classList.add('fade-out');
+
+        // Wait for the transition to finish
+        setTimeout(() => {
+          container.removeChild(newFieldDiv);
+          emailFieldCount--;
+
+          // Bring back the Add button if needed
+          if (emailFieldCount < maxEmailFields) {
+            document.getElementById('add-email-btn').style.display = 'inline-block';
+          }
+        }, 300); // matches transition time
+      };
+      newFieldDiv.appendChild(deleteBtn);
+    }
+
+    container.appendChild(newFieldDiv);
+
+    newInput.focus();
+
+    emailFieldCount++;
+
+    if (emailFieldCount === maxEmailFields) {
+      document.getElementById('add-email-btn').style.display = 'none';
+    }
+  }
 }
+
 // -->
 </script>
 
@@ -102,10 +176,12 @@ function addEmailField() {
             <tr>
               <th align="right" valign="top">Email addresses:</th>
               <td>
-		<div id="email-fields">                
-		<input size="35" name="email[]" id="new_login_name"> 
+		<div id="email-fields">   
+		  <div class="email-field">             
+		   <input type="email" size="35" name="email[]" id="new_login_name">
+                  </div> 
 		</div>
-                <button type="button" onclick="addEmailField()">Add another email</button><br><br>
+                <button type="button" id="add-email-btn" onclick="addEmailField()">Add another email</button><br><br>
                 [% INCLUDE "mfa/protected.html.tmpl" %]
               </td>
             </tr>
