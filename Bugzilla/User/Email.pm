@@ -22,13 +22,38 @@ use Bugzilla::Constants;
 use constant DB_TABLE => 'profiles_emails';
 
 
+use constant DB_COLUMNS => qw(
+  profiles_emails.id
+  profiles_emails.user_id
+  profiles_emails.email
+  profiles_emails.is_primary_email
+);
+
+
+use constant VALIDATORS => {
+  user_id            => \&_check_user_id,
+  email              => \&_check_email,
+  is_primary_email   => \&Bugzilla::Object::check_boolean,
+};
+
+
 sub create {
   my ($class, $params) = @_;
   my $user_email = $class->SUPER::create($params);
 
-
   # Return the newly created user email account.
   return $user_email;
+}
+
+###############################
+###       Validators        ###
+###############################
+
+sub _check_user_id {
+return 1;
+}
+sub _check_email {
+return 1;
 }
 1;
 
