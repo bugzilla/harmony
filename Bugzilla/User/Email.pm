@@ -14,6 +14,7 @@ use warnings;
 use base qw(Bugzilla::Object);
 
 use Bugzilla::Constants;
+use Bugzilla::Util;
 
 #############
 # Constants #
@@ -82,9 +83,8 @@ sub _check_user_id {
   require Bugzilla::User;
   return Bugzilla::User->check({id => $id})->id;
 }
-sub _check_email {
-return 1;
-}
+
+sub _check_email { return validate_email_syntax($_[1]); }
 1;
 
 __END__
