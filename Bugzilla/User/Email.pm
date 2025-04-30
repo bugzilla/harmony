@@ -42,6 +42,24 @@ use constant UPDATE_COLUMNS => qw(email is_primary_email);
 # There's no gain to caching these objects
 use constant USE_MEMCACHED => 0;
 
+###############################
+####      Accessors      ######
+###############################
+
+sub email   { return $_[0]->{email}; }
+sub user_id { return $_[0]->{'user_id'}; }
+sub is_primary_email { return $_[0]->{'is_primary_email'}; }
+
+############
+# Mutators #
+############
+
+sub set_email         { $_[0]->set('email',   $_[1]); }
+sub set_primary_email { $_[0]->set('is_primary_email', $_[1]); }
+
+###############################
+####     Constructors     #####
+###############################
 
 sub create {
   my ($class, $params) = @_;
@@ -59,20 +77,10 @@ sub update {
   return $updated_email;
 }
 
-
-###############################
-####      Accessors      ######
-###############################
-
-sub email   { return $_[0]->{email}; }
-sub user_id { return $_[0]->{'user_id'}; }
-
-############
-# Mutators #
-############
-
-sub set_email         { $_[0]->set('email',   $_[1]); }
-sub set_primary_email { $_[0]->set('is_primary_email', $_[1]); }
+sub remove_from_db {
+  my $self = shift;
+  return is_primary_email($self) ? 0 : $self->SUPER::remove_from_db();
+}
 
 ###############################
 ###       Validators        ###
