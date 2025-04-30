@@ -36,6 +36,11 @@ use constant VALIDATORS => {
   is_primary_email   => \&Bugzilla::Object::check_boolean,
 };
 
+use constant UPDATE_COLUMNS => qw(email is_primary_email);
+
+# There's no gain to caching these objects
+use constant USE_MEMCACHED => 0;
+
 
 sub create {
   my ($class, $params) = @_;
@@ -45,12 +50,37 @@ sub create {
   return $user_email;
 }
 
+sub update {
+  my ($class, $params) = @_;
+  my $updated_email = $class->SUPER::update($params);
+
+  # Return the updated user email account.
+  return $updated_email;
+}
+
+
+###############################
+####      Accessors      ######
+###############################
+
+sub email   { return $_[0]->{email}; }
+sub user_id { return $_[0]->{'user_id'}; }
+
+############
+# Mutators #
+############
+
+sub set_email         { $_[0]->set('email',   $_[1]); }
+sub set_primary_email { $_[0]->set('is_primary_email', $_[1]); }
+
 ###############################
 ###       Validators        ###
 ###############################
 
 sub _check_user_id {
-return 1;
+  my ($invocant, $id) = @_;
+  require Bugzilla::User;
+  return Bugzilla::User->check({id => $id})->id;
 }
 sub _check_email {
 return 1;
