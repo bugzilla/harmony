@@ -55,63 +55,143 @@
 </style>
 <script [% script_nonce FILTER none %]>
 <!--
-let emailFieldCount = 1;
-const maxEmailFields = 3;
+let emailFieldCount = 1; // Keeps track of the current number of email fields. Initialized to 1 as there's always a primary email.
+const maxEmailFields = 3; // Defines the maximum number of email fields allowed.
 
+/**
+ * Adds a new email input field to the form dynamically.
+ * It clones the first email field, updates its placeholder,
+ * assigns unique name and id attributes, and appends a delete button
+ * if it doesn't already exist. It also manages the visibility of the
+ * "Add Email" button based on the maximum number of fields.
+ */
 function addEmailField() {
+  // Check if the current number of email fields is less than the maximum allowed.
   if (emailFieldCount < maxEmailFields) {
+    // Get the container element where the email fields are located.
     const container = document.getElementById('email-fields');
+    // Get the first email field div to use as a template for cloning.
     const firstFieldDiv = container.querySelector('.email-field');
 
-    // Clone the email field div
+    // Clone the first email field div to create a new field.
     const newFieldDiv = firstFieldDiv.cloneNode(true);
+    // Get the input element within the cloned div.
     const newInput = newFieldDiv.querySelector('input');
 
+    // Clear the value of the cloned input field.
     newInput.value = '';
 
+    // Assign unique name and id attributes to the new input field.
+    // This is crucial for the backend to correctly identify each email address.
+    newInput.name = `email${emailFieldCount + 1}`;
+    newInput.id = `email${emailFieldCount + 1}`;
+
+    // Define an array of placeholders for each email field.
     const placeholders = [
       "Enter email address",          // 1st
       "Enter second email address",   // 2nd
       "Enter third email address"     // 3rd
     ];
+    // Set the placeholder text for the new input field based on the current count.
     newInput.placeholder = placeholders[emailFieldCount];
 
-    // Add delete button if missing
+    // Check if a delete button already exists in the cloned field.
     if (!newFieldDiv.querySelector('.delete-btn')) {
+      // Create a new delete button element.
       const deleteBtn = document.createElement('button');
       deleteBtn.type = 'button';
       deleteBtn.textContent = 'Delete';
       deleteBtn.className = 'delete-btn';
+      // Define the function to be executed when the delete button is clicked.
       deleteBtn.onclick = function() {
-        // Add animation class
+        // Add a CSS class for a fade-out animation.
         newFieldDiv.classList.add('fade-out');
 
-        // Wait for the transition to finish
+        // Use setTimeout to wait for the CSS transition to complete before removing the element.
         setTimeout(() => {
+          // Remove the email field div from the container.
           container.removeChild(newFieldDiv);
+          // Decrement the email field counter.
           emailFieldCount--;
 
-          // Bring back the Add button if needed
+          // If the number of email fields is now less than the maximum,
+          // make the "Add Email" button visible again.
           if (emailFieldCount < maxEmailFields) {
             document.getElementById('add-email-btn').style.display = 'inline-block';
           }
-        }, 300); // matches transition time
+
+          // Re-index the name and id attributes of the remaining email fields
+          // to maintain a consistent sequence (email1, email2, email3).
+          reIndexEmailFields();
+
+        }, 300); // matches the transition time in CSS
       };
+      // Append the newly created delete button to the new email field div.
       newFieldDiv.appendChild(deleteBtn);
     }
 
+    // Append the newly created and configured email field div to the container.
     container.appendChild(newFieldDiv);
 
+    // Set focus to the newly added input field for better user experience.
     newInput.focus();
 
+    // Increment the email field counter.
     emailFieldCount++;
 
+    // If the maximum number of email fields has been reached, hide the "Add Email" button.
     if (emailFieldCount === maxEmailFields) {
       document.getElementById('add-email-btn').style.display = 'none';
     }
   }
 }
 
+/**
+ * Re-indexes the name and id attributes of all existing email input fields.
+ * This function is called after an email field is deleted to ensure that the
+ * remaining fields maintain a sequential numbering (email1, email2, email3)
+ * for their name and id attributes, regardless of the order in which fields
+ * were added or deleted. It also updates the placeholders accordingly and
+ * adjusts the visibility of the "Add Email" button.
+ */
+function reIndexEmailFields() {
+  // Get the container element holding the email fields.
+  const container = document.getElementById('email-fields');
+  // Get all the email field divs within the container.
+  const emailFieldDivs = container.querySelectorAll('.email-field');
+  // Reset the email field counter before re-indexing.
+  emailFieldCount = 0;
+
+  // Iterate through each email field div.
+  emailFieldDivs.forEach((fieldDiv, index) => {
+    // Get the input element within the current email field div.
+    const inputField = fieldDiv.querySelector('input');
+    // Calculate the new index for the name and id attributes (starting from 1).
+    const newIndex = index + 1;
+    // Update the name attribute of the input field with the new index.
+    inputField.name = `email${newIndex}`;
+    // Update the id attribute of the input field with the new index.
+    inputField.id = `email${newIndex}`;
+
+    // Define the array of placeholders again for setting based on the new index.
+    const placeholders = [
+      "Enter email address",          // 1st
+      "Enter second email address",   // 2nd
+      "Enter third email address"     // 3rd
+    ];
+    // Set the placeholder text based on the current index in the loop.
+    inputField.placeholder = placeholders[index];
+    // Increment the email field counter as we re-index.
+    emailFieldCount++;
+  });
+
+  // After re-indexing, adjust the visibility of the "Add Email" button.
+  if (emailFieldCount < maxEmailFields) {
+    document.getElementById('add-email-btn').style.display = 'inline-block';
+  } else {
+    document.getElementById('add-email-btn').style.display = 'none';
+  }
+}
 // -->
 </script>
 
