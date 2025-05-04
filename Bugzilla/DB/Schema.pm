@@ -1026,6 +1026,7 @@ use constant ABSTRACT_SCHEMA => {
       },
       email            => {TYPE => 'varchar(255)', NOTNULL => 1},
       is_primary_email => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      display_order    => {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 1},
     ],
     INDEXES => [
       profiles_emails_userid_idx => ['user_id'],
