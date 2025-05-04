@@ -35,7 +35,7 @@ use constant VALIDATORS => {
   is_primary_email   => \&Bugzilla::Object::check_boolean,
 };
 
-use constant UPDATE_COLUMNS => qw(email is_primary_email);
+use constant UPDATE_COLUMNS => qw(email is_primary_email display_order);
 
 # There's no gain to caching these objects
 use constant USE_MEMCACHED => 0;
