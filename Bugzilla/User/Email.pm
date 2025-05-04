@@ -22,14 +22,12 @@ use Bugzilla::Util;
 
 use constant DB_TABLE => 'profiles_emails';
 
-
 use constant DB_COLUMNS => qw(
   profiles_emails.id
   profiles_emails.user_id
   profiles_emails.email
   profiles_emails.is_primary_email
 );
-
 
 use constant VALIDATORS => {
   user_id            => \&_check_user_id,
@@ -75,6 +73,14 @@ sub update {
 
   # Return the updated user email account.
   return $updated_email;
+}
+
+sub get_user_emails {
+    my ($user_id) = @_;
+    my $dbh = Bugzilla->dbh;
+    my $emails_ref = $dbh->selectall_arrayref("SELECT email, is_primary_email, display_order FROM profiles_emails WHERE user_id = ?",
+                                            undef, $user_id);
+    return $emails_ref || [];
 }
 
 sub remove_from_db {
