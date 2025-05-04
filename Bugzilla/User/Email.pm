@@ -85,7 +85,7 @@ sub get_user_emails {
 
 sub remove_from_db {
   my $self = shift;
-  return is_primary_email($self) ? 0 : $self->SUPER::remove_from_db();
+  return $self->is_primary_email ? 0 : $self->SUPER::remove_from_db();
 }
 
 ###############################
