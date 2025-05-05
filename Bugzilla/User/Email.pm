@@ -78,7 +78,7 @@ sub update {
   return $updated_email;
 }
 
-sub get_user_emails {
+sub get_emails_by_user {
     my ($user_id) = @_;
     my $dbh = Bugzilla->dbh;
     my $emails_ref = $dbh->selectall_arrayref("SELECT email, is_primary_email, display_order FROM profiles_emails WHERE user_id = ?",
