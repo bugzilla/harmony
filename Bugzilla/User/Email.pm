@@ -87,7 +87,7 @@ sub get_emails_by_user {
 }
 
 
-sub find_user_by_email {
+sub get_user_by_email {
     my ($email) = @_;
     my $dbh = Bugzilla->dbh;
     my ($user_id) = $dbh->selectrow_array("SELECT user_id FROM profiles_emails WHERE email = ? LIMIT 1", undef, $email); 
