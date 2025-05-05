@@ -86,6 +86,15 @@ sub get_user_emails {
     return $emails_ref || [];
 }
 
+
+sub find_user_by_email {
+    my ($email) = @_;
+    my $dbh = Bugzilla->dbh;
+    my ($user_id) = $dbh->selectrow_array("SELECT user_id FROM profiles_emails WHERE email = ? LIMIT 1", undef, $email); 
+    # We use the defined-or operator because a user_id might be 0 
+    return $email // 0;
+}
+
 sub remove_from_db {
   my $self = shift;
   return $self->is_primary_email ? 0 : $self->SUPER::remove_from_db();
