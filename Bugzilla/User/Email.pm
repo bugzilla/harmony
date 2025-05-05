@@ -27,12 +27,14 @@ use constant DB_COLUMNS => qw(
   profiles_emails.user_id
   profiles_emails.email
   profiles_emails.is_primary_email
+  profiles_emails.display_order
 );
 
 use constant VALIDATORS => {
   user_id            => \&_check_user_id,
   email              => \&_check_email,
   is_primary_email   => \&Bugzilla::Object::check_boolean,
+  display_order      => \&Bugzilla::Object::check_boolean,
 };
 
 use constant UPDATE_COLUMNS => qw(email is_primary_email display_order);
@@ -54,6 +56,7 @@ sub is_primary_email { return $_[0]->{'is_primary_email'}; }
 
 sub set_email         { $_[0]->set('email',   $_[1]); }
 sub set_primary_email { $_[0]->set('is_primary_email', $_[1]); }
+sub set_display_order { $_[0]->set('display_order', $_[1]); }
 
 ###############################
 ####     Constructors     #####
