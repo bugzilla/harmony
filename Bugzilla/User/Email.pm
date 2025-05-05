@@ -101,7 +101,7 @@ sub _check_user_id {
   return Bugzilla::User->check({id => $id})->id;
 }
 
-sub _check_email { return validate_email_syntax($_[1]); }
+sub _check_email { return validate_email_syntax($_[1]) ? $_[1] : 0; }
 1;
 
 __END__
