@@ -79,16 +79,15 @@ sub update {
 }
 
 sub get_emails_by_user {
-    my ($user_id) = @_;
+    my ($class, $user_id) = @_;
     my $dbh = Bugzilla->dbh;
     my $emails_ref = $dbh->selectall_arrayref("SELECT email, is_primary_email, display_order FROM profiles_emails WHERE user_id = ?",
                                             undef, $user_id);
     return $emails_ref || [];
 }
 
-
 sub get_user_by_email {
-    my ($email) = @_;
+    my ($class, $email) = @_;
     my $dbh = Bugzilla->dbh;
     my ($user_id) = $dbh->selectrow_array("SELECT user_id FROM profiles_emails WHERE email = ? LIMIT 1", undef, $email); 
     # We use the defined-or operator because a user_id might be 0 
