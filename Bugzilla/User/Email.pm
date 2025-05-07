@@ -15,26 +15,28 @@ use base qw(Bugzilla::Object);
 
 use Bugzilla::Constants;
 use Bugzilla::Util;
+use Scalar::Util qw(looks_like_number);
 
 #############
 # Constants #
 #############
 
 use constant DB_TABLE => 'profiles_emails';
+use constant NAME_FIELD => 'email';
 
 use constant DB_COLUMNS => qw(
-  profiles_emails.id
-  profiles_emails.user_id
-  profiles_emails.email
-  profiles_emails.is_primary_email
-  profiles_emails.display_order
+  id
+  user_id
+  email
+  is_primary_email
+  display_order
 );
 
 use constant VALIDATORS => {
   user_id            => \&_check_user_id,
   email              => \&_check_email,
   is_primary_email   => \&Bugzilla::Object::check_boolean,
-  display_order      => \&Bugzilla::Object::check_boolean,
+  display_order      => \&_check_display_order,
 };
 
 use constant UPDATE_COLUMNS => qw(email is_primary_email display_order);
@@ -62,6 +64,14 @@ sub set_display_order { $_[0]->set('display_order', $_[1]); }
 ####     Constructors     #####
 ###############################
 
+sub new {
+  my ($class, $params) = @_;
+  my $email = $class->SUPER::new($params);
+
+  # Return the newly created user email account.
+  return $email;
+}
+
 sub create {
   my ($class, $params) = @_;
   my $user_email = $class->SUPER::create($params);
@@ -72,7 +82,7 @@ sub create {
 
 sub update {
   my ($class, $params) = @_;
-  my $updated_email = $class->SUPER::update($params);
+  my $updated_email = $class->SUPER::update();
 
   # Return the updated user email account.
   return $updated_email;
@@ -110,6 +120,21 @@ sub _check_user_id {
 }
 
 sub _check_email { return validate_email_syntax($_[1]) ? $_[1] : 0; }
+
+sub _check_display_order { 
+  my ($invocant, $value) = @_;
+  
+  unless (defined $value && looks_like_number($value)) {
+        return 0; 
+  }
+  if ($value == int($value) && $value >= 1) {
+        return $value; 
+  } else {
+        return 0; 
+  }
+}
+
+
 1;
 
 __END__
