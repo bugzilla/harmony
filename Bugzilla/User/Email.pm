@@ -34,7 +34,7 @@ use constant DB_COLUMNS => qw(
 
 use constant VALIDATORS => {
   user_id            => \&_check_user_id,
-  email              => \&_check_email,
+  email              => \&check_email_for_creation,
   is_primary_email   => \&Bugzilla::Object::check_boolean,
   display_order      => \&_check_display_order,
 };
@@ -109,6 +109,8 @@ sub remove_from_db {
   return $self->is_primary_email ? 0 : $self->SUPER::remove_from_db();
 }
 
+
+
 ###############################
 ###       Validators        ###
 ###############################
@@ -119,7 +121,18 @@ sub _check_user_id {
   return Bugzilla::User->check({id => $id})->id;
 }
 
-sub _check_email { return validate_email_syntax($_[1]) ? $_[1] : 0; }
+sub check_email_for_creation {
+  my ($invocant, $email) = @_;
+  
+  validate_email_syntax($email)
+    || ThrowUserError('illegal_email_address', {addr => $email});
+  
+  if ($invocant->get_user_by_email($email)) {
+    ThrowUserError('email_exists');
+  }
+ 
+  return $email;
+}
 
 sub _check_display_order { 
   my ($invocant, $value) = @_;
