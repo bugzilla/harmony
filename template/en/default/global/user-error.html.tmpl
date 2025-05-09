@@ -560,6 +560,10 @@
     [% title = "Email Address Confirmation Failed" %]
     Email address confirmation failed.
 
+  [% ELSIF error == "email_exists" %]
+    [% title = "Email Address Already Exists" %]
+    There is already an account with that email address.
+
   [% ELSIF error == "email_no_text_plain" %]
     Your message did not contain any text.[% terms.Bugzilla %] does not
     accept HTML-only email, or HTML email with attachments.
