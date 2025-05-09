@@ -684,6 +684,9 @@
     [% title = BLOCK %]Flag Type '[% flag_type.name FILTER html %]' Deactivated[% END %]
     The flag type <em>[% flag_type.name FILTER html %]</em> has been deactivated.
 
+  [% ELSIF message_tag == "install_admin_get_login_name" %]
+    Enter the login name of the administrator:
+
   [% ELSIF message_tag == "install_admin_get_email" %]
     Enter the e-mail address of the administrator:
 
