@@ -15,6 +15,7 @@ use base qw(Bugzilla::Object);
 
 use Bugzilla::Constants;
 use Bugzilla::Util;
+use Bugzilla::Error;
 use Scalar::Util qw(looks_like_number);
 
 #############
