@@ -69,7 +69,7 @@ sub new {
   my ($class, $params) = @_;
   my $email = $class->SUPER::new($params);
 
-  # Return the newly created user email account.
+  # Return the user email account.
   return $email;
 }
 
