@@ -345,6 +345,7 @@ sub check_login_name_for_creation {
   return $name;
 }
 
+
 sub _check_password {
   my ($self, $pass) = @_;
 
@@ -619,7 +620,7 @@ sub update_last_seen_date {
 sub name           { $_[0]->{realname}; }
 sub login          { $_[0]->{login_name}; }
 sub extern_id      { $_[0]->{extern_id}; }
-sub email          { $_[0]->login . Bugzilla->params->{'emailsuffix'}; }
+sub email          { Bugzilla::User::Email->get_primary_email_of_user($_[0]->{userid});}
 sub disabledtext   { $_[0]->{'disabledtext'}; }
 sub is_enabled     { $_[0]->{'is_enabled'} ? 1 : 0; }
 sub showmybugslink { $_[0]->{showmybugslink}; }
@@ -2589,17 +2590,6 @@ sub create {
     = _generate_nickname($params->{realname}, $params->{login_name}, 0);
   my $user = $class->SUPER::create($params);
 
-  # Create a user email account
-  my $email_data = {
-    user_id          => $user->id,
-    email            => $params->{admin_email},
-    is_primary_email => 1,
-    notify           => 1,
-    last_modified    => Bugzilla::Util::DateTime::now(),
-  };
-
-  my $user_email = Bugzilla::User::Email->create($email_data);
-  
   # Turn on all email for the new user
   require Bugzilla::BugMail;
   my %relationships = Bugzilla::BugMail::relationships();
