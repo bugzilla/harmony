@@ -67,10 +67,8 @@ sub set_display_order { $_[0]->set('display_order', $_[1]); }
 
 sub new {
   my ($class, $params) = @_;
-  my $email = $class->SUPER::new($params);
-
-  # Return the user email account.
-  return $email;
+  my $user_email = $class->SUPER::new($params);
+  return $user_email;
 }
 
 sub create {
