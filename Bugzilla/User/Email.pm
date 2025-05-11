@@ -103,6 +103,20 @@ sub get_user_by_email {
     return $user_id // 0;
 }
 
+sub get_primary_email_of_user {
+    my ($class, $user_id) = @_;
+    my $emails_ref = $class->get_emails_by_user($user_id);
+
+    for my $email_info (@$emails_ref) {
+        my ($email, $is_primary) = @$email_info;
+        if ($is_primary == 1) {
+            return $email;
+        }
+    }
+
+    return undef; # No primary email found
+}
+
 sub remove_from_db {
   my $self = shift;
   return $self->is_primary_email ? 0 : $self->SUPER::remove_from_db();
