@@ -20,6 +20,7 @@ use Bugzilla::Search;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::User;
+use Bugzilla::User::Email;
 use Bugzilla::User::Setting qw(clear_settings_cache);
 use Bugzilla::User::Session;
 use Bugzilla::User::APIKey;
@@ -84,8 +85,8 @@ sub SaveAccount {
   my $oldpassword    = $cgi->param('old_password');
   my $pwd1           = $cgi->param('new_password1');
   my $pwd2           = $cgi->param('new_password2');
-  my $new_login = clean_text(scalar $cgi->param('new_login'));
   my $new_login_name = trim($cgi->param('new_login_name'));
+  my $new_email      = trim($cgi->param('new_email'));
   my @mfa_events;
 
   if ($user->authorizer->can_change_password
@@ -123,11 +124,11 @@ sub SaveAccount {
   }
   
   if ($user->authorizer->can_change_login
-        && $new_login
-        && $user->login ne $new_login)
+        && $new_login_name
+        && $user->login ne $new_login_name)
   {
  
-        if ($new_login =~ /@/)
+        if ($new_login_name =~ /@/)
         {
             ThrowUserError("login_at_sign_disallowed");
         }
@@ -136,14 +137,14 @@ sub SaveAccount {
             ThrowUserError("login_change_during_email_change");
         }
  
-        $user->set_login($new_login);
+        $user->set_login($new_login_name);
   }
  
   if ( $user->authorizer->can_change_email
     && Bugzilla->params->{"allowemailchange"}
-    && $new_login_name)
+    && $new_email)
   {
-    if ($user->login ne $new_login_name) {
+    if ($user->email ne $new_email) {
       $oldpassword || ThrowUserError("old_password_required");
 
       # Block multiple email changes for the same user.
@@ -151,22 +152,18 @@ sub SaveAccount {
         ThrowUserError("email_change_in_progress");
       }
 
-      # Before changing an email address, confirm one does not exist.
-      validate_email_syntax($new_login_name)
-        || ThrowUserError('illegal_email_address', {addr => $new_login_name});
-      is_available_username($new_login_name)
-        || ThrowUserError("account_exists", {email => $new_login_name});
+      Bugzilla::User::Email->check_email_for_creation($new_email);
 
       if ($user->mfa) {
         push @mfa_events,
           {
           type   => 'set_login',
           reason => 'changing your email address',
-          login  => $new_login_name,
+          login  => $new_email,
           };
       }
       else {
-        Bugzilla::Token::IssueEmailChangeToken($user, $new_login_name);
+        Bugzilla::Token::IssueEmailChangeToken($user, $new_email);
         $vars->{email_changes_saved} = 1;
       }
     }
@@ -1026,6 +1023,7 @@ my $token = $cgi->param('token');
 check_token_data($token, 'edit_user_prefs')
   if $save_changes || $disable_account;
 
+  
 # Do any saving, and then display the current tab.
 SWITCH: for ($current_tab_name) {
 
