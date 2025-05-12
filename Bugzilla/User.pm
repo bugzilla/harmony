@@ -442,6 +442,19 @@ sub _generate_nickname {
   return $nick;
 }
 
+sub set_email {
+  my ($self, $email) = @_;
+  # Create a user email account
+  my $email_data = {
+    user_id          => $self->id,
+    email            => $email,
+    is_primary_email => 1
+  };
+
+  my $user_email = Bugzilla::User::Email->create($email_data);
+}
+
+
 sub set_name {
   my ($self, $name) = @_;
   $self->set('realname', $name);
@@ -2590,14 +2603,7 @@ sub create {
     = _generate_nickname($params->{realname}, $params->{login_name}, 0);
   my $user = $class->SUPER::create($params);
 
-  # Create a user email account
-  my $email_data = {
-    user_id          => $user->id,
-    email            => $params->{email},
-    is_primary_email => 1
-  };
-
-  my $user_email = Bugzilla::User::Email->create($email_data);
+  $user->set_email($params->{email});
 
   # Turn on all email for the new user
   require Bugzilla::BugMail;
