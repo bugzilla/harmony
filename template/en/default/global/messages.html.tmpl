@@ -554,6 +554,10 @@
     [%+ field_descs.${field.name} FILTER html %] value
     created: [% value FILTER html %]
 
+  [% ELSIF message_tag == "email_changed" %]
+    [% title = "Email Changed" %]
+    Your email address has been updated.
+
   [% ELSIF message_tag == "milestone_created" %]
     [% title = "Milestone Created" %]
     The milestone <em>[% milestone.name FILTER html %]</em> has been created.
