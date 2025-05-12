@@ -339,7 +339,7 @@ sub check_login_name_for_creation {
   # Check the name if it's a new user, or if we're changing the name.
   if (!ref($invocant) || $invocant->login ne $name) {
     is_available_username($name)
-      || ThrowUserError('account_exists', {email => $name});
+      || ThrowUserError('account_exists', {login => $name});
   }
 
   return $name;
