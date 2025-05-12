@@ -562,7 +562,12 @@
 
   [% ELSIF error == "email_exists" %]
     [% title = "Email Address Already Exists" %]
-    There is already an account with that email address.
+    There is already an account with
+    [% IF email %]
+      the email address [% email FILTER html %].
+    [% ELSE %]
+      that email address.
+    [% END %]
 
   [% ELSIF error == "email_no_text_plain" %]
     Your message did not contain any text.[% terms.Bugzilla %] does not
