@@ -18,6 +18,7 @@ use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::Token;
 use Bugzilla::User;
+use Bugzilla::User::Email;
 
 use Date::Format;
 use Date::Parse;
@@ -289,21 +290,20 @@ sub changeEmail {
 
   # The new email address should be available as this was
   # confirmed initially so cancel token if it is not still available
-  if (!is_available_username($new_email, $old_email)) {
+  if (Bugzilla::User::Email->get_user_by_email($new_email)) {
     $vars->{'email'} = $new_email;    # Needed for Bugzilla::Token::Cancel's mail
     Bugzilla::Token::Cancel($token, "account_exists", $vars);
-    ThrowUserError("account_exists", {email => $new_email});
+    ThrowUserError("email_exists", {'email' => $new_email});
   }
 
-  # Update the user's login name in the profiles table and delete the token
+  # Update the user's email address and delete the token
   # from the tokens table.
+
+  my $user_email = Bugzilla::User::Email->new('name' => $old_email);
+  $user_email->set_email($new_email);
+  $user_email->update();
+
   $dbh->bz_start_transaction();
-  $dbh->do(
-    q{UPDATE   profiles
-               SET      login_name = ?
-               WHERE    userid = ?}, undef, ($new_email, $userid)
-  );
-  Bugzilla->memcached->clear({table => 'profiles', id => $userid});
   $dbh->do('DELETE FROM tokens WHERE token = ?', undef, $token);
   $dbh->do(
     q{DELETE FROM tokens WHERE userid = ?
@@ -321,7 +321,7 @@ sub changeEmail {
 
   # Let the user know their email address has been changed.
 
-  $vars->{'message'} = "login_changed";
+  $vars->{'message'} = "email_changed";
 
   $template->process("global/message.html.tmpl", $vars)
     || ThrowTemplateError($template->error());
@@ -419,8 +419,13 @@ sub confirm_create_account {
   Bugzilla->assert_password_is_secure($password1);
   Bugzilla->assert_passwords_match($password1, $password2);
 
+  # Be careful! Some logins may contain ":" in them.
+  my ($email, $login) = split(':', $data, 2);
+  $login = $cgi->param('login') if login_to_id($login);
+
   my $otheruser = Bugzilla::User->create({
     login_name    => $login_name,
+    email         => $email,
     realname      => scalar $cgi->param('realname'),
     cryptpassword => $password1
   });
