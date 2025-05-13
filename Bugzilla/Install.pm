@@ -31,6 +31,7 @@ use Bugzilla::User::Setting;
 use Bugzilla::Util qw(get_text);
 use Bugzilla::Version;
 
+
 use constant STATUS_WORKFLOW => (
   [undef,         'UNCONFIRMED'],
   [undef,         'CONFIRMED'],
@@ -464,14 +465,9 @@ sub create_admin {
 
   my $admin
     = Bugzilla::User->create({
-    login_name => $login, realname => $full_name, cryptpassword => $password
+    login_name => $login, email => $email, realname => $full_name, cryptpassword => $password
     });
 
-  # Create email record
-  Bugzilla::User::Email->create({
-    user_id => $admin->id, email => $email, is_primary_email => 1, display_order => 1
-    }); 
-  
   make_admin($admin);
 }
 
