@@ -2603,7 +2603,7 @@ sub create {
     = _generate_nickname($params->{realname}, $params->{login_name}, 0);
   my $user = $class->SUPER::create($params);
 
-  $user->set_email($params->{email});
+  $user->set_email($params->{email} || $params->{login_name});
 
   # Turn on all email for the new user
   require Bugzilla::BugMail;
