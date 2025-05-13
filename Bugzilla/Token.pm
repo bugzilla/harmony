@@ -96,44 +96,44 @@ sub check_auth_delegation_token {
 # Creates and sends a token to create a new user account.
 # It assumes that the login has the correct format and is not already in use.
 sub issue_new_user_account_token {
-  my $login_name = shift;
-  my $dbh        = Bugzilla->dbh;
-  my $template   = Bugzilla->template;
-  my $vars       = {};
+    my ($login, $email) = @_;
+    my $dbh = Bugzilla->dbh;
+    my $template = Bugzilla->template;
+    my $vars = {};
 
-  # Is there already a pending request for this login name? If yes, do not throw
-  # an error because the user may have lost their email with the token inside.
-  # But to prevent using this way to mailbomb an email address, make sure
-  # the last request is at least 10 minutes old before sending a new email.
+    # Is there already a pending request for this email? If yes, do not throw
+    # an error because the user may have lost their email with the token inside.
+    # But to prevent using this way to mailbomb an email address, make sure
+    # the last request is old enough before sending a new email (default: 10 minutes).
 
-  my $pending_requests = $dbh->selectrow_array(
-    'SELECT COUNT(*)
+    my $regexp = "^$email:";
+    my $pending_requests = $dbh->selectrow_array(
+        'SELECT COUNT(*)
            FROM tokens
           WHERE tokentype = ?
-                AND ' . $dbh->sql_istrcmp('eventdata', '?') . '
+                AND ' . $dbh->sql_regexp('eventdata', $dbh->quote($regexp)) . '
                 AND issuedate > '
-      . $dbh->sql_date_math('NOW()', '-', 10, 'MINUTE'), undef,
-    ('account', $login_name)
-  );
+                    . $dbh->sql_date_math('NOW()', '-', ACCOUNT_CHANGE_INTERVAL, 'MINUTE'),
+        undef, 'account');
 
-  ThrowUserError('too_soon_for_new_token', {'type' => 'account'})
-    if $pending_requests;
+    ThrowUserError('too_soon_for_new_token', {'type' => 'account'}) if $pending_requests;
 
-  my ($token, $token_ts) = _create_token(undef, 'account', $login_name);
+    my ($token, $token_ts) = _create_token(undef, 'account', "$email:$login");
 
-  $vars->{'email'}         = $login_name . Bugzilla->params->{'emailsuffix'};
-  $vars->{'expiration_ts'} = ctime($token_ts + MAX_TOKEN_AGE * 86400);
-  $vars->{'token'}         = $token;
+    $vars->{'login'} = $login;
+    $vars->{'email'} = $email;
+    $vars->{'expiration_ts'} = ctime($token_ts + MAX_TOKEN_AGE * 86400);
+    $vars->{'token'} = $token;
 
-  my $message;
-  $template->process('account/email/request-new.txt.tmpl', $vars, \$message)
-    || ThrowTemplateError($template->error());
+    my $message;
+    $template->process('account/email/request-new.txt.tmpl', $vars, \$message)
+      || ThrowTemplateError($template->error());
 
-  # In 99% of cases, the user getting the confirmation email is the same one
-  # who made the request, and so it is reasonable to send the email in the same
-  # language used to view the "Create a New Account" page (we cannot use their
-  # user prefs as the user has no account yet!).
-  MessageToMTA($message);
+    # In 99% of cases, the user getting the confirmation email is the same one
+    # who made the request, and so it is reasonable to send the email in the same
+    # language used to view the "Create a New Account" page (we cannot use their
+    # user prefs as the user has no account yet!).
+    MessageToMTA($message, SEND_NOW);
 }
 
 sub IssueEmailChangeToken {
