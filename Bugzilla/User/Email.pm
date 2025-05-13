@@ -141,7 +141,7 @@ sub check_email_for_creation {
     || ThrowUserError('illegal_email_address', {addr => $email});
   
   if ($invocant->get_user_by_email($email)) {
-    ThrowUserError('email_exists');
+    ThrowUserError("email_exists", {'email' => $email})
   }
  
   return $email;
