@@ -2792,21 +2792,22 @@ sub check_account_creation_enabled {
 }
 
 sub check_and_send_account_creation_confirmation {
-  my ($self, $login) = @_;
+  my ($self, $login, $email) = @_;
 
   $login = $self->check_login_name_for_creation($login);
+  $email = Bugzilla::User::Email->check_email_for_creation($email);
   my $creation_regexp = Bugzilla->params->{'createemailregexp'};
 
-  if ($login !~ /$creation_regexp/i) {
+  if ($email !~ /$creation_regexp/i) {
     ThrowUserError('account_creation_restricted');
   }
 
   # BMO - add a hook to allow extra validation prior to account creation.
-  Bugzilla::Hook::process("user_verify_login", {login => $login});
+  Bugzilla::Hook::process("user_verify_login", {login => $login, email => $email});
 
   # Create and send a token for this new account.
   require Bugzilla::Token;
-  Bugzilla::Token::issue_new_user_account_token($login);
+  Bugzilla::Token::issue_new_user_account_token($login, $email);
 }
 
 # This is used in a few performance-critical areas where we don't want to
