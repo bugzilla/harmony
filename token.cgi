@@ -409,7 +409,7 @@ sub confirm_create_account {
   my $token = shift;
 
   Bugzilla->user->check_account_creation_enabled;
-  my (undef, undef, $login_name) = Bugzilla::Token::GetTokenData($token);
+  my ($user_id, $date, $data, $tokentype) = Bugzilla::Token::GetTokenData($token);
 
   my $password1 = $cgi->param('passwd1');
   my $password2 = $cgi->param('passwd2');
@@ -424,7 +424,7 @@ sub confirm_create_account {
   $login = $cgi->param('login') if login_to_id($login);
 
   my $otheruser = Bugzilla::User->create({
-    login_name    => $login_name,
+    login_name    => $login,
     email         => $email,
     realname      => scalar $cgi->param('realname'),
     cryptpassword => $password1
