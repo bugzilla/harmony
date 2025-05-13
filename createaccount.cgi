@@ -40,6 +40,7 @@ if (defined($login)) {
   my $email = $cgi->param('email');
   $user->check_and_send_account_creation_confirmation($login, $email);
   $vars->{'login'} = $login;
+  $vars->{'email'} = $email;
 
   $template->process("account/created.html.tmpl", $vars)
     || ThrowTemplateError($template->error());
