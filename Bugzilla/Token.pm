@@ -388,7 +388,18 @@ sub Cancel {
   # is no entry in the 'profiles' table.
   my $user = new Bugzilla::User($userid);
 
-  $vars->{'emailaddress'}  = $userid ? $user->email : $eventdata;
+
+  if ($userid) {
+      $vars->{'emailaddress'} = $user->email;
+      $vars->{'login'} = $user->login;
+  }
+  else {
+      # Be careful! Some logins may contain ":" in them.
+      my ($email, $login) = split(':', $eventdata, 2);
+      $vars->{'emailaddress'} = $email;
+      $vars->{'login'} = $login;
+  }
+
   $vars->{'remoteaddress'} = remote_ip();
   $vars->{'token'}         = $token;
   $vars->{'tokentype'}     = $tokentype;
