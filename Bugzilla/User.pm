@@ -633,7 +633,7 @@ sub update_last_seen_date {
 sub name           { $_[0]->{realname}; }
 sub login          { $_[0]->{login_name}; }
 sub extern_id      { $_[0]->{extern_id}; }
-sub email          { Bugzilla::User::Email->get_primary_email_of_user($_[0]->{userid});}
+sub email          { Bugzilla::User::Email->get_primary_email_of_user($_[0]->{userid}) || $_[0]->login;}
 sub disabledtext   { $_[0]->{'disabledtext'}; }
 sub is_enabled     { $_[0]->{'is_enabled'} ? 1 : 0; }
 sub showmybugslink { $_[0]->{showmybugslink}; }
