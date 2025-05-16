@@ -158,9 +158,6 @@ sub new {
     }
     elsif (exists $param->{name}) {
       my $email = $param->{name};
-
-      validate_email_syntax($email)
-         || ThrowUserError('illegal_email_address', {addr => $email});
       
       my $user_id = Bugzilla::User::Email->get_user_by_email($email);
       if ($user_id) {
