@@ -133,7 +133,7 @@ sub issue_new_user_account_token {
     # who made the request, and so it is reasonable to send the email in the same
     # language used to view the "Create a New Account" page (we cannot use their
     # user prefs as the user has no account yet!).
-    MessageToMTA($message, SEND_NOW);
+    MessageToMTA($message);
 }
 
 sub IssueEmailChangeToken {
