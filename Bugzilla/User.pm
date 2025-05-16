@@ -156,6 +156,18 @@ sub new {
       $param = {condition => 'extern_id = ?', values => [$param->{extern_id}]};
       $_[0] = $param;
     }
+    elsif (exists $param->{name}) {
+      my $email = $param->{name};
+
+      validate_email_syntax($email)
+         || ThrowUserError('illegal_email_address', {addr => $email});
+      
+      my $user_id = Bugzilla::User::Email->get_user_by_email($email);
+      if ($user_id) {
+        $param->{id} = $user_id;
+	delete $param->{name};
+      }
+    }
   }
 
   $user = $class->SUPER::new(@_);
