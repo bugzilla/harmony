@@ -1118,6 +1118,12 @@
     [% title = "Invalid Flag ID" %]
     The flag id [% flag_id FILTER html %] is invalid.
 
+  [% ELSIF error == "invalid_email" %]
+    [% title = "Invalid Email Address" %]
+    The address <tt>[% email FILTER html %]</tt> is not a valid email address.
+    Either you misspelled it, or the person has not
+    registered for a [% terms.Bugzilla %] account.
+
   [% ELSIF error == "invalid_format" %]
     [% title = "Invalid Format" %]
     The format "[% format FILTER html %]" is invalid (must be one of
