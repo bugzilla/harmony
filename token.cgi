@@ -89,7 +89,7 @@ if ($token) {
 # the list of allowed verification methods.
 my $user_account;
 if ($action eq 'reqpw') {
-  my $login_name = $cgi->param('loginname')
+  my $email = $cgi->param('loginname')
     || ThrowUserError("email_needed_for_password_change");
 
   # check verification methods
@@ -102,15 +102,19 @@ if ($action eq 'reqpw') {
   my $token = $cgi->param('token');
   check_hash_token($token, ['reqpw']);
 
-  validate_email_syntax($login_name)
-    || ThrowUserError('illegal_email_address', {addr => $login_name});
+  validate_email_syntax($email)
+    || ThrowUserError('illegal_email_address', {addr => $email});
 
-  $user_account = Bugzilla::User->check($login_name);
+  my $user_id = Bugzilla::User::Email->get_user_by_email($email);
+  # Make sure we have a fallback in case profiles.login still has email address
+  my $user_account = $user_id
+                 ? Bugzilla::User->new({ id => $user_id })
+                 : Bugzilla::User->new({ name => $email });
 
   # Make sure the user account is active or was deactivated due to inactivity
   if (!$user_account->is_enabled && $user_account->password_change_reason ne 'Inactive Account') {
     ThrowUserError('account_disabled',
-      {disabled_reason => get_text('account_disabled', {account => $login_name})});
+      {disabled_reason => get_text('account_disabled', {account => $email})});
   }
 }
 
