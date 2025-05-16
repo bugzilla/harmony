@@ -102,14 +102,11 @@ if ($action eq 'reqpw') {
   my $token = $cgi->param('token');
   check_hash_token($token, ['reqpw']);
 
-  validate_email_syntax($email)
-    || ThrowUserError('illegal_email_address', {addr => $email});
+  my $user_account = Bugzilla::User->new({ name => $email });
 
-  my $user_id = Bugzilla::User::Email->get_user_by_email($email);
-  # Make sure we have a fallback in case profiles.login still has email address
-  my $user_account = $user_id
-                 ? Bugzilla::User->new({ id => $user_id })
-                 : Bugzilla::User->new({ name => $email });
+  unless ($user_account) {
+    ThrowUserError("invalid_email", {email => $email});
+  }
 
   # Make sure the user account is active or was deactivated due to inactivity
   if (!$user_account->is_enabled && $user_account->password_change_reason ne 'Inactive Account') {
