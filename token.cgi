@@ -90,7 +90,7 @@ if ($token) {
 my $user_account;
 if ($action eq 'reqpw') {
   my $login_name = $cgi->param('loginname')
-    || ThrowUserError("login_needed_for_password_change");
+    || ThrowUserError("email_needed_for_password_change");
 
   # check verification methods
   unless (Bugzilla->user->authorizer->can_change_password) {
