@@ -2610,9 +2610,10 @@ sub create {
   $dbh->bz_start_transaction();
   $params->{nickname}
     = _generate_nickname($params->{realname}, $params->{login_name}, 0);
+  my $email = exists $params->{email} ? delete $params->{email} : $params->{login_name};
   my $user = $class->SUPER::create($params);
 
-  $user->set_email($params->{email} || $params->{login_name});
+  $user->set_email($email);
 
   # Turn on all email for the new user
   require Bugzilla::BugMail;
