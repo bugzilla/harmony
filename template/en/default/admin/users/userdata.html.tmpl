@@ -17,7 +17,7 @@
   #
   # editform:  is this an edit form? (It's a create form otherwise)
   # editusers: is viewing user member of editusers?
-  # user: Bugzilla::User object of user to edit
+  # otheruser: Bugzilla::User object of user to edit
   #%]
 
 <tr>
@@ -25,16 +25,16 @@
   <td>
     [% IF editusers %]
       <input size="64" maxlength="255" name="login"
-             id="login" value="[% user.login FILTER html %]">
+             id="login" value="[% otheruser.login FILTER html %]">
       [% IF editform %]
-        [% IF !user.in_group('bz_sudo_protect') %]
+        [% IF !otheruser.in_group('bz_sudo_protect') %]
           <br>
           <a href="[% basepath FILTER none %]relogin.cgi?action=prepare-sudo&amp;target_login=
-          [%- user.login FILTER uri %]">Impersonate this user</a>
+          [%- otheruser.login FILTER uri %]">Impersonate this user</a>
         [% END %]
       [% END %]
     [% ELSE %]
-      [% user.login FILTER html %]
+      [% otheruser.login FILTER html %]
     [% END %]
   </td>
 </tr>
@@ -43,14 +43,14 @@
 <td>
     [% IF editusers %]
       <input size="64" maxlength="255" name="email"
-             id="email" value="[% user.email FILTER html %]">
+             id="email" value="[% otheruser.email FILTER html %]">
       [% IF editform %]
-        [% IF !user.in_group('bz_sudo_protect') %]
+        [% IF !otheruser.in_group('bz_sudo_protect') %]
           <br>
         [% END %]
       [% END %]
     [% ELSE %]
-      [% user.email FILTER html %]
+      [% otheruser.email FILTER html %]
     [% END %]
 </td>
 </tr>
@@ -60,9 +60,9 @@
     <td>
       [% IF editusers %]
         <input size="64" maxlength="64" name="extern_id"
-               id="extern_id" value="[% user.extern_id FILTER html %]">
+               id="extern_id" value="[% otheruser.extern_id FILTER html %]">
       [% ELSE %]
-        [% user.extern_id FILTER html %]
+        [% otheruser.extern_id FILTER html %]
       [% END %]
     </td>
   </tr>
@@ -73,9 +73,9 @@
     [% IF editusers || disableusers %]
       <input size="64" maxlength="255" name="name"
              autocomplete="off"
-             id="name" value="[% user.name FILTER html %]">
+             id="name" value="[% otheruser.name FILTER html %]">
     [% ELSE %]
-      [% user.name FILTER html %]
+      [% otheruser.name FILTER html %]
     [% END %]
   </td>
 </tr>
@@ -85,7 +85,7 @@
     <th>
       <label for="password">
         [% IF editform %]
-          [% user.cryptpassword == '*' ? "Set" : "Update" =%]
+          [% otheruser.cryptpassword == '*' ? "Set" : "Update" =%]
         [% END %]
         Password:
       </label>
@@ -95,16 +95,16 @@
       [%# if a user's cryptpassword is '*' it means they use an auth provider
         # such as GitHub, or you can't log in with that account.  in either case
         # forcing a password reset isn't valid %]
-      [% IF user.cryptpassword != '*' && editform %]
+      [% IF otheruser.cryptpassword != '*' && editform %]
         <br>
         <input type="checkbox" name="password_change_required" id="password_change_required" maxlength="64"
-          [% " checked" IF user.password_change_required %]>
+          [% " checked" IF otheruser.password_change_required %]>
         <label for="password_change_required">User must change their password immediately</label>
         <div id="password_change_reason_container">
           Password change reason (will be displayed to the user):<br>
           <input type="text" size="64"
                  name="password_change_reason" id="password_change_reason"
-                 value="[% user.password_change_reason || "You are required to change your password." FILTER html %]"
+                 value="[% otheruser.password_change_reason || "You are required to change your password." FILTER html %]"
           >
         </div>
       [% END %]
@@ -117,20 +117,20 @@
     <th><label for="disable_mail">[% terms.Bug %]mail Disabled:</label></th>
     <td>
       <input type="checkbox" name="disable_mail" id="disable_mail" value="1"
-      [% IF user.email_disabled %] checked="checked" [% END %]>
+      [% IF otheruser.email_disabled %] checked="checked" [% END %]>
       <label for="disable_mail">
         (This affects [% terms.bug %]mail and whinemail, not password-reset or other
         non-[% terms.bug %]-related emails)
       </label>
     </td>
   </tr>
-  [% IF user.bounce_count %]
+  [% IF otheruser.bounce_count %]
   <tr>
     <th><label for="reset_bounce">Reset Bounce Count</label></th>
     <td>
       <input type="checkbox" name="reset_bounce" id="reset_bounce" value="1">
       (<a href="/bounced_emails/[% user.id FILTER uri %]" title="View bounce email history">
-        [% user.bounce_count FILTER html %]</a>)
+        [% otheruser.bounce_count FILTER html %]</a>)
     </td>
   </tr>
   [% END %]
@@ -156,11 +156,11 @@
   <tr>
     <th><label for="mfa">Two-factor Auth:</label></th>
     <td>
-      [% IF user.in_group('bz_can_disable_mfa') %]
-        [% IF user.mfa %]
+      [% IF otheruser.in_group('bz_can_disable_mfa') %]
+        [% IF otheruser.mfa %]
           <select name="mfa" value="mfa">
             <option value="">Disable</option>
-            [% SWITCH user.mfa %]
+            [% SWITCH otheruser.mfa %]
               [% CASE "TOTP" %]
                 <option value="TOTP" selected>Enabled - TOTP</option>
               [% CASE "Duo" %]
@@ -171,7 +171,7 @@
           Disabled
         [% END %]
       [% ELSE %]
-        [% user.mfa ? "Enabled - " _ user.mfa : "Disabled" FILTER html %]
+        [% otheruser.mfa ? "Enabled - " _ otheruser.mfa : "Disabled" FILTER html %]
       [% END %]
     </td>
   </tr>
