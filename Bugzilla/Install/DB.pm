@@ -4403,9 +4403,18 @@ sub _copy_valid_emails_to_profiles_emails {
         return;
     }
 
-    print "Populating profiles_emails table. There are $total emails to process.\n";
+    # Check if 'email' column exists in 'profiles'
+    my $columns = $dbh->selectcol_arrayref(
+        "SHOW COLUMNS FROM profiles LIKE 'email'"
+    );
+    my $has_email_column = scalar(@$columns) > 0;
 
-    my $select_sth = $dbh->prepare('SELECT userid, email, login_name FROM profiles');
+    # Build SELECT statement dynamically
+    my $select_sql = 'SELECT userid, login_name';
+    $select_sql .= ', email' if $has_email_column;
+    $select_sql .= ' FROM profiles';
+
+    my $select_sth = $dbh->prepare($select_sql);
     my $check_sth  = $dbh->prepare('SELECT 1 FROM profiles_emails WHERE user_id = ?');
     my $insert_sth = $dbh->prepare('
         INSERT INTO profiles_emails (user_id, email, is_primary_email, display_order)
@@ -4421,7 +4430,7 @@ sub _copy_valid_emails_to_profiles_emails {
         $check_sth->execute($user_id);
         next if $check_sth->fetchrow_array;
 
-        my $email = $row->{email};
+        my $email = $has_email_column ? $row->{email} : undef;
         my $login = $row->{login_name};
 
         my $valid_email;
