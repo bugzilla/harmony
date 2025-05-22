@@ -817,7 +817,8 @@ sub update_table_definitions {
   $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
   _populate_attachment_storage_class();
 
-
+  # Bug 1963773 - topunixguy@gmail.com
+  _copy_valid_emails_to_profiles_emails(); 
   ################################################################
   # New --TABLE-- changes should go *** A B O V E *** this point #
   ################################################################
@@ -4393,6 +4394,50 @@ sub _populate_attachment_storage_class {
   }
 }
 
+sub _copy_valid_emails_to_profiles_emails {
+    my $dbh = Bugzilla->dbh;
+
+    my ($total) = $dbh->selectrow_array("SELECT COUNT(*) FROM profiles");
+    print "Populating profiles_emails table. There are $total emails to process.\n";
+
+    my $select_sth = $dbh->prepare('SELECT userid, email, login_name FROM profiles');
+    my $check_sth  = $dbh->prepare('SELECT 1 FROM profiles_emails WHERE user_id = ?');
+    my $insert_sth = $dbh->prepare('
+        INSERT INTO profiles_emails (user_id, email, is_primary_email, display_order)
+        VALUES (?, ?, 1, 1)
+    ');
+
+    $select_sth->execute();
+
+    while (my $row = $select_sth->fetchrow_hashref) {
+        my $user_id = $row->{userid};
+
+        # Skip if the user already has an entry
+        $check_sth->execute($user_id);
+        next if $check_sth->fetchrow_array;
+
+        my $email = $row->{email};
+        my $login = $row->{login_name};
+
+        my $valid_email;
+        if (validate_email_syntax($email)) {
+            $valid_email = $email;
+        } elsif (validate_email_syntax($login)) {
+            $valid_email = $login;
+        }
+
+        next unless defined $valid_email;
+
+        eval {
+            $insert_sth->execute($user_id, $valid_email);
+        };
+        warn "Failed to insert email for user $user_id: $@" if $@;
+    }
+
+    $select_sth->finish;
+    $check_sth->finish;
+    $insert_sth->finish;
+}
 
 1;
 
