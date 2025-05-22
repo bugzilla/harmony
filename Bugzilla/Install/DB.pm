@@ -4398,6 +4398,11 @@ sub _copy_valid_emails_to_profiles_emails {
     my $dbh = Bugzilla->dbh;
 
     my ($total) = $dbh->selectrow_array("SELECT COUNT(*) FROM profiles");
+    unless ($total) {
+        print "Skipping profiles_emails population: no profiles to process.\n";
+        return;
+    }
+
     print "Populating profiles_emails table. There are $total emails to process.\n";
 
     my $select_sth = $dbh->prepare('SELECT userid, email, login_name FROM profiles');
@@ -4420,9 +4425,9 @@ sub _copy_valid_emails_to_profiles_emails {
         my $login = $row->{login_name};
 
         my $valid_email;
-        if (validate_email_syntax($email)) {
+        if (defined $email && $email ne '' && validate_email_syntax($email)) {
             $valid_email = $email;
-        } elsif (validate_email_syntax($login)) {
+        } elsif (defined $login && $login ne '' && validate_email_syntax($login)) {
             $valid_email = $login;
         }
 
