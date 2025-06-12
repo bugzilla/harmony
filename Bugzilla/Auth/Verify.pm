@@ -65,7 +65,7 @@ sub create_or_update_user {
         failure => AUTH_ERROR,
         error   => "extern_id_conflict",
         details =>
-          {extern_id => $extern_id, extern_user => $extern_name, username => $login}
+        {extern_id => $extern_id, extern_user => $extern_name, username => $login}
       };
     }
 
@@ -86,9 +86,9 @@ sub create_or_update_user {
       # that is too involved to be done right now.
       my $user = Bugzilla::User->create({
         login_name    => $login,
-        email         => $email,	
-	cryptpassword => $password, 
-	realname      => $real_name});
+        email         => $email,
+        cryptpassword => $password, 
+        realname      => $real_name});
       $login_user_id = $user->id;
     }
 

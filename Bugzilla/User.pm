@@ -162,7 +162,7 @@ sub new {
       my $user_id = Bugzilla::User::Email->get_user_by_email($email);
       if ($user_id) {
         $param->{id} = $user_id;
-	delete $param->{name};
+        delete $param->{name};
       }
     }
   }
