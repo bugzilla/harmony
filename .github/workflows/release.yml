@@ -27,9 +27,9 @@ jobs:
             ~/.perl-cpm/cache
             ~/.perl-cpm/builds
             **/local/
-          key: ${{ runner.os }}-ubuntu-20.04
+          key: ${{ runner.os }}-ubuntu-24.04
           restore-keys: |
-            ${{ runner.os }}-ubuntu-20.04
+            ${{ runner.os }}-ubuntu-24.04
       - name: apt install
         run: |
           sudo apt-get update
@@ -59,7 +59,7 @@ jobs:
       - name: Save dependencies
         uses: actions/upload-artifact@v4
         with:
-          name: ubuntu-20.04-local-lib.tar.gz
+          name: ubuntu-24.04-local-lib.tar.gz
           path: local-lib.tar.gz
       - name: Run Makefile.PL
         run: 'perl Makefile.PL'
