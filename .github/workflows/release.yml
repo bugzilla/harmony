@@ -53,7 +53,7 @@ jobs:
         run: |
           perl Makefile.PL
           cpanm --notest --quiet --local-lib="$GITHUB_WORKSPACE/.github/cpm/lib/perl5" Module::CPANfile
-          make cpanfile GEN_CPANFILE_ARGS='-A -X oracle'
+          make cpanfile GEN_CPANFILE_ARGS='-A -U oracle'
           perl -I"$GITHUB_WORKSPACE/.github/cpm/lib/perl5" "$GITHUB_WORKSPACE/.github/cpm/bin/cpm" install \
           && tar -C "$GITHUB_WORKSPACE" \
               --exclude 'local/cache/*' \
