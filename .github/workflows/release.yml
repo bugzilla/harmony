@@ -49,11 +49,13 @@ jobs:
            curl libssl-dev zlib1g-dev openssl \
            libexpat-dev cmake git libcairo-dev \
            unzip wget
-      - name: cpm install
+      - name: Run Makefile.PL
         run: |
           perl Makefile.PL
           cpanm --notest --quiet --local-lib="$GITHUB_WORKSPACE/.github/cpm/lib/perl5" Module::CPANfile
           make cpanfile GEN_CPANFILE_ARGS='-A -U oracle'
+      - name: cpm install
+        run: |
           perl -I"$GITHUB_WORKSPACE/.github/cpm/lib/perl5" "$GITHUB_WORKSPACE/.github/cpm/bin/cpm" install \
           && tar -C "$GITHUB_WORKSPACE" \
               --exclude 'local/cache/*' \
@@ -65,8 +67,6 @@ jobs:
         with:
           name: ubuntu-24.04-local-lib.tar.gz
           path: local-lib.tar.gz
-      - name: Run Makefile.PL
-        run: 'perl Makefile.PL'
       - name: Run checksetup
         run: 'perl checksetup.pl --no-database --default-localconfig --no-templates'
       - name: Run tests
