@@ -15,8 +15,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   ubuntu:
-    name: Release Tests on Ubuntu 20.04
-    runs-on: ubuntu-20.04
+    name: Release Tests on Ubuntu 24.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -27,31 +27,37 @@ jobs:
             ~/.perl-cpm/cache
             ~/.perl-cpm/builds
             **/local/
-          key: ${{ runner.os }}-ubuntu-20.04
+          key: ${{ runner.os }}-ubuntu-24.04
           restore-keys: |
-            ${{ runner.os }}-ubuntu-20.04
+            ${{ runner.os }}-ubuntu-24.04
       - name: apt install
         run: |
           sudo apt-get update
           sudo apt-get -y dist-upgrade
           sudo apt-get install --ignore-hold --allow-downgrades -y \
            apache2 \
-           mariadb-client-10.3 \
-           netcat \
+           cpanminus \
+           mariadb-client \
+           netcat-traditional \
            build-essential \
            libapache2-mod-perl2 \
            libapache2-mod-perl2-dev \
+           libgd3 \
+           libgd-dev \
            perlmagick \
            graphviz \
            curl libssl-dev zlib1g-dev openssl \
            libexpat-dev cmake git libcairo-dev \
-           unzip wget 
-      - name: cpm install
+           unzip wget
+      - name: Run Makefile.PL
         run: |
           perl Makefile.PL
-          #make cpanfile GEN_CPANFILE_ARGS='-A'
-          perl -I$GITHUB_WORKSPACE/.github/cpm/lib/perl5 $GITHUB_WORKSPACE/.github/cpm/bin/cpm install \
-          && tar -C $GITHUB_WORKSPACE \
+          cpanm --notest --quiet --local-lib="$GITHUB_WORKSPACE/.github/cpm/lib/perl5" Module::CPANfile
+          make cpanfile GEN_CPANFILE_ARGS='-A -U oracle'
+      - name: cpm install
+        run: |
+          perl -I"$GITHUB_WORKSPACE/.github/cpm/lib/perl5" "$GITHUB_WORKSPACE/.github/cpm/bin/cpm" install \
+          && tar -C "$GITHUB_WORKSPACE" \
               --exclude 'local/cache/*' \
               --exclude 'local/man/*' \
               --exclude '*.pod' \
@@ -59,10 +65,8 @@ jobs:
       - name: Save dependencies
         uses: actions/upload-artifact@v4
         with:
-          name: ubuntu-20.04-local-lib.tar.gz
+          name: ubuntu-24.04-local-lib.tar.gz
           path: local-lib.tar.gz
-      - name: Run Makefile.PL
-        run: 'perl Makefile.PL'
       - name: Run checksetup
         run: 'perl checksetup.pl --no-database --default-localconfig --no-templates'
       - name: Run tests

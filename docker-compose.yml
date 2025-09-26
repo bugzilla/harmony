@@ -95,9 +95,9 @@ services:
 #      - memcached
 
   bugzilla6.mysql8:
-    build:
-      context: .
-      dockerfile: docker/images/Dockerfile.mysql8
+    image: mysql:8
+    command:
+      - '--max_allowed_packet=64M'
     volumes:
       - bugzilla6-mysql-db:/var/lib/mysql
     tmpfs:

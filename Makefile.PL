@@ -90,6 +90,7 @@ my %requires = (
   'Role::Tiny'                 => '2.000003',
   'Scope::Guard'               => '0.21',
   'Sereal'                     => '4.004',
+  'Sub::Identify'              => 0,
   'Sub::Quote'                 => '2.005000',
   'Template'                   => '3.008',
   'Text::CSV_XS'               => '1.26',
@@ -199,7 +200,7 @@ my %optional_features = (
   jsonrpc => {
     description => 'JSON-RPC Interface',
     prereqs     => {
-      runtime => {requires => {'JSON::RPC' => '== 1.01', 'Test::Taint' => '1.06'}}
+      runtime => {requires => {'JSON::RPC' => '1.01', 'Test::Taint' => '1.06'}}
     }
   },
   linux_pdeath => {
@@ -283,7 +284,7 @@ my %optional_features = (
   rest => {
     description => 'REST Interface',
     prereqs     => {
-      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '==1.01',}}
+      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '1.01',}}
     }
   },
   s3 => {
