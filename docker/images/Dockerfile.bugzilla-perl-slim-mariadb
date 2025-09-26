@@ -1,8 +1,9 @@
-FROM perl:5.38.0-slim AS builder
+FROM bugzilla/bugzilla-perl-slim:20250925.1 AS builder
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \
  && apt-get install -y \
+    libmariadb-dev \
     apt-file \
     build-essential \
     cmake \
@@ -17,20 +18,17 @@ RUN apt-get update \
     unzip \
     wget
 
-RUN cpanm --notest --quiet App::cpm Module::CPANfile Carton::Snapshot
-
 WORKDIR /app
 
 COPY Makefile.PL Bugzilla.pm gen-cpanfile.pl /app/
 COPY extensions/ /app/extensions/
 
+RUN cpanm --notest --quiet App::cpm Module::CPANfile Carton::Snapshot
+
 RUN perl Makefile.PL
-RUN make cpanfile GEN_CPANFILE_ARGS="-D better_xff -D jsonrpc -D xmlrpc -D docker"
+RUN make cpanfile GEN_CPANFILE_ARGS="-D mariadb"
 
 RUN carton install
-
-# secure mail loop fixes
-RUN cpm install http://s3.amazonaws.com/moz-devservices-bmocartons/third-party/Crypt-OpenPGP-1.15.tar.gz
 
 RUN apt-file update
 RUN find local -name '*.so' -exec ldd {} \; \
@@ -40,7 +38,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
     | xargs -IFILE apt-file search -l FILE \
     | sort -u > PACKAGES
 
-FROM perl:5.38.0-slim
+FROM bugzilla/bugzilla-perl-slim:20250925.1
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -49,12 +47,11 @@ COPY --from=builder /app/PACKAGES /app/PACKAGES
 
 RUN apt-get update \
     && apt-get install -y \
-       curl \
-       git \
-       graphviz \
-       libcap2-bin \
-       rsync \
+       gnupg
+
+RUN apt-get update \
+    && apt-get install -y \
+       mariadb-client \
        $(cat /app/PACKAGES) \
     && rm -rf /var/cache/apt/* /var/lib/apt/lists/*
 
-RUN useradd -u 10001 -U app -m && setcap 'cap_net_bind_service=+ep' /usr/local/bin/perl

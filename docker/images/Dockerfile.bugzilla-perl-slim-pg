@@ -1,4 +1,4 @@
-FROM bugzilla/bugzilla-perl-slim:20240410.1 AS builder
+FROM bugzilla/bugzilla-perl-slim:20250925.1 AS builder
 
 # reinstall the build prereqs on the temporary image
 RUN apt-get update \
@@ -49,7 +49,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
 
 # now we start over with a new image so the final image doesn't contain
 # developer tools
-FROM bugzilla/bugzilla-perl-slim:20240410.1
+FROM bugzilla/bugzilla-perl-slim:20250925.1
 
 ENV DEBIAN_FRONTEND noninteractive
 

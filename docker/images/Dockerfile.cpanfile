@@ -1,10 +1,10 @@
-FROM perl:5.38.0-slim
+FROM perl:5.38.2-slim
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \
  && apt-get install -y \
     build-essential curl libssl-dev zlib1g-dev openssl \
-    libexpat-dev cmake git libcairo-dev libgd-dev \
+    libexpat-dev cmake cpanminus git libcairo-dev libgd-dev \
     unzip wget
 
 # The Perl image is based on Debian, which doesn't have MySQL 8, and the
