@@ -79,7 +79,7 @@ sub check_regexp {
 sub check_email {
   my ($value) = @_;
   my ($address) = Email::Address::XS->parse($value);
-  if (!$address->is_valid) {
+  if (defined $address && !$address->is_valid) {
     return "must be a valid email address.";
   }
   return "";

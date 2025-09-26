@@ -38,6 +38,22 @@
     [% END %]
   </td>
 </tr>
+<tr>
+<th> <label for="email"> Email address: </label> </th>
+<td>
+    [% IF editusers %]
+      <input size="64" maxlength="255" name="email"
+             id="email" value="[% otheruser.email FILTER html %]">
+      [% IF editform %]
+        [% IF !otheruser.in_group('bz_sudo_protect') %]
+          <br>
+        [% END %]
+      [% END %]
+    [% ELSE %]
+      [% otheruser.email FILTER html %]
+    [% END %]
+</td>
+</tr>
 [% IF default_authorizer.extern_id_used %]
   <tr>
     <th><label for="extern_id">External Login ID:</label></th>
@@ -113,7 +129,7 @@
     <th><label for="reset_bounce">Reset Bounce Count</label></th>
     <td>
       <input type="checkbox" name="reset_bounce" id="reset_bounce" value="1">
-      (<a href="/bounced_emails/[% otheruser.id FILTER uri %]" title="View bounce email history">
+      (<a href="/bounced_emails/[% user.id FILTER uri %]" title="View bounce email history">
         [% otheruser.bounce_count FILTER html %]</a>)
     </td>
   </tr>
@@ -128,7 +144,7 @@
          maxrows        = 10
          defaultrows    = 10
          cols           = 60
-         defaultcontent = otheruser.disabledtext
+         defaultcontent = user.disabledtext
        %]<br>
       (If non-empty, then the account will be disabled, and this text should
       explain why.)
@@ -140,7 +156,7 @@
   <tr>
     <th><label for="mfa">Two-factor Auth:</label></th>
     <td>
-      [% IF user.in_group('bz_can_disable_mfa') %]
+      [% IF otheruser.in_group('bz_can_disable_mfa') %]
         [% IF otheruser.mfa %]
           <select name="mfa" value="mfa">
             <option value="">Disable</option>

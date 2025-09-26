@@ -77,14 +77,27 @@ elsif ($action eq 'list') {
   my $matchstr      = trim($cgi->param('matchstr'));
   my $matchtype     = $cgi->param('matchtype');
   my $grouprestrict = $cgi->param('grouprestrict') || '0';
-  my $query
-    = 'SELECT DISTINCT userid, login_name, realname, is_enabled, '
-    . $dbh->sql_date_format('last_seen_date', '%Y-%m-%d')
-    . ' AS last_seen_date '
-    . 'FROM profiles';
+
   my @bindValues;
   my $nextCondition;
   my $visibleGroups;
+
+  my $select_fields = 'profiles.userid, profiles.login_name, profiles.realname, profiles.is_enabled, '
+                  . $dbh->sql_date_format('profiles.last_seen_date', '%Y-%m-%d') . ' AS last_seen_date';
+
+  # Add email as a column from profiles_emails table
+  $select_fields .= ', profiles_emails.email AS email';
+
+  my $query = 'SELECT DISTINCT ' . $select_fields . ' FROM profiles';
+  
+  # Join the two tables by userid
+  $query .= ' INNER JOIN profiles_emails ON profiles.userid = profiles_emails.user_id';
+
+  my $expr;
+  if ($matchvalue eq 'email') {
+    $expr = 'profiles_emails.email';
+    $nextCondition = 'WHERE';
+  }
 
   # If a group ID is given, make sure it is a valid one.
   my $group;
@@ -128,20 +141,21 @@ elsif ($action eq 'list') {
     # Handle selection by login name, real name, or userid.
     if (defined($matchtype)) {
       $query .= " $nextCondition ";
-      my $expr = "";
-      if ($matchvalue eq 'userid') {
-        if ($matchstr) {
-          my $stored_matchstr = $matchstr;
-          detaint_natural($matchstr)
-            || ThrowUserError('illegal_user_id', {userid => $stored_matchstr});
+      if (!$expr) {
+        if ($matchvalue eq 'userid') {
+          if ($matchstr) {
+            my $stored_matchstr = $matchstr;
+            detaint_natural($matchstr)
+              || ThrowUserError('illegal_user_id', {userid => $stored_matchstr});
+          }
+          $expr = "profiles.userid";
+        } 
+        elsif ($matchvalue eq 'realname') {
+          $expr = "profiles.realname";
         }
-        $expr = "profiles.userid";
-      }
-      elsif ($matchvalue eq 'realname') {
-        $expr = "profiles.realname";
-      }
-      else {
-        $expr = "profiles.login_name";
+        else {
+          $expr = "profiles.login_name";
+        }
       }
 
       if ($matchtype =~ /^(regexp|notregexp|exact)$/) {
@@ -176,9 +190,9 @@ elsif ($action eq 'list') {
     }
     $query .= ' ORDER BY profiles.login_name';
 
+
     $vars->{'users'}
       = $dbh->selectall_arrayref($query, {'Slice' => {}}, @bindValues);
-
   }
 
   if ($matchtype && $matchtype eq 'exact' && scalar(@{$vars->{'users'}}) == 1) {
