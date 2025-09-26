@@ -284,7 +284,7 @@ my %optional_features = (
   rest => {
     description => 'REST Interface',
     prereqs     => {
-      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '==1.01',}}
+      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '1.01',}}
     }
   },
   s3 => {
