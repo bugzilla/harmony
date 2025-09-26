@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
-        run: sudo apt update && sudo apt install -y docker-compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
         run: docker compose -f docker-compose.test.yml build
       - name: Run sanity tests
@@ -29,7 +29,7 @@ jobs:
 #    steps:
 #      - uses: actions/checkout@v4
 #      - name: Install docker-compose
-#        run: sudo apt update && sudo apt install -y docker-compose
+#        run: sudo apt-get update && sudo apt-get install -y docker-compose
 #      - name: Build the Docker images
 #        run: docker compose -f docker-compose.test.yml build
 #      - name: Run webservice tests
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
-        run: sudo apt update && sudo apt install -y docker-compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
         run: docker compose -f docker-compose.test.yml build
       - name: Run bmo specific tests
@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
-        run: sudo apt update && sudo apt install -y docker-compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
         run: docker compose -f docker-compose.test-mariadb.yml build
       - name: Run bmo specific tests
@@ -62,18 +62,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
-        run: sudo apt update && sudo apt install -y docker-compose docker.io
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
-        run: docker-compose -f docker-compose.test-pg.yml build
+        run: docker compose -f docker-compose.test-pg.yml build
       - name: Run bmo specific tests
-        run: docker-compose -f docker-compose.test-pg.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
+        run: docker compose -f docker-compose.test-pg.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_sqlite:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
-        run: sudo apt update && sudo apt install -y docker-compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
         run: docker compose -f docker-compose.test-sqlite.yml build
       - name: Run bmo specific tests
