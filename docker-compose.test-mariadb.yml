@@ -8,7 +8,7 @@ services:
   bugzilla6.test:
     build:
       args:
-        - BZDB=-mariadb106
+        - BZDB=-mariadb
       context: .
       dockerfile: Dockerfile
     command: dev_httpd

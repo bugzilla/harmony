@@ -1,4 +1,4 @@
-FROM bugzilla/bugzilla-perl-slim:20240410.1 AS builder
+FROM bugzilla/bugzilla-perl-slim:20250925.1 AS builder
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \
@@ -6,6 +6,7 @@ RUN apt-get update \
     apt-file \
     build-essential \
     cmake \
+    cpanminus \
     curl \
     git \
     libcairo-dev \
@@ -47,7 +48,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
     | xargs -IFILE apt-file search -l FILE \
     | sort -u > PACKAGES
 
-FROM bugzilla/bugzilla-perl-slim:20240410.1
+FROM bugzilla/bugzilla-perl-slim:20250925.1
 
 ENV DEBIAN_FRONTEND noninteractive
 
