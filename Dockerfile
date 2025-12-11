@@ -1,7 +1,7 @@
 ARG BZDB="-mysql"
 FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 ENV LOG4PERL_CONFIG_FILE=log4perl-json.conf
 

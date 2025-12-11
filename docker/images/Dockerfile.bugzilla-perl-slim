@@ -43,7 +43,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
 
 FROM perl:5.38.2-slim
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=builder /app/local /app/local
 COPY --from=builder /app/PACKAGES /app/PACKAGES

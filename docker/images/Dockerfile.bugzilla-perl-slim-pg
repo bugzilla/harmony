@@ -51,7 +51,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
 # developer tools
 FROM bugzilla/bugzilla-perl-slim:20250925.1
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # copy the stuff we built over from the temporary image
 COPY --from=builder /app/local /app/local
