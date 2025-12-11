@@ -79,7 +79,7 @@ select IMAGE in $FILES; do
     if [ $? == 0 ]; then
         echo
         echo "The build appears to have succeeded. Don't forget to change the FROM line"
-        echo "at the top of Dockerfile to use:"
+        echo "at the top of Dockerfile and each of docker/Dockerfile.* to use:"
         echo "  bugzilla/${IMAGE}:${DATE}.${ITER}"
         echo "to make use of this image."
         echo
