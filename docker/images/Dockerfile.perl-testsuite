@@ -5,7 +5,8 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-FROM ubuntu:24.04
+ARG BZDB=""
+FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
 
 WORKDIR /app
 
