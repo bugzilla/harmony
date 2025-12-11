@@ -86,7 +86,7 @@ elif [ "$1" == "sqlite" ]; then
 elif [ "$1" == "mariadb" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-mariadb.yml
 elif [ "$1" == "release" ]; then
-    DOCKER_FILE=docker/images/Dockerfile.release-test
+    DOCKER_FILE=docker/images/Dockerfile.perl-testsuite
     $DOCKER build -t bugzilla-release-test -f $DOCKER_FILE .
     if [ $? == 0 ]; then
         $DOCKER run --rm bugzilla-release-test
