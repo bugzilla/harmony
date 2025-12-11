@@ -14,6 +14,7 @@ on:
 
 jobs:
   test_sanity:
+    name: Sanity Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +37,7 @@ jobs:
 #        run: docker compose -f docker-compose.test-mysql.yml run bugzilla6.test test_webservices
 
   test_bugzilla6_mysql:
+    name: Interactive Tests with MySQL
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +49,7 @@ jobs:
         run: docker compose -f docker-compose.test-mysql.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_mariadb:
+    name: Interactive Tests with MariaDB
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,6 +61,7 @@ jobs:
         run: docker compose -f docker-compose.test-mariadb.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_pg:
+    name: Interactive Tests with PostgreSQL
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,6 +73,7 @@ jobs:
         run: docker compose -f docker-compose.test-pg.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_sqlite:
+    name: Interactive Tests with SQLite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -80,7 +85,7 @@ jobs:
         run: docker compose -f docker-compose.test-sqlite.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_release:
-    name: Release Tests on Ubuntu 24.04
+    name: Perl Test Suite
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
