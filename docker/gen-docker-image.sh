@@ -108,6 +108,8 @@ select IMAGE in $FILES; do
                 *)
                     echo "Not pushing. You can just run this script again when you're ready"
                     echo "to push. The prior build result is cached."
+                    echo "Remember NOT to commit any changes to the FROM lines of Dockerfiles until"
+                    echo "you've pushed to DockerHub."
                     ;;
             esac
         fi
