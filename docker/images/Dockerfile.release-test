@@ -34,7 +34,7 @@ COPY . /app/
 # Run Makefile.PL and install dependencies
 RUN perl Makefile.PL && \
     cpanm --notest --quiet --local-lib="/app/local" Module::CPANfile && \
-    make cpanfile GEN_CPANFILE_ARGS='-A -U oracle' && \
+    make cpanfile GEN_CPANFILE_ARGS='-A -U oracle -U mariadb -U pg -U mysql' && \
     cpanm --notest --quiet --local-lib="/app/local" -f --installdeps .
 
 # Run checksetup
