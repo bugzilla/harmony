@@ -20,9 +20,9 @@ jobs:
       - name: Install docker-compose
         run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
-        run: docker compose -f docker-compose.test.yml build
+        run: docker compose -f docker-compose.test-mysql.yml build
       - name: Run sanity tests
-        run: docker compose -f docker-compose.test.yml run --no-deps bugzilla6.test test_sanity t/*.t extensions/*/t/*.t
+        run: docker compose -f docker-compose.test-mysql.yml run --no-deps bugzilla6.test test_sanity t/*.t extensions/*/t/*.t
 
 #  test_webservices:
 #    runs-on: ubuntu-latest
@@ -31,9 +31,9 @@ jobs:
 #      - name: Install docker-compose
 #        run: sudo apt-get update && sudo apt-get install -y docker-compose
 #      - name: Build the Docker images
-#        run: docker compose -f docker-compose.test.yml build
+#        run: docker compose -f docker-compose.test-mysql.yml build
 #      - name: Run webservice tests
-#        run: docker compose -f docker-compose.test.yml run bugzilla6.test test_webservices
+#        run: docker compose -f docker-compose.test-mysql.yml run bugzilla6.test test_webservices
 
   test_bugzilla6_mysql:
     runs-on: ubuntu-latest
@@ -42,9 +42,9 @@ jobs:
       - name: Install docker-compose
         run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
-        run: docker compose -f docker-compose.test.yml build
+        run: docker compose -f docker-compose.test-mysql.yml build
       - name: Run bmo specific tests
-        run: docker compose -f docker-compose.test.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
+        run: docker compose -f docker-compose.test-mysql.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_mariadb:
     runs-on: ubuntu-latest
@@ -78,4 +78,15 @@ jobs:
         run: docker compose -f docker-compose.test-sqlite.yml build
       - name: Run bmo specific tests
         run: docker compose -f docker-compose.test-sqlite.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
+
+  test_release:
+    name: Release Tests on Ubuntu 24.04
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t bugzilla-release-test -f docker/images/Dockerfile.release-test .
+      - name: Run tests
+        run: docker run --rm bugzilla-release-test
 

@@ -6,10 +6,16 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
+if [ ! -e 'Makefile.PL' ]; then
+    echo
+    echo "Please run this from the root of the Bugzilla source tree."
+    echo
+    exit -1
+fi
 if [ -z "$DOCKER" ]; then
     DOCKER=`which docker`
 fi
-if [ ! -x "$DOCKER" ]; then
+if [ -n "$DOCKER" ] && [ ! -x "$DOCKER" ]; then
     echo
     echo "You specified a custom Docker executable via the DOCKER"
     echo "environment variable at $DOCKER"

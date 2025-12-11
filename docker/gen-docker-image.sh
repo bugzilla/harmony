@@ -15,7 +15,7 @@ fi
 if [ -z "$DOCKER" ]; then
     DOCKER=`which docker`
 fi
-if [ ! -x "$DOCKER" ]; then
+if [ -n "$DOCKER" ] && [ ! -x "$DOCKER" ]; then
     echo
     echo "You specified a custom Docker executable via the DOCKER"
     echo "environment variable at $DOCKER"

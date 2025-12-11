@@ -15,7 +15,7 @@ fi
 if [ -z "$DOCKER" ]; then
     DOCKER=`which docker`
 fi
-if [ ! -x "$DOCKER" ]; then
+if [ -n "$DOCKER" ] && [ ! -x "$DOCKER" ]; then
     echo
     echo "You specified a custom Docker executable via the DOCKER"
     echo "environment variable at $DOCKER"
@@ -51,17 +51,53 @@ export DOCKER_CLI_HINTS=false
 export CI=""
 export CIRCLE_SHA1=""
 export CIRCLE_BUILD_URL=""
-DOCKER_COMPOSE_FILE=docker-compose.test.yml
-if [ "$1" == "pg" ]; then
+
+TEST_NAME="test_bmo"
+DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
+if [ "$#" -eq 0 ]; then
+    echo "Available test options:"
+    echo "  1) sanity   - Run sanity tests"
+    echo "  2) mysql    - Run BMO tests with MySQL (default)"
+    echo "  3) pg       - Run BMO tests with PostgreSQL"
+    echo "  4) sqlite   - Run BMO tests with SQLite"
+    echo "  5) mariadb  - Run BMO tests with MariaDB"
+    echo "  6) release  - Run release tests"
+    echo
+    read -p "Select a test option (1-6, default is mysql): " choice
+    case "$choice" in
+        1) set -- "sanity" ;;
+        2|"") set -- "mysql" ;;
+        3) set -- "pg" ;;
+        4) set -- "sqlite" ;;
+        5) set -- "mariadb" ;;
+        6) set -- "release" ;;
+        *) echo "Invalid choice. Using default (mysql)"; set -- "mysql" ;;
+    esac
+fi
+if [ "$1" == "sanity" ]; then
+    DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
+    TEST_NAME="test_sanity"
+elif [ "$1" == "mysql" ]; then
+    DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
+elif [ "$1" == "pg" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-pg.yml
 elif [ "$1" == "sqlite" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-sqlite.yml
 elif [ "$1" == "mariadb" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-mariadb.yml
+elif [ "$1" == "release" ]; then
+    DOCKER_FILE=docker/images/Dockerfile.release-test
+    $DOCKER build -t bugzilla-release-test -f $DOCKER_FILE .
+    if [ $? == 0 ]; then
+        $DOCKER run --rm bugzilla-release-test
+    else
+        echo "docker build failed."
+    fi
+    exit $?
 fi
 $DOCKER compose -f $DOCKER_COMPOSE_FILE build
 if [ $? == 0 ]; then
-    $DOCKER compose -f $DOCKER_COMPOSE_FILE run --rm --name bugzilla6.test bugzilla6.test test_bmo -q -f t/bmo/*.t
+    $DOCKER compose -f $DOCKER_COMPOSE_FILE run --rm --name bugzilla6.test bugzilla6.test $TEST_NAME -q -f t/bmo/*.t
     $DOCKER compose -f $DOCKER_COMPOSE_FILE down
 else
     echo "docker compose build failed."
