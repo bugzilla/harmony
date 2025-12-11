@@ -78,11 +78,27 @@ select IMAGE in $FILES; do
     $DOCKER build $CACHE -t bugzilla/${IMAGE}:${DATE}.${ITER} -f docker/images/Dockerfile.${IMAGE} .
     if [ $? == 0 ]; then
         echo
-        echo "The build appears to have succeeded. Don't forget to change the FROM line"
-        echo "at the top of Dockerfile and each of docker/Dockerfile.* to use:"
-        echo "  bugzilla/${IMAGE}:${DATE}.${ITER}"
-        echo "to make use of this image."
+        echo "The build appears to have succeeded."
+        echo "Updating FROM lines in Dockerfiles to use bugzilla/${IMAGE}:${DATE}.${ITER}..."
         echo
+
+        # Update all Dockerfiles that reference this image
+        for dockerfile in Dockerfile docker/images/Dockerfile.*; do
+            if [ -f "$dockerfile" ]; then
+                # Check for both direct references and BZDB variable references
+                if grep -q "FROM bugzilla/${IMAGE}:" "$dockerfile" || grep -q "FROM bugzilla/${IMAGE}\${BZDB}:" "$dockerfile"; then
+                    # Create a backup
+                    cp "$dockerfile" "${dockerfile}.bak"
+                    # Update the FROM line - handle both direct and BZDB variable patterns
+                    sed -i.tmp "s|FROM bugzilla/${IMAGE}:[^ ]*|FROM bugzilla/${IMAGE}:${DATE}.${ITER}|g" "$dockerfile"
+                    sed -i.tmp "s|FROM bugzilla/${IMAGE}\${BZDB}:[^ ]*|FROM bugzilla/${IMAGE}\${BZDB}:${DATE}.${ITER}|g" "$dockerfile"
+                    rm -f "${dockerfile}.tmp"
+                    echo "  Updated: $dockerfile"
+                fi
+            fi
+        done
+        echo
+
         # check if the user is logged in
         if [ -z "$PYTHON" ]; then
             PYTHON=`which python`
