@@ -95,3 +95,15 @@ jobs:
       - name: Run tests
         run: docker run --rm bugzilla-release-test
 
+  shellcheck:
+    name: ShellCheck (linting for shell scripts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run ShellCheck on all scripts
+        run: |
+          find . -type f -name '*.sh' | while read -r file; do
+            shellcheck -x "$file"
+          done
