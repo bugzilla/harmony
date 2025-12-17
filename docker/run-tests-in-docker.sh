@@ -7,6 +7,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 # Source common Docker script checks and functions
+# shellcheck source=docker/common.sh
 source "$(dirname "$0")/common.sh"
 
 export CI=""
@@ -24,7 +25,7 @@ if [ "$#" -eq 0 ]; then
     echo "  5) mariadb  - Run BMO tests with MariaDB"
     echo "  6) release  - Run release tests"
     echo
-    read -p "Select a test option (1-6, default is mysql): " choice
+    read -rp "Select a test option (1-6, default is mysql): " choice
     case "$choice" in
         1) set -- "sanity" ;;
         2|"") set -- "mysql" ;;
@@ -48,18 +49,22 @@ elif [ "$1" == "mariadb" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-mariadb.yml
 elif [ "$1" == "release" ]; then
     DOCKER_FILE=docker/images/Dockerfile.perl-testsuite
-    $DOCKER build -t bugzilla-release-test -f $DOCKER_FILE .
-    if [ $? == 0 ]; then
+    if $DOCKER build -t bugzilla-release-test -f "$DOCKER_FILE" .; then
         $DOCKER run --rm bugzilla-release-test
     else
         echo "docker build failed."
     fi
     exit $?
 fi
-$DOCKER compose -f $DOCKER_COMPOSE_FILE build
-if [ $? == 0 ]; then
-    $DOCKER compose -f $DOCKER_COMPOSE_FILE run --rm --name bugzilla6.test bugzilla6.test $TEST_NAME -q -f t/bmo/*.t
-    $DOCKER compose -f $DOCKER_COMPOSE_FILE down
+if $DOCKER compose -f "$DOCKER_COMPOSE_FILE" build; then
+    if $DOCKER compose -f "$DOCKER_COMPOSE_FILE" run --rm --name bugzilla6.test bugzilla6.test "$TEST_NAME" -q -f t/bmo/*.t; then
+        $DOCKER compose -f "$DOCKER_COMPOSE_FILE" down
+    else
+        echo "docker compose run failed."
+        $DOCKER compose -f "$DOCKER_COMPOSE_FILE" down
+        exit 1
+    fi
 else
     echo "docker compose build failed."
+    exit 1
 fi

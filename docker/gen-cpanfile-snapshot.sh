@@ -7,6 +7,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 # Source common Docker script checks and functions
+# shellcheck source=docker/common.sh
 source "$(dirname "$0")/common.sh"
 
 if [ ! -f "docker/images/Dockerfile.cpanfile" ]; then
@@ -14,7 +15,7 @@ if [ ! -f "docker/images/Dockerfile.cpanfile" ]; then
     echo "Can't locate the Dockerfile, try running from the root of"
     echo "your Bugzilla checkout."
     echo
-    exit -1
+    exit 1
 fi
 
 $DOCKER build -t bugzilla-cpanfile -f docker/images/Dockerfile.cpanfile .

@@ -17,16 +17,20 @@ if ! (declare -A __test_assoc 2>/dev/null); then
         exec bash "$0" "$@"
     else
         echo_red "Could not find bash. Put it in your PATH and try again."
-        exit -1
+        exit 1
     fi
 fi
 
 # Source common Docker script checks and functions
+# shellcheck source=docker/common.sh
 source "$(dirname "$0")/common.sh"
 
-FILES=$(ls -1 docker/images/Dockerfile.b* | grep -v '\.bak$' | sed -e 's@^docker/images/Dockerfile\.@@')
+FILES=()
+for f in docker/images/Dockerfile.b*; do
+    [[ "$f" != *.bak ]] && FILES+=("${f#docker/images/Dockerfile.}")
+done
 PS3="Choose an image to build or CTRL-C to abort: "
-select IMAGE in "All images" $FILES; do
+select IMAGE in "All images" "${FILES[@]}"; do
     CACHE=""
     if [ "$1" == "--no-cache" ]; then
         CACHE="--no-cache"
@@ -39,9 +43,9 @@ select IMAGE in "All images" $FILES; do
 
     # Determine which images to build
     if [ "$IMAGE" == "All images" ]; then
-        IMAGES_TO_BUILD=($FILES)
+        IMAGES_TO_BUILD=("${FILES[@]}")
     else
-        IMAGES_TO_BUILD=($IMAGE)
+        IMAGES_TO_BUILD=("$IMAGE")
     fi
 
     # Track successfully built images
@@ -54,18 +58,15 @@ select IMAGE in "All images" $FILES; do
         # number on the end.
         DATE=$(date +"%Y%m%d")
         ITER=1
-        $DOCKER pull bugzilla/${IMAGE}:${DATE}.${ITER} >/dev/null 2>/dev/null
-        while [ $? == 0 ]; do
+        while $DOCKER pull "bugzilla/${IMAGE}:${DATE}.${ITER}" >/dev/null 2>/dev/null; do
             # as long as we succesfully pull, keep bumping the number on the end
             ((ITER++))
-            $DOCKER pull bugzilla/${IMAGE}:${DATE}.${ITER} >/dev/null 2>/dev/null
         done
         LINE="Building bugzilla/${IMAGE}:${DATE}.${ITER}"
         echo "##${LINE//?/#}##"
         echo "# ${LINE} #"
         echo "##${LINE//?/#}##"
-        $DOCKER build $CACHE -t bugzilla/${IMAGE}:${DATE}.${ITER} -f docker/images/Dockerfile.${IMAGE} .
-        if [ $? == 0 ]; then
+        if $DOCKER build $CACHE -t "bugzilla/${IMAGE}:${DATE}.${ITER}" -f "docker/images/Dockerfile.${IMAGE}" .; then
             echo
             echo_green "The build appears to have succeeded."
 
@@ -104,7 +105,7 @@ select IMAGE in "All images" $FILES; do
             echo_red "Docker build failed for ${IMAGE}. See output above."
             echo
             if [ ${#IMAGES_TO_BUILD[@]} -eq 1 ]; then
-                exit -1
+                exit 1
             fi
         fi
     done
@@ -112,7 +113,7 @@ select IMAGE in "All images" $FILES; do
     # Check if any images were built successfully
     if [ ${#BUILT_IMAGES[@]} -eq 0 ]; then
         echo_red "No images were built successfully."
-        exit -1
+        exit 1
     fi
     echo
     echo_green "Successfully built ${#BUILT_IMAGES[@]} image(s):"
@@ -129,13 +130,13 @@ select IMAGE in "All images" $FILES; do
     fi
     if [ ! -x "$PYTHON" ]; then
         echo "The python executable specified in your PYTHON environment value or your PATH is not executable or I can't find it."
-        exit -1
+        exit 1
     fi
     AUTHINFO=$($PYTHON -c "import json; print(len(json.load(open('${HOME}/.docker/config.json','r',encoding='utf-8'))['auths']))")
-    if [ $AUTHINFO -gt 0 ]; then
+    if [ "$AUTHINFO" -gt 0 ]; then
         # user is logged in
         echo
-        read -p "Do you wish to push to DockerHub? [y/N]: " yesno
+        read -rp "Do you wish to push to DockerHub? [y/N]: " yesno
         case $yesno in
             [Yy]*)
                 echo
@@ -143,10 +144,10 @@ select IMAGE in "All images" $FILES; do
                 for img in "${!BUILT_IMAGES[@]}"; do
                     tag="${BUILT_IMAGES[$img]}"
                     echo "Pushing bugzilla/${img}:${tag}..."
-                    $DOCKER push bugzilla/${img}:${tag}
+                    $DOCKER push "bugzilla/${img}:${tag}"
                     echo "Tagging bugzilla/${img}:${tag} as bugzilla/${img}:latest..."
-                    $DOCKER tag bugzilla/${img}:${tag} bugzilla/${img}:latest
-                    $DOCKER push bugzilla/${img}:latest
+                    $DOCKER tag "bugzilla/${img}:${tag}" "bugzilla/${img}:latest"
+                    $DOCKER push "bugzilla/${img}:latest"
                 done
                 echo_green "All images pushed successfully."
                 ;;

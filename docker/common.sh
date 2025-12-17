@@ -12,7 +12,7 @@
 
 # Function to print text in red if terminal supports it
 echo_red() {
-    if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ $(tput colors 2>/dev/null || echo 0) -ge 8 ]; then
+    if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
         echo -e "\033[31m$1\033[0m"
     else
         echo "$1"
@@ -21,7 +21,7 @@ echo_red() {
 
 # Function to print text in green if terminal supports it
 echo_green() {
-    if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ $(tput colors 2>/dev/null || echo 0) -ge 8 ]; then
+    if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
         echo -e "\033[32m$1\033[0m"
     else
         echo "$1"
@@ -33,7 +33,7 @@ if [ ! -e 'Makefile.PL' ]; then
     echo
     echo_red "Please run this from the root of the Bugzilla source tree."
     echo
-    exit -1
+    exit 1
 fi
 
 # Find and validate the Docker executable
@@ -49,7 +49,7 @@ if [ -n "$DOCKER" ] && [ ! -x "$DOCKER" ]; then
     echo "DOCKER environment variable to use the one in your PATH"
     echo "if it exists."
     echo
-    exit -1
+    exit 1
 fi
 if [ -z "$DOCKER" ]; then
     echo
@@ -61,17 +61,16 @@ if [ -z "$DOCKER" ]; then
     echo "Please install docker or specify the location of the docker"
     echo "executable in the DOCKER environment variable and try again."
     echo
-    exit -1
+    exit 1
 fi
 
 # Check that Docker daemon is running
-$DOCKER info 1>/dev/null 2>/dev/null
-if [ $? != 0 ]; then
+if ! $DOCKER info >/dev/null 2>&1; then
     echo
     echo_red "The docker daemon is not running or I can't connect to it."
     echo "Please make sure it's running and try again."
     echo
-    exit -1
+    exit 1
 fi
 
 # Disable Docker CLI hints
