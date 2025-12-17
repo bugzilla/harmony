@@ -10,7 +10,7 @@
 # BASH_VERSION can be set in some shells; instead, verify declare -A works.
 if ! (declare -A __test_assoc 2>/dev/null); then
     echo "This script requires bash. Checking if you have it..."
-    bash=`which bash`
+    bash=$(which bash)
     if [ -n "$bash" ] && [ -x "$bash" ]; then
         echo "Found bash at $bash. Re-running script with bash..."
         echo
@@ -24,7 +24,7 @@ fi
 # Source common Docker script checks and functions
 source "$(dirname "$0")/common.sh"
 
-FILES=`ls -1 docker/images/Dockerfile.b* | grep -v '\.bak$' | sed -e 's@^docker/images/Dockerfile\.@@'`
+FILES=$(ls -1 docker/images/Dockerfile.b* | grep -v '\.bak$' | sed -e 's@^docker/images/Dockerfile\.@@')
 PS3="Choose an image to build or CTRL-C to abort: "
 select IMAGE in "All images" $FILES; do
     CACHE=""
@@ -52,7 +52,7 @@ select IMAGE in "All images" $FILES; do
         # a code based on today's date, then attempt to pull it from DockerHub. If
         # we successfully pull, then it already exists, and we bump the interation
         # number on the end.
-        DATE=`date +"%Y%m%d"`
+        DATE=$(date +"%Y%m%d")
         ITER=1
         $DOCKER pull bugzilla/${IMAGE}:${DATE}.${ITER} >/dev/null 2>/dev/null
         while [ $? == 0 ]; do
@@ -122,16 +122,16 @@ select IMAGE in "All images" $FILES; do
 
     # check if the user is logged in
     if [ -z "$PYTHON" ]; then
-        PYTHON=`which python`
+        PYTHON=$(which python)
     fi
     if [ -z "$PYTHON" ]; then
-        PYTHON=`which python3`
+        PYTHON=$(which python3)
     fi
     if [ ! -x "$PYTHON" ]; then
         echo "The python executable specified in your PYTHON environment value or your PATH is not executable or I can't find it."
         exit -1
     fi
-    AUTHINFO=`$PYTHON -c "import json; print(len(json.load(open('${HOME}/.docker/config.json','r',encoding='utf-8'))['auths']))"`
+    AUTHINFO=$($PYTHON -c "import json; print(len(json.load(open('${HOME}/.docker/config.json','r',encoding='utf-8'))['auths']))")
     if [ $AUTHINFO -gt 0 ]; then
         # user is logged in
         echo

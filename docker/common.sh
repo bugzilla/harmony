@@ -38,7 +38,7 @@ fi
 
 # Find and validate the Docker executable
 if [ -z "$DOCKER" ]; then
-    DOCKER=`which docker`
+    DOCKER=$(which docker)
 fi
 if [ -n "$DOCKER" ] && [ ! -x "$DOCKER" ]; then
     echo
