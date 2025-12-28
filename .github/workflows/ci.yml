@@ -14,15 +14,16 @@ on:
 
 jobs:
   test_sanity:
+    name: Sanity Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
         run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
-        run: docker compose -f docker-compose.test.yml build
+        run: docker compose -f docker-compose.test-mysql.yml build
       - name: Run sanity tests
-        run: docker compose -f docker-compose.test.yml run --no-deps bugzilla6.test test_sanity t/*.t extensions/*/t/*.t
+        run: docker compose -f docker-compose.test-mysql.yml run --no-deps bugzilla6.test test_sanity t/*.t extensions/*/t/*.t
 
 #  test_webservices:
 #    runs-on: ubuntu-latest
@@ -31,22 +32,24 @@ jobs:
 #      - name: Install docker-compose
 #        run: sudo apt-get update && sudo apt-get install -y docker-compose
 #      - name: Build the Docker images
-#        run: docker compose -f docker-compose.test.yml build
+#        run: docker compose -f docker-compose.test-mysql.yml build
 #      - name: Run webservice tests
-#        run: docker compose -f docker-compose.test.yml run bugzilla6.test test_webservices
+#        run: docker compose -f docker-compose.test-mysql.yml run bugzilla6.test test_webservices
 
   test_bugzilla6_mysql:
+    name: Interactive Tests with MySQL
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install docker-compose
         run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Build the Docker images
-        run: docker compose -f docker-compose.test.yml build
+        run: docker compose -f docker-compose.test-mysql.yml build
       - name: Run bmo specific tests
-        run: docker compose -f docker-compose.test.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
+        run: docker compose -f docker-compose.test-mysql.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_mariadb:
+    name: Interactive Tests with MariaDB
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,6 +61,7 @@ jobs:
         run: docker compose -f docker-compose.test-mariadb.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_pg:
+    name: Interactive Tests with PostgreSQL
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,6 +73,7 @@ jobs:
         run: docker compose -f docker-compose.test-pg.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
   test_bugzilla6_sqlite:
+    name: Interactive Tests with SQLite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -79,3 +84,26 @@ jobs:
       - name: Run bmo specific tests
         run: docker compose -f docker-compose.test-sqlite.yml run -e CI=1 bugzilla6.test test_bmo -q -f t/bmo/*.t
 
+  test_release:
+    name: Perl Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t bugzilla-release-test -f docker/images/Dockerfile.perl-testsuite .
+      - name: Run tests
+        run: docker run --rm bugzilla-release-test
+
+  shellcheck:
+    name: ShellCheck (linting for shell scripts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run ShellCheck on all scripts
+        run: |
+          find . -type f -name '*.sh' | while read -r file; do
+            shellcheck -x "$file"
+          done
