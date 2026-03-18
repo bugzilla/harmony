@@ -283,7 +283,7 @@ sub build_message_id {
     $user_id = Bugzilla->user->id;
   }
 
-  my $sitespec = '@' . Bugzilla->params->{'urlbase'};
+  my $sitespec = '@' . Bugzilla->localconfig->urlbase;
   $sitespec =~ s/:\/\//\./;               # Make the protocol look like part of the domain
   $sitespec =~ s/^([^:\/]+):(\d+)/$1/;    # Remove a port number, to relocate
   if ($2) {
