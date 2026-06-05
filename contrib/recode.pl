@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -71,8 +71,8 @@ sub trunc {
 
 sub is_valid_utf8 {
   my ($str) = @_;
-  Encode::_utf8_on($str);
-  return is_utf8($str, 1);
+  my $copy = $str;
+  return utf8::decode($copy);
 }
 
 ###############
@@ -116,7 +116,9 @@ if (exists $switch{'overrides'}) {
   $file->close();
   foreach my $line (@lines) {
     chomp($line);
-    my ($digest, $encoding) = split(' ', $line);
+    my ($digest, $encoding) = split(' ', $line, 2);
+    $encoding = resolve_alias($encoding)
+      || die "'$encoding' is not a valid charset (in $switch{overrides}).";
     $overrides{$digest} = $encoding;
   }
 }
@@ -183,7 +185,7 @@ foreach my $table ($dbh->bz_table_list_real) {
 
       print "Converting $table.$column...\n";
       my $sth = $dbh->prepare(
-        "SELECT $column, $pk FROM $table 
+        "SELECT $column, $pk FROM $table
                                       WHERE $column IS NOT NULL
                                             AND $column != ''"
       );
@@ -222,7 +224,7 @@ foreach my $table ($dbh->bz_table_list_real) {
 
           # If we fail a guess, and the data is valid UTF-8,
           # just assume we failed because it's UTF-8.
-          next if is_valid_utf8($data);
+          next if !$encoding && is_valid_utf8($data);
         }
 
         # If we couldn't detect the charset (or were instructed
@@ -234,7 +236,7 @@ foreach my $table ($dbh->bz_table_list_real) {
 
         $encoding = $overrides{$digest} if $overrides{$digest};
 
-        # We only fix it if it's not ASCII or UTF-8 already.
+        # We only fix it if it's not ASCII, UTF-8, or ISO-8859-1 already.
         if ($encoding && !grep($_ eq $encoding, IGNORE_ENCODINGS)) {
           my $decoded = encode('utf8', decode($encoding, $data));
           if ($switch{'dry-run'} && $data ne $decoded) {
@@ -256,7 +258,7 @@ __END__
 
 =head1 NAME
 
-recode.pl - Converts a database from one encoding (or multiple encodings) 
+recode.pl - Converts a database from one encoding (or multiple encodings)
 to UTF-8.
 
 =head1 SYNOPSIS
@@ -290,12 +292,12 @@ to UTF-8.
 
 Don't modify the database, just print out what the conversions will be.
 
-recode.pl will print out a Key for each item. You can use this in the 
+recode.pl will print out a Key for each item. You can use this in the
 overrides file, described below.
 
-=item --guess 
+=item --guess
 
-If your database is in multiple different encodings, specify this switch 
+If your database is in multiple different encodings, specify this switch
 and recode.pl will do its best to determine the original charset of the data.
 The detection is usually very reliable.
 
@@ -312,8 +314,8 @@ a fallback--when it cannot guess the charset of a particular piece
 of data, it will guess that the data is in this charset and convert
 it from this charset to UTF-8.
 
-charset-name must be a charset that is known to perl's Encode 
-module. To see a list of available charsets, do: 
+charset-name must be a charset that is known to perl's Encode
+module. To see a list of available charsets, do:
 
 C<perl -MEncode -e 'print join("\n", Encode-E<gt>encodings(":all"))'>
 
@@ -323,8 +325,8 @@ If --guess fails to guess a charset, print out the data it failed on.
 
 =item --overrides=file_name
 
-This is a way of specifying certain encodings to override the encodings of 
---guess. The file is a series of lines. The line should start with the Key 
+This is a way of specifying certain encodings to override the encodings of
+--guess. The file is a series of lines. The line should start with the Key
 from --dry-run, and then a space, and then the encoding you'd like to use.
 
 =back
