@@ -19,6 +19,7 @@ use Bugzilla::Util qw(detect_encoding);
 use Digest::MD5 qw(md5_base64);
 use Encode qw(encode decode resolve_alias is_utf8);
 use Getopt::Long;
+use IO::File;
 use Pod::Usage;
 
 #############
