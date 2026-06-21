@@ -1,0 +1,46 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
+
+ARG BZDB=""
+FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get -y dist-upgrade && \
+    apt-get install --ignore-hold --allow-downgrades -y \
+    apache2 \
+    cpanminus \
+    mariadb-client \
+    netcat-traditional \
+    build-essential \
+    libapache2-mod-perl2 \
+    libapache2-mod-perl2-dev \
+    libgd3 \
+    libgd-dev \
+    perlmagick \
+    graphviz \
+    curl libssl-dev zlib1g-dev openssl \
+    libexpat-dev cmake git libcairo-dev \
+    unzip wget && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the source code
+COPY . /app/
+
+# Run Makefile.PL and install dependencies
+RUN perl Makefile.PL && \
+    cpanm --notest --quiet --local-lib="/app/local" Module::CPANfile && \
+    make cpanfile GEN_CPANFILE_ARGS='-A -U oracle -U mariadb -U pg -U mysql' && \
+    cpanm --notest --quiet --local-lib="/app/local" -f --installdeps .
+
+# Run checksetup
+RUN perl checksetup.pl --no-database --default-localconfig --no-templates
+
+# Set the default command to run tests
+ENTRYPOINT ["prove", "-Ilocal/lib/perl5", "t"]
+CMD []

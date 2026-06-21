@@ -16,7 +16,7 @@ use base qw(Bugzilla::Extension);
 use Bugzilla::Error;
 use Bugzilla::Group;
 use Bugzilla::Util qw(remote_ip);
-use Email::Address;
+use Email::Address::XS;
 use Socket;
 
 our $VERSION = '1';
@@ -67,7 +67,7 @@ sub _comment_blocking {
   my $regex = '\b(?:' . join('|', map {quotemeta} @$blocklist) . ')\b';
   if ($params->{thetext} =~ /$regex/i) {
     Bugzilla->audit(sprintf(
-      "blocked <%s> %s from commenting, blacklisted phrase",
+      "blocked <%s> %s from commenting, blocklisted phrase",
       remote_ip(), $user->login
     ));
     ThrowUserError('antispam_comment_blocked');
@@ -80,14 +80,14 @@ sub _comment_blocking {
 
 sub _domain_blocking {
   my ($self, $login) = @_;
-  my $address = Email::Address->new(undef, $login);
+  my $address = Email::Address::XS->new(address => $login);
   my $blocked
     = Bugzilla->dbh->selectrow_array(
     "SELECT 1 FROM antispam_domain_blocklist WHERE domain=?",
     undef, $address->host);
   if ($blocked) {
     Bugzilla->audit(sprintf(
-      "blocked <%s> from creating %s, blacklisted domain",
+      "blocked <%s> from creating %s, blocklisted domain",
       remote_ip(), $login
     ));
     ThrowUserError('account_creation_restricted');
@@ -107,7 +107,7 @@ sub _ip_blocking {
     undef, $ip);
   if ($blocked) {
     Bugzilla->audit(
-      sprintf("blocked <%s> from creating %s, blacklisted IP", $ip, $login));
+      sprintf("blocked <%s> from creating %s, blocklisted IP", $ip, $login));
     ThrowUserError('account_creation_restricted');
   }
 }

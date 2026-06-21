@@ -5,8 +5,10 @@
 version: '3.6'
 
 services:
-  bmo.test:
-    build: &bmo_build
+  bugzilla6.test:
+    build:
+      args:
+        - BZDB=
       context: .
       dockerfile: Dockerfile
     command: dev_httpd
@@ -15,11 +17,11 @@ services:
       - /run
     environment:
       - 'BMO_inbound_proxies=*'
-      - BMO_db_host=bmo.db
+      - BMO_db_driver=sqlite
+      - BMO_db_host=localhost
       - BMO_db_name=bugs
       - BMO_db_pass=bugs
       - BMO_db_user=bugs
-      - BMO_db_mysql_ssl_get_pubkey=1
       - BMO_memcached_namespace=bugzilla
       - BMO_memcached_servers=memcached:11211
       - BMO_ses_username=ses@mozilla.bugs
@@ -30,9 +32,6 @@ services:
       - BZ_QA_ANSWERS_FILE=/app/.github/checksetup_answers.txt
       - BZ_QA_CONF_FILE=/app/.github/selenium_test.conf
       - BZ_QA_CONFIG=1
-      - CI=${CI}
-      - CIRCLE_SHA1=${CIRCLE_SHA1}
-      - CIRCLE_BUILD_URL=${CIRCLE_BUILD_URL}
       - LOCALCONFIG_ENV=1
       - LOG4PERL_CONFIG_FILE=log4perl-test.conf
       - LOGGING_PORT=5880
@@ -41,21 +40,8 @@ services:
       - TWD_HOST=selenium
       - TWD_PORT=4444
     depends_on:
-      - bmo.db
       - memcached
       - selenium
-
-  bmo.db:
-    image: mysql:8
-    tmpfs:
-      - /tmp
-    logging:
-      driver: "none"
-    environment:
-      - MYSQL_DATABASE=bugs
-      - MYSQL_USER=bugs
-      - MYSQL_PASSWORD=bugs
-      - MYSQL_ALLOW_EMPTY_PASSWORD=1
 
   memcached:
     image: memcached:latest
@@ -63,8 +49,5 @@ services:
   selenium:
     image: selenium/standalone-firefox:3.141.59
     shm_size: '512m'
-    ports:
-      - "5900:5900"
-
-volumes:
-  bmo-mysql-db:
+    #ports:
+    #  - "5900:5900"

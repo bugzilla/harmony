@@ -29,7 +29,8 @@ use base qw(Exporter);
   get_text template_var disable_utf8
   enable_utf8 detect_encoding email_filter
   round extract_nicks);
-use Bugzilla::Logging;
+# Bugzilla::Logging cannot be used it this file due to circular dependency
+#use Bugzilla::Logging;
 use Bugzilla::Constants;
 use Bugzilla::RNG qw(irand);
 
@@ -38,7 +39,7 @@ use Date::Parse;
 use DateTime::TimeZone;
 use DateTime;
 use Digest;
-use Email::Address;
+use Email::Address::XS;
 use Encode qw(encode decode resolve_alias);
 use Encode::Guess;
 use English qw(-no_match_vars $EGID);
@@ -227,13 +228,19 @@ sub html_light_quote {
 sub email_filter {
   my ($toencode) = @_;
   if (!Bugzilla->user->id) {
-    my @emails = Email::Address->parse($toencode);
-    if (scalar @emails) {
-      my @hosts = map { quotemeta($_->host) } @emails;
-      my $hosts_re = join('|', @hosts);
-      $toencode =~ s/\@(?:$hosts_re)//g;
-      return $toencode;
+    my $email_re = qr/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+    my @hosts;
+    while ($toencode =~ /$email_re/g) {
+      my @emails = Email::Address::XS->parse($1);
+      if (scalar @emails) {
+        my @these_hosts = map { quotemeta($_->host) } @emails;
+        push @hosts, @these_hosts;
+      }
     }
+    my $hosts_re = join('|', @hosts);
+
+    $toencode =~ s/\@(?:$hosts_re)//g;
+    return $toencode;
   }
   return $toencode;
 }
@@ -323,7 +330,6 @@ sub do_ssl_redirect_if_required {
 
   # If we're already running under SSL, never redirect.
   return if $ENV{HTTPS} && $ENV{HTTPS} eq 'on';
-  DEBUG("Redirect to HTTPS because \$ENV{HTTPS}=$ENV{HTTPS}");
   Bugzilla->cgi->redirect_to_https();
 }
 
@@ -740,15 +746,10 @@ sub validate_email_syntax {
   my $match  = Bugzilla->params->{'emailregexp'};
   my $email  = $addr . Bugzilla->params->{'emailsuffix'};
 
-  # This regexp follows RFC 2822 section 3.4.1.
-  my $addr_spec = $Email::Address::addr_spec;
-
-  # RFC 2822 section 2.1 specifies that email addresses must
-  # be made of US-ASCII characters only.
-  # Email::Address::addr_spec doesn't enforce this.
+  my $address = Email::Address::XS->parse_bare_address($email);
   if ( $addr =~ /$match/
+    && $address->is_valid
     && $email !~ /\P{ASCII}/
-    && $email =~ /^$addr_spec$/
     && length($email) <= 127)
   {
     return 1;

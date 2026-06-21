@@ -35,6 +35,8 @@ their own bugfixes to those modules, but that’s not something we want to do
 upstream.  Version 5.0 rewrote the email code to use currently-supported Perl
 modules.  That needs to be ported into Harmony.
 
+**[COMPLETED]**
+
 # Postgresql Compatibility
 
 We suspect, but don’t know for certain, that BMO may have moved to using
@@ -45,6 +47,8 @@ they used for their local customizations instead of in the actual database
 abstraction modules. This code needs to be migrated back to the database
 abstraction modules so their extension can be disposed of.
 
+**[COMPLETED]**
+
 # Sensible, Default Logging Configuration
 
 Bugzilla::Logging controls how the application logs. It has support for
@@ -53,6 +57,8 @@ app.
 
 The defaults need to be updated to log to a more generic location users are
 likely to have, or walk through setting it during the installation script.
+
+**[COMPLETED]**
 
 # Docker and Containerization
 
@@ -65,6 +71,8 @@ bugzilla.pl sub-commands can be defined in the Bugzilla::App::Cmd::* namespace.
 
 If we release harmony and it has a good (and small!) container, it will look
 good.
+
+**[COMPLETED]**
 
 # Documentation
 
@@ -83,12 +91,14 @@ were dropped or new features being picked up when compared to version 5.2.
 
 - Start with an empty list.
 - Go through [Harmony's commit
-  logs](https://github.com/bugzilla/harmony/commits/main) going all the way
-  back to Version 4.2, and make note of anything new/changed that's release-note
-  worthy.
+  logs](https://github.com/bugzilla/harmony/compare/3a0affd238cd65bc8c40e316ab20663f3110cee9...main)
+  going all the way back to Version 4.2 (the commit log at the link starts at
+  the diverging commit between the two branches), and make note of anything
+  new/changed that's release-note worthy.
 - Go through [5.2's commit
-  logs](https://github.com/bugzilla/bugzilla/commits/5.2) goinng all the way
-  back to Version 4.2
+  logs](https://github.com/bugzilla/bugzilla/compare/3a0affd238cd65bc8c40e316ab20663f3110cee9...5.2)
+  goinng all the way back to Version 4.2 (the commit log at the link starts at
+  the diverging commit between the two branches)
   - anything new/changed that is already on the list needs to be removed from
     the list (because 5.2 already had it, so it's not a change)
   - anything new/changed that is NOT already on your list needs to be added to

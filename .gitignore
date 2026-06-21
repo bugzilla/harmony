@@ -7,6 +7,7 @@
 /local/*
 /logs/*
 /template/en/custom
+/docs/doctrees
 /docs/en/rst/extensions/*
 /docs/en/rst/api/extensions/*
 /docs/en/html
@@ -19,7 +20,6 @@
 /localconfig.*
 /index.html
 /error_reports
-/.DS_Store
 /template_cache
 /Makefile
 /MYMETA.*
@@ -27,10 +27,12 @@
 /blib
 /Bugzilla-*.*/
 /local
+.DS_Store
 .vscode/perl-lang
 version.json
 __lbheartbeat__
 .perl-version
+*.bak
 
 /skins/contrib/Dusk/admin.css
 /skins/contrib/Dusk/bug.css

@@ -5,8 +5,10 @@
 version: '3.6'
 
 services:
-  bmo.test:
-    build: &bmo_build
+  bugzilla6.test:
+    build:
+      args:
+        - BZDB=-pg
       context: .
       dockerfile: Dockerfile
     command: dev_httpd
@@ -16,7 +18,7 @@ services:
     environment:
       - 'BMO_inbound_proxies=*'
       - BMO_db_driver=pg
-      - BMO_db_host=bmo.db
+      - BMO_db_host=bugzilla6.pgsql13
       - BMO_db_name=bugs
       - BMO_db_pass=bugs
       - BMO_db_user=bugs
@@ -27,12 +29,9 @@ services:
       - BMO_urlbase=AUTOMATIC
       - BUGZILLA_ALLOW_INSECURE_HTTP=1
       - BZ_ANSWERS_FILE=/app/conf/checksetup_answers.txt
-      - BZ_QA_ANSWERS_FILE=/app/.circleci/checksetup_answers.txt
-      - BZ_QA_CONF_FILE=/app/.circleci/selenium_test.conf
+      - BZ_QA_ANSWERS_FILE=/app/.github/checksetup_answers.txt
+      - BZ_QA_CONF_FILE=/app/.github/selenium_test.conf
       - BZ_QA_CONFIG=1
-      - CI=${CI}
-      - CIRCLE_SHA1=${CIRCLE_SHA1}
-      - CIRCLE_BUILD_URL=${CIRCLE_BUILD_URL}
       - LOCALCONFIG_ENV=1
       - LOG4PERL_CONFIG_FILE=log4perl-test.conf
       - LOGGING_PORT=5880
@@ -41,12 +40,12 @@ services:
       - TWD_HOST=selenium
       - TWD_PORT=4444
     depends_on:
-      - bmo.db
+      - bugzilla6.pgsql13
       - memcached
       - selenium
 
-  bmo.db:
-    image: postgres:9.0
+  bugzilla6.pgsql13:
+    image: postgres:13.22
     tmpfs:
       - /tmp
     logging:
@@ -62,8 +61,5 @@ services:
   selenium:
     image: selenium/standalone-firefox:3.141.59
     shm_size: '512m'
-    ports:
-      - "5900:5900"
-
-volumes:
-  bmo-pg-db:
+    #ports:
+    #  - "5900:5900"

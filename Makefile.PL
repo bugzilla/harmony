@@ -57,8 +57,9 @@ my %requires = (
   'Devel::NYTProf'             => '6.04',
   'Digest::SHA'                => '5.47',
   'EV'                         => '4.0',
+  'Email::Address::XS'         => '1.05',
   'Email::MIME'                => '1.904',
-  'Email::Send'                => '1.911',
+  'Email::Sender'              => '2.600',
   'FFI::Platypus'              => 0,
   'Future'                     => '0.34',
   'HTML::Escape'               => '1.10',
@@ -89,6 +90,7 @@ my %requires = (
   'Role::Tiny'                 => '2.000003',
   'Scope::Guard'               => '0.21',
   'Sereal'                     => '4.004',
+  'Sub::Identify'              => 0,
   'Sub::Quote'                 => '2.005000',
   'Template'                   => '3.008',
   'Text::CSV_XS'               => '1.26',
@@ -158,6 +160,12 @@ my %optional_features = (
       runtime => {requires => {'File::Which' => 0, 'File::Copy::Recursive' => 0,}}
     },
   },
+  docker => {
+    description => 'Run Bugzilla inside Docker',
+    prereqs     => {
+      runtime => {requires => {'File::Copy::Recursive' => 0,}}
+    },
+  },
   graphical_reports => {
     description => 'Graphical Reports',
     prereqs     => {
@@ -192,7 +200,7 @@ my %optional_features = (
   jsonrpc => {
     description => 'JSON-RPC Interface',
     prereqs     => {
-      runtime => {requires => {'JSON::RPC' => '== 1.01', 'Test::Taint' => '1.06'}}
+      runtime => {requires => {'JSON::RPC' => '1.01', 'Test::Taint' => '1.06'}}
     }
   },
   linux_pdeath => {
@@ -232,6 +240,13 @@ my %optional_features = (
     prereqs     =>
       {runtime => {requires => {'MIME::Parser' => '5.406', 'XML::Twig' => 0}}},
   },
+  mariadb => {
+    description => 'MariaDB database support',
+    prereqs     => {
+      runtime =>
+        {requires => {'DBD::MariaDB' => 0, 'DateTime::Format::MySQL' => '0.06'}}
+    }
+  },
   mysql => {
     description => 'MySQL database support',
     prereqs     => {
@@ -269,7 +284,7 @@ my %optional_features = (
   rest => {
     description => 'REST Interface',
     prereqs     => {
-      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '==1.01',}}
+      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '1.01',}}
     }
   },
   s3 => {
@@ -386,7 +401,7 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D better_xff -D mysql -D jsonrpc -D xmlrpc -D documentation -D pg
+GEN_CPANFILE_ARGS = -D better_xff -D mariadb -D jsonrpc -D xmlrpc -D documentation -D pg
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
 
