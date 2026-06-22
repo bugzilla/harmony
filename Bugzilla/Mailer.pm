@@ -99,10 +99,10 @@ sub MessageToMTA {
     if !$email->header('MIME-Version');
 
   # We ensure there's a Message-ID header set otherwise some mailsystems
-  # treat us as spam. 
+  # treat us as spam.
   $email->header_set('Message-ID', build_message_id())
     if !$email->header('Message-ID');
-  
+
   # Encode the headers correctly in quoted-printable
   foreach my $header ($email->header_names) {
     $header = lc $header;
@@ -291,7 +291,7 @@ sub build_message_id {
   }
 
   my $rand_bits  = generate_random_password(10);
-  my $message_id = "<bugzilla-$user_id-$rand_bits$sitespec>";
+  my $message_id = '<bugzilla-' . ($user_id ne '' ? "$user_id-" : '') . "$rand_bits$sitespec>";
   return $message_id;
 }
 1;
