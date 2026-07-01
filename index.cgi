@@ -15,6 +15,8 @@ use lib qw(. lib local/lib/perl5);
 use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Error;
+use Bugzilla::Token;
+use Bugzilla::Donation;
 use Bugzilla::Update;
 use Digest::MD5 qw(md5_hex);
 use List::MoreUtils qw(any);
@@ -44,6 +46,21 @@ if ($cgi->param('logout')) {
   $cgi->delete('logout');
 }
 
+my $donate_action = $cgi->param('donate_action');
+if ($donate_action) {
+  Bugzilla->login(LOGIN_REQUIRED) unless Bugzilla->user->id;
+
+  my $token = $cgi->param('token');
+  check_token_data($token, 'edit_user_prefs');
+
+  my $redirect = Bugzilla::Donation::set_banner_preference($donate_action,
+    scalar $cgi->param('donate_banner_reminder_date'));
+  delete_token($token);
+
+  print $cgi->redirect(-uri => $redirect);
+  exit;
+}
+
 # our weak etag is based on the Bugzilla version parameter (BMO customization) and the announcehtml
 # if either change, the cache will be considered invalid.
 my @etag_parts = (
@@ -69,7 +86,7 @@ if (
 else {
   my $template = Bugzilla->template;
   $C->content_security_policy(
-    script_src => ['self', 'https://www.google-analytics.com']);
+    script_src => ['self', 'nonce', 'https://www.google-analytics.com']);
 
   # Return the appropriate HTTP response headers.
   print $cgi->header(
@@ -89,6 +106,8 @@ else {
     # Inform the administrator about new releases, if any.
     $vars->{'release'} = Bugzilla::Update::get_notifications();
   }
+
+  $vars->{'donation'} = Bugzilla::Donation::get_banner();
 
   # Generate and return the UI (HTML page) from the appropriate template.
   $template->process("index.html.tmpl", $vars)
