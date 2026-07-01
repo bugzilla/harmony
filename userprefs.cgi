@@ -245,6 +245,35 @@ sub DoSettings {
   $vars->{dont_show_button}     = !$has_settings_enabled;
 }
 
+sub DoDonate {
+  my $user = Bugzilla->user;
+
+  $vars->{settings} = $user->settings;
+}
+
+sub SaveDonate {
+  my $cgi      = Bugzilla->cgi;
+  my $user     = Bugzilla->user;
+  my $settings = $user->settings;
+
+  my $pref = $cgi->param('donate_banner_pref') || 'next_upgrade';
+  my $date = $cgi->param('donate_banner_reminder_date') || '';
+
+  if ($pref eq 'specific_date') {
+    validate_date($date)
+      || ThrowUserError('illegal_date', {date => $date, format => 'YYYY-MM-DD'});
+    $settings->{'donate_banner_reminder_date'}->set($date);
+  }
+  elsif ($pref ne 'next_upgrade' && $pref ne 'never') {
+    ThrowUserError('invalid_parameter',
+      {name => 'donate_banner_pref', err => "must be one of 'next_upgrade', 'specific_date', or 'never'"});
+  }
+
+  $settings->{'donate_banner_pref'}->set($pref);
+  clear_settings_cache($user->id);
+  $vars->{settings} = $user->settings(1);
+}
+
 sub SaveSettings {
   my $cgi  = Bugzilla->cgi;
   my $user = Bugzilla->user;
@@ -1035,6 +1064,11 @@ SWITCH: for ($current_tab_name) {
     MfaSettings()  if $mfa_token;
     SaveSettings() if $save_changes;
     DoSettings();
+    last SWITCH;
+  };
+  /^donate$/ && do {
+    SaveDonate() if $save_changes;
+    DoDonate();
     last SWITCH;
   };
   /^email$/ && do {
