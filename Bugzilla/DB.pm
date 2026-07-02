@@ -2702,6 +2702,8 @@ altered.
 
 =item B<Params>
 
+=over
+
 =item C<$fixes>
 
 An arrayref of hashrefs. Each hashref supports:
