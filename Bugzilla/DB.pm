@@ -1064,6 +1064,39 @@ sub bz_drop_related_fks {
   return $related;
 }
 
+sub bz_fk_safe_alter_columns {
+  my ($self, $fixes) = @_;
+
+  foreach my $fix (@$fixes) {
+    my ($table, $column, $target) = @{$fix}{qw(table column definition)};
+    next if !$table || !$column || !$target;
+
+    my $current = $self->bz_column_info($table, $column);
+    next if !$current;
+
+    my $only_if_type = $fix->{only_if_type};
+    if ($only_if_type) {
+      my @allowed_types = ref($only_if_type) eq 'ARRAY'
+        ? @$only_if_type
+        : ($only_if_type);
+      next if !grep { $current->{TYPE} eq $_ } @allowed_types;
+    }
+
+    my $needs_alter = 0;
+    foreach my $key (keys %$target) {
+      if (!defined $current->{$key} || $current->{$key} ne $target->{$key}) {
+        $needs_alter = 1;
+        last;
+      }
+    }
+    next if !$needs_alter;
+
+    warn "Dropping foreign keys on $table.$column\n";
+    $self->bz_drop_related_fks($table, $column);
+    $self->bz_alter_column($table, $column, $target);
+  }
+}
+
 sub bz_drop_index {
   my ($self, $table, $name) = @_;
 
@@ -2637,6 +2670,65 @@ data type of the column
 to be NOT NULL, you probably also want to set any existing NULL columns
 to a particular value. Specify that value here. B<NOTE>: The value should
 not already be SQL-quoted.
+
+=back
+
+=item B<Returns> (nothing)
+
+=back
+
+=item C<bz_fk_safe_alter_columns>
+
+=over
+
+=item B<Description>
+
+Performs one or more column alterations in a foreign-key-safe way.
+
+For each requested fix, this method compares the current column
+definition to the target definition, drops related foreign keys when
+needed, and then alters the column.
+
+This is intended for upgrade paths where a referenced or referencing
+column type changes and foreign keys must be dropped before running
+C<bz_alter_column>.
+
+Note that missing foreign keys are replaced later in the installation
+process, so this method does not attempt to re-add them.
+
+Looking for foreign keys is expensive, so this method should only be
+used when you know that foreign keys exist on the columns being
+altered.
+
+=item B<Params>
+
+=item C<$fixes>
+
+An arrayref of hashrefs. Each hashref supports:
+
+=over
+
+=item C<table>
+
+The table containing the column to alter.
+
+=item C<column>
+
+The column to alter.
+
+=item C<definition>
+
+The target abstract column definition (same format used by
+C<bz_alter_column>).
+
+=item C<only_if_type> (optional)
+
+If specified, the fix is only applied when the current column C<TYPE>
+matches this value. May be a scalar type name or an arrayref of type
+names. This can be used when a column may have had multiple types in
+the past, but you're only doing a specific phase of the upgrade.
+
+=back
 
 =back
 
