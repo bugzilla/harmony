@@ -1,0 +1,50 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
+
+package Bugzilla::Extension::MoreBugUrl;
+
+use 5.14.0;
+use strict;
+use warnings;
+
+use base qw(Bugzilla::Extension);
+
+use constant MORE_SUB_CLASSES => qw(
+  Bugzilla::Extension::MoreBugUrl::BitBucket
+  Bugzilla::Extension::MoreBugUrl::ReviewBoard
+  Bugzilla::Extension::MoreBugUrl::RT
+  Bugzilla::Extension::MoreBugUrl::PHP
+  Bugzilla::Extension::MoreBugUrl::Redmine
+  Bugzilla::Extension::MoreBugUrl::Savane
+  Bugzilla::Extension::MoreBugUrl::WineHQForums
+);
+
+# We need to update the bug_see_also table because ReviewBoard was
+# originally under Bugzilla/BugUrl/.
+sub install_update_db {
+  my $dbh = Bugzilla->dbh;
+
+  my $should_rename = $dbh->selectrow_array(q{SELECT 1 FROM bug_see_also
+          WHERE class = 'Bugzilla::BugUrl::ReviewBoard'}
+  );
+
+  if ($should_rename) {
+    my $sth = $dbh->prepare(
+      'UPDATE bug_see_also SET class = ?
+                                 WHERE class = ?'
+    );
+    $sth->execute('Bugzilla::Extension::MoreBugUrl::ReviewBoard',
+      'Bugzilla::BugUrl::ReviewBoard');
+  }
+}
+
+sub bug_url_sub_classes {
+  my ($self, $args) = @_;
+  push @{$args->{sub_classes}}, MORE_SUB_CLASSES;
+}
+
+__PACKAGE__->NAME;
