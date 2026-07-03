@@ -1050,7 +1050,9 @@ input[type="radio"]:checked {
   color: var(--secondary-label-color);
 }
 
-#new_release.donation_banner {
+.donation_banner {
+  margin: 1em;
+  padding: 0.5em 1em;
   border: 2px solid rgba(var(--accent-color-green-1), 0.75);
   color: var(--primary-text-color);
   background: var(--primary-region-background-color);
@@ -1182,7 +1184,7 @@ input[type="radio"]:checked {
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  #new_release.donation_banner {
+  .donation_banner {
     border-color: rgba(var(--accent-color-green-1), 0.6);
     background: rgba(40, 46, 43, 0.95);
   }

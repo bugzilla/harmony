@@ -33,7 +33,7 @@
 %]
 
 [% IF donation %]
-  <div id="new_release" class="donation_banner">
+  <div class="donation_banner">
     <div class="donation_banner_layout">
       <img
         src="[% basepath FILTER none %]images/buggie.png"
@@ -96,7 +96,9 @@
       </div>
     </div>
   </div>
-[% ELSIF release %]
+[% END %]
+
+[% IF release %]
   <div id="new_release">
     [% IF release.data %]
       [% IF release.eos_date %]
