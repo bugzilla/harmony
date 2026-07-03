@@ -9,6 +9,11 @@
 [%
   donate_pref = user.settings.donate_banner_pref.value;
   reminder_date = user.settings.donate_banner_reminder_date.value;
+  # The setting defaults to the epoch as a "show immediately" sentinel; show
+  # today in the picker instead, since reminders are always future dates.
+  IF !reminder_date || reminder_date == '1970-01-01';
+    reminder_date = today;
+  END;
 %]
 
 <p>
