@@ -29,6 +29,14 @@ use DateTime;
 
 use constant SESSION_MAX => 20;
 
+# Donation banner settings are managed from the dedicated "Donate" tab (and the
+# home page banner), not the generic Settings tab. Two of them hold internal
+# state (last shown version, reminder date) with no legal_values, so they would
+# otherwise render as empty dropdowns and be reset to their defaults whenever the
+# Settings tab is saved.
+use constant DONATION_SETTINGS =>
+  qw(donate_banner_pref donate_banner_last_version donate_banner_reminder_date);
+
 local our $template = Bugzilla->template;
 local our $vars     = {};
 
