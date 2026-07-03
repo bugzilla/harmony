@@ -485,9 +485,9 @@ sub update_table_definitions {
 
   # 2019-01-31 dylan@hardison.net - Bug TODO
   $dbh->bz_fk_safe_alter_columns([
-    {table => 'flaginclusions', column => 'type_id', definition => {TYPE => 'INT3'}, only_if_type => 'INT2'},
-    {table => 'flagexclusions', column => 'type_id', definition => {TYPE => 'INT3'}, only_if_type => 'INT2'},
-    {table => 'flags',          column => 'type_id', definition => {TYPE => 'INT3'}, only_if_type => 'INT2'},
+    {table => 'flaginclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flagexclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flags',          column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
     {table => 'flagtypes',      column => 'id',      definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}}
   ]);
 

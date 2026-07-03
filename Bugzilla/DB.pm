@@ -2723,6 +2723,18 @@ The column to alter.
 The target abstract column definition (same format used by
 C<bz_alter_column>).
 
+This must be the B<complete> desired definition of the column, not just
+the attributes that are changing: C<bz_alter_column> replaces the whole
+column definition with what you pass, so any omitted attribute (such as
+C<NOTNULL>, C<DEFAULT>, or C<PRIMARYKEY>) will be dropped from the
+column. Foreign keys are the exception -- they are preserved by
+C<bz_alter_column> and re-added later in the installation process, so
+they should not be listed here.
+
+Only scalar attributes are compared when deciding whether an alteration
+is needed (see below), so avoid relying on reference-valued attributes
+in C<definition> to trigger a change.
+
 =item C<only_if_type> (optional)
 
 If specified, the fix is only applied when the current column C<TYPE>
@@ -2731,6 +2743,11 @@ names. This can be used when a column may have had multiple types in
 the past, but you're only doing a specific phase of the upgrade.
 
 =back
+
+Each fix is only applied when the current column definition differs from
+C<definition> in at least one of the attributes listed there, so calling
+this method repeatedly (for example across re-runs of C<checksetup.pl>)
+is safe and idempotent.
 
 =back
 
