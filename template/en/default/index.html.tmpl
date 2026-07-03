@@ -33,7 +33,7 @@
 %]
 
 [% IF donation %]
-  <div class="donation_banner">
+  <div class="donation_banner home_banner">
     <div class="donation_banner_layout">
       <img
         src="[% basepath FILTER none %]images/buggie.png"
@@ -99,7 +99,7 @@
 [% END %]
 
 [% IF release %]
-  <div id="new_release">
+  <div id="new_release" class="home_banner">
     [% IF release.data %]
       [% IF release.eos_date %]
         <p>[% terms.Bugzilla %] [%+ release.branch_version FILTER html %] will
