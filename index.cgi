@@ -51,11 +51,10 @@ if ($donate_action) {
   Bugzilla->login(LOGIN_REQUIRED) unless Bugzilla->user->id;
 
   my $token = $cgi->param('token');
-  check_token_data($token, 'edit_user_prefs');
+  check_hash_token($token, ['donation_banner']);
 
   my $redirect = Bugzilla::Donation::set_banner_preference($donate_action,
     scalar $cgi->param('donate_banner_reminder_date'));
-  delete_token($token);
 
   print $cgi->redirect(-uri => $redirect);
   exit;
