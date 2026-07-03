@@ -259,6 +259,10 @@ sub DoDonate {
   my $user = Bugzilla->user;
 
   $vars->{settings} = $user->settings;
+
+  # Default the reminder date picker to today rather than the stored epoch
+  # sentinel, since a reminder is always meant to be a future date.
+  $vars->{today} = DateTime->now(time_zone => Bugzilla->local_timezone)->ymd;
 }
 
 sub SaveDonate {
