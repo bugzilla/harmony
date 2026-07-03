@@ -1051,13 +1051,10 @@ input[type="radio"]:checked {
 }
 
 .donation_banner {
-  margin: 1em;
-  padding: 0.5em 1em;
-  border: 2px solid rgba(var(--accent-color-green-1), 0.75);
+  border-color: rgba(var(--accent-color-green-1), 0.75);
   color: var(--primary-text-color);
   background: var(--primary-region-background-color);
   box-shadow: var(--primary-region-box-shadow);
-  border-radius: 8px;
   font-weight: normal;
 }
 

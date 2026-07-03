@@ -21,16 +21,25 @@
    text-align: center;
  }
 
- #new_release {
+ /* Shared styling for home page banners (new release + donation). Each banner
+    sets its own border-color; the shared rule uses the border-width/-style
+    longhands so it never resets that color regardless of stylesheet order. */
+ .home_banner {
    margin: 1em;
-   border: 2px solid rgb(var(--accent-color-red-1));
    padding: 0.5em 1em;
-   font-weight: bold;
+   border-width: 2px;
+   border-style: solid;
+   border-radius: 8px;
  }
 
- #new_release .notice {
+ .home_banner .notice {
    font-size: var(--font-size-small);
    font-weight: normal;
+ }
+
+ #new_release {
+   border-color: rgb(var(--accent-color-red-1));
+   font-weight: bold;
  }
 
  #welcome-admin a {
