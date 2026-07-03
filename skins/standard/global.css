@@ -1068,6 +1068,8 @@ input[type="radio"]:checked {
   width: 110px;
   height: 110px;
   flex: 0 0 auto;
+  object-fit: contain;
+  object-position: center;
   border: 1px dashed rgba(var(--accent-color-green-1), 0.7);
   border-radius: 10px;
   background: rgba(var(--accent-color-green-1), 0.08);
