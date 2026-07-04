@@ -71,7 +71,7 @@ requires 'Sereal', '4.004';
 requires 'Sub::Identify';
 requires 'Sub::Quote', '2.005000';
 requires 'Sys::Syslog';
-requires 'Template', '3.008';
+requires 'Template', '3.009';
 requires 'Test::CPAN::Meta';
 requires 'Test::Pod';
 requires 'Test::Pod::Coverage';
