@@ -48,7 +48,7 @@ sub db_schema_abstract_schema {
         REFERENCES => {TABLE => 'products', COLUMN => 'id', DELETE => 'CASCADE',}
       },
       component_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 0,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE',}
       }
@@ -63,6 +63,12 @@ sub db_sanitize {
   my $dbh = Bugzilla->dbh;
   print "Deleting webhooks...\n";
   $dbh->do("DELETE FROM webhooks");
+}
+
+sub install_update_db {
+  Bugzilla->dbh->bz_fk_safe_alter_columns([
+    {table => 'webhooks', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
+  ]);
 }
 
 #
