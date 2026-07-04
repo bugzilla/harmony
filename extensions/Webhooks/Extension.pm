@@ -66,6 +66,7 @@ sub db_sanitize {
 }
 
 sub install_update_db {
+  # Bug 2052640 - justdave@bugzilla.org
   Bugzilla->dbh->bz_fk_safe_alter_columns([
     {table => 'webhooks', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
   ]);
