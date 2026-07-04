@@ -484,7 +484,12 @@ sub update_table_definitions {
   $dbh->bz_drop_column('groups',   'last_changed');
 
   # 2019-01-31 dylan@hardison.net - Bug TODO
-  _update_flagtypes_id();
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'flaginclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flagexclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flags',          column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flagtypes',      column => 'id',      definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}}
+  ]);
 
   $dbh->bz_alter_column('keyworddefs', 'id',
     {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
@@ -808,13 +813,14 @@ sub update_table_definitions {
   $dbh->bz_add_column('profiles', 'bounce_count', {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0});
 
   # Bug 1588221 - dkl@mozilla.com
-  $dbh->bz_alter_column('bugs_activity', 'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('attachments', 'attach_id',
-    {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('attach_data', 'id',
-    {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'bugs_activity',    column => 'attach_id', definition => {TYPE => 'INT5'}},
+    {table => 'attachments',      column => 'attach_id', definition => {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1}},
+    {table => 'attach_data',      column => 'id',        definition => {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1}},
+    {table => 'flags',            column => 'attach_id', definition => {TYPE => 'INT5'}},
+    {table => 'user_request_log', column => 'attach_id', definition => {TYPE => 'INT5', NOTNULL => 0}},
+  ]);
+
   _populate_attachment_storage_class();
 
 
@@ -902,30 +908,6 @@ sub _update_product_name_definition {
     $dbh->bz_alter_column('products',   'product', {TYPE => 'varchar(64)'});
     $dbh->bz_alter_column('versions', 'program',
       {TYPE => 'varchar(64)', NOTNULL => 1});
-  }
-}
-
-sub _update_flagtypes_id {
-  my $dbh   = Bugzilla->dbh;
-  my @fixes = (
-    {table => 'flaginclusions', column => 'type_id'},
-    {table => 'flagexclusions', column => 'type_id'},
-    {table => 'flags',          column => 'type_id'},
-  );
-  my $flagtypes_def = $dbh->bz_column_info('flagtypes', 'id');
-  foreach my $fix (@fixes) {
-    my $def = $dbh->bz_column_info($fix->{table}, $fix->{column});
-    if ($def->{TYPE} eq 'INT2') {
-      warn "Dropping foreign keys on $fix->{table}\n";
-      $dbh->bz_drop_related_fks($fix->{table}, $fix->{column});
-      $def->{TYPE} = 'INT3';
-      $dbh->bz_alter_column($fix->{table}, $fix->{column}, $def);
-    }
-  }
-
-  if ($flagtypes_def->{TYPE} ne 'MEDIUMSERIAL') {
-    $flagtypes_def->{TYPE} = 'MEDIUMSERIAL';
-    $dbh->bz_alter_column('flagtypes', 'id', $flagtypes_def);
   }
 }
 
