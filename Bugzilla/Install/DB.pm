@@ -821,6 +821,15 @@ sub update_table_definitions {
     {table => 'user_request_log', column => 'attach_id', definition => {TYPE => 'INT5', NOTNULL => 0}},
   ]);
 
+  # Bug 903895 - sgreen@redhat.com
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'flaginclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'flagexclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'bugs',           column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'component_cc',    column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'components',      column => 'id',           definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}},
+  ]);
+
   _populate_attachment_storage_class();
 
 
@@ -1592,6 +1601,9 @@ sub _use_ids_for_products_and_components {
 
     print "Updating the database to use component IDs.\n";
 
+    # NOTE: These columns are now MEDIUMSERIAL/INT3 in the current schema, but
+    # historically were originally created as SMALLSERIAL/INT2. The upgrade steps
+    # are done in order; they will be converted to the correct current type later.
     $dbh->bz_add_column("components", "id",
       {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
     $dbh->bz_add_column("bugs", "component_id", {TYPE => 'INT2', NOTNULL => 1}, 0);
