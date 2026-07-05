@@ -51,14 +51,17 @@ sub template_before_process {
   my $file = $args->{'file'};
   my $vars = $args->{'vars'};
 
-  Bugzilla->process_cache->{shadow_bug_field}
-    ||= Bugzilla::Field->new({name => 'cf_shadow_bug'});
-
-  return unless Bugzilla->user->in_group('can_shadow_bugs');
   return
        unless $file eq 'bug/edit.html.tmpl'
     || $file eq 'bug/show.html.tmpl'
     || $file eq 'bug/show-header.html.tmpl';
+
+  return unless Bugzilla->user->in_group('can_shadow_bugs');
+
+  Bugzilla->process_cache->{shadow_bug_field}
+    ||= Bugzilla::Field->new({name => 'cf_shadow_bug'});
+  return unless Bugzilla->process_cache->{shadow_bug_field};
+
   my $bug = exists $vars->{'bugs'} ? $vars->{'bugs'}[0] : $vars->{'bug'};
   return unless $bug && $bug->cf_shadow_bug;
   $vars->{is_shadow_bug} = 1;
