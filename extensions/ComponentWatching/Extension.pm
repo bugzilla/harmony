@@ -245,7 +245,11 @@ sub _check_watch_user {
   if ($value !~ /@(?!invalid).+\.bugs$/i) {
     ThrowUserError('component_watch_invalid_watch_user');
   }
-  return Bugzilla::User->check($value)->id;
+
+  # Use a direct login->id lookup here instead of Bugzilla::User->check.
+  # During checksetup, User->check can try to load full user columns before
+  # schema upgrades are complete.
+  return Bugzilla::User::login_to_id($value, 1);
 }
 
 #
