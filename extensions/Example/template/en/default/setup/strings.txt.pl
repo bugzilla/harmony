@@ -17,6 +17,10 @@
 # Contributor(s):
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 
+use 5.10.1;
+use strict;
+use warnings;
+
 %strings = (feature_example_acme => 'Example Extension: Acme Feature',);
 
 1;
