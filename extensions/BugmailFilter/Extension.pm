@@ -421,7 +421,6 @@ sub reorg_move_component {
 
 sub db_schema_abstract_schema {
   my ($self, $args) = @_;
-  my $component_id_type = _component_id_type_from_schema($args->{schema});
 
   $args->{schema}->{bugmail_filters} = {
     FIELDS => [
@@ -443,7 +442,7 @@ sub db_schema_abstract_schema {
         REFERENCES => {TABLE => 'products', COLUMN => 'id', DELETE => 'CASCADE'},
       },
       component_id => {
-        TYPE       => $component_id_type,
+        TYPE       => 'INT3',
         NOTNULL    => 0,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE'},
       },
@@ -473,36 +472,12 @@ sub install_update_db {
   $dbh->bz_add_column('bugmail_filters', 'changer_id',
     {TYPE => 'INT3', NOTNULL => 0,});
 
-  my $component_id_type = _component_id_type_from_db($dbh);
-
   my @fixes = (
     {table => 'bugmail_filters', column => 'product_id', definition => {TYPE => 'INT2', NOTNULL => 0}},
-    {table => 'bugmail_filters', column => 'component_id', definition => {TYPE => $component_id_type, NOTNULL => 0}},
+    {table => 'bugmail_filters', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
   );
 
   $dbh->bz_fk_safe_alter_columns(\@fixes);
-}
-
-sub _component_id_type_from_schema {
-  my ($schema) = @_;
-
-  my $component_id_type = 'INT2';
-  my $len               = scalar @{$schema->{components}->{FIELDS}};
-  for (my $i = 0; $i < $len - 1; $i += 2) {
-    next if $schema->{components}->{FIELDS}->[$i] ne 'id';
-    $component_id_type = 'INT3'
-      if $schema->{components}->{FIELDS}->[$i + 1]->{TYPE} eq 'MEDIUMSERIAL';
-    last;
-  }
-
-  return $component_id_type;
-}
-
-sub _component_id_type_from_db {
-  my ($dbh) = @_;
-
-  my $component_id = $dbh->bz_column_info('components', 'id');
-  return $component_id->{TYPE} eq 'MEDIUMSERIAL' ? 'INT3' : 'INT2';
 }
 
 sub db_sanitize {
