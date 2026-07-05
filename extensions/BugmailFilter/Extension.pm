@@ -472,12 +472,10 @@ sub install_update_db {
   $dbh->bz_add_column('bugmail_filters', 'changer_id',
     {TYPE => 'INT3', NOTNULL => 0,});
 
-  my @fixes = (
+  $dbh->bz_fk_safe_alter_columns([
     {table => 'bugmail_filters', column => 'product_id', definition => {TYPE => 'INT2', NOTNULL => 0}},
     {table => 'bugmail_filters', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
-  );
-
-  $dbh->bz_fk_safe_alter_columns(\@fixes);
+  ]);
 }
 
 sub db_sanitize {
