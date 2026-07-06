@@ -47,6 +47,6 @@ COPY . /app/
 # Run checksetup
 RUN perl checksetup.pl --no-database --default-localconfig --no-templates
 
-# Set the default command to run tests
-ENTRYPOINT ["prove", "-Ilocal/lib/perl5", "t"]
-CMD []
+# Set a default test target but allow callers to override/append prove args.
+ENTRYPOINT ["prove", "-Ilocal/lib/perl5"]
+CMD ["t"]
