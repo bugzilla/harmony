@@ -47,6 +47,12 @@ COPY . /app/
 # Run checksetup
 RUN perl checksetup.pl --no-database --default-localconfig --no-templates
 
-# Set a default test target but allow callers to override/append prove args.
-ENTRYPOINT ["prove", "-Ilocal/lib/perl5"]
+# Support both prove (default) and perl commands via a dispatcher script.
+# the perl option is so you can do `perl -c` on a file in the container
+# to make sure it compiles when you don't have dependencies on the host
+# machine.
+COPY docker/images/perl-testsuite-entrypoint.sh /usr/local/bin/perl-testsuite-entrypoint
+RUN chmod +x /usr/local/bin/perl-testsuite-entrypoint
+
+ENTRYPOINT ["/usr/local/bin/perl-testsuite-entrypoint"]
 CMD ["t"]
