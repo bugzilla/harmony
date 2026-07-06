@@ -29,8 +29,8 @@ RUN apt-get update && apt-get -y dist-upgrade && \
     unzip wget && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the source code
-COPY . /app/
+# Copy just enough to get the list of dependencies
+COPY Bugzilla.pm Makefile.PL gen-cpanfile.pl /app/
 
 # Run Makefile.PL and install dependencies
 RUN perl Makefile.PL && \
@@ -38,9 +38,21 @@ RUN perl Makefile.PL && \
     make cpanfile GEN_CPANFILE_ARGS='-A -U oracle -U mariadb -U pg -U mysql' && \
     cpanm --notest --quiet --local-lib="/app/local" -f --installdeps .
 
+# Now copy all of the source. Splitting it from the dependency-related files
+# above allows Docker to cache the dependency install step unless the
+# dependencies change, saving a *lot* of build time when you just want to run
+# tests
+COPY . /app/
+
 # Run checksetup
 RUN perl checksetup.pl --no-database --default-localconfig --no-templates
 
-# Set the default command to run tests
-ENTRYPOINT ["prove", "-Ilocal/lib/perl5", "t"]
-CMD []
+# Support both prove (default) and perl commands via a dispatcher script.
+# the perl option is so you can do `perl -c` on a file in the container
+# to make sure it compiles when you don't have dependencies on the host
+# machine.
+COPY docker/images/perl-testsuite-entrypoint.sh /usr/local/bin/perl-testsuite-entrypoint
+RUN chmod +x /usr/local/bin/perl-testsuite-entrypoint
+
+ENTRYPOINT ["/usr/local/bin/perl-testsuite-entrypoint"]
+CMD ["t"]
