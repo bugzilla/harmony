@@ -29,14 +29,20 @@ RUN apt-get update && apt-get -y dist-upgrade && \
     unzip wget && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the source code
-COPY . /app/
+# Copy just enough to get the list of dependencies
+COPY Bugzilla.pm Makefile.PL gen-cpanfile.pl /app/
 
 # Run Makefile.PL and install dependencies
 RUN perl Makefile.PL && \
     cpanm --notest --quiet --local-lib="/app/local" Module::CPANfile && \
     make cpanfile GEN_CPANFILE_ARGS='-A -U oracle -U mariadb -U pg -U mysql' && \
     cpanm --notest --quiet --local-lib="/app/local" -f --installdeps .
+
+# Now copy all of the source. Splitting it from the dependency-related files
+# above allows Docker to cache the dependency install step unless the
+# dependencies change, saving a *lot* of build time when you just want to run
+# tests
+COPY . /app/
 
 # Run checksetup
 RUN perl checksetup.pl --no-database --default-localconfig --no-templates
