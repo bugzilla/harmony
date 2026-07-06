@@ -16,6 +16,8 @@ export CIRCLE_BUILD_URL=""
 
 TEST_NAME="test_bmo"
 DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
+DEFAULT_TEST_ARGS=(-q -f t/bmo/*.t)
+SUITE_ARGS=()
 if [ "$#" -eq 0 ]; then
     echo "Available test options:"
     echo "  1) sanity   - Run sanity tests"
@@ -36,28 +38,41 @@ if [ "$#" -eq 0 ]; then
         *) echo "Invalid choice. Using default (mysql)"; set -- "mysql" ;;
     esac
 fi
-if [ "$1" == "sanity" ]; then
+SUITE="$1"
+shift
+SUITE_ARGS=("$@")
+
+if [ "$SUITE" == "sanity" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
     TEST_NAME="test_sanity"
-elif [ "$1" == "mysql" ]; then
+elif [ "$SUITE" == "mysql" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
-elif [ "$1" == "pg" ]; then
+elif [ "$SUITE" == "pg" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-pg.yml
-elif [ "$1" == "sqlite" ]; then
+elif [ "$SUITE" == "sqlite" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-sqlite.yml
-elif [ "$1" == "mariadb" ]; then
+elif [ "$SUITE" == "mariadb" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-mariadb.yml
-elif [ "$1" == "release" ]; then
+elif [ "$SUITE" == "release" ]; then
     DOCKER_FILE=docker/images/Dockerfile.perl-testsuite
     if $DOCKER build -t bugzilla-release-test -f "$DOCKER_FILE" .; then
-        $DOCKER run --rm bugzilla-release-test
+        $DOCKER run --rm bugzilla-release-test "${SUITE_ARGS[@]}"
     else
         echo "docker build failed."
     fi
     exit $?
+else
+    echo "Unknown test suite: $SUITE"
+    echo "Usage: $0 [sanity|mysql|pg|sqlite|mariadb|release] [suite args...]"
+    exit 1
 fi
+
+if [ "${#SUITE_ARGS[@]}" -eq 0 ]; then
+    SUITE_ARGS=("${DEFAULT_TEST_ARGS[@]}")
+fi
+
 if $DOCKER compose -f "$DOCKER_COMPOSE_FILE" build; then
-    if $DOCKER compose -f "$DOCKER_COMPOSE_FILE" run --rm --name bugzilla6.test bugzilla6.test "$TEST_NAME" -q -f t/bmo/*.t; then
+    if $DOCKER compose -f "$DOCKER_COMPOSE_FILE" run --rm --name bugzilla6.test bugzilla6.test "$TEST_NAME" "${SUITE_ARGS[@]}"; then
         $DOCKER compose -f "$DOCKER_COMPOSE_FILE" down
     else
         echo "docker compose run failed."
