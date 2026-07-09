@@ -8,7 +8,7 @@
 #
 # Import email messages from a mbox file and place in jobqueue
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw(/app /app/local/lib/perl5);

@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::PhabBugz::Revision;
 
-use 5.10.1;
+use 5.14.0;
 use Moo;
 
 use Mojo::JSON qw(true);
