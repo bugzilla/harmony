@@ -37,7 +37,7 @@ sub time_to_datetime {
 
 sub parse_date {
   my ($str) = @_;
-  if ($str =~ /^(-|\+)?(\d+)([hHdDwWmMyY])$/) {
+  if ($str =~ /^(-|\+)?(\d+)([hHdDwWmMyY])$/a) {
 
     # relative date
     my ($sign, $amount, $unit, $date) = ($1, $2, lc $3, time);

@@ -859,7 +859,7 @@ sub extract_flags_from_cgi {
 
   my $match_status
     = Bugzilla::User::match_field(
-    {'^requestee(_type)?-(\d+)$' => {'type' => 'multi'},},
+    {'(?a:^requestee(_type)?-(\d+)$)' => {'type' => 'multi'},},
     undef, $skip);
 
   $vars->{'match_field'} = 'requestee';
@@ -871,10 +871,10 @@ sub extract_flags_from_cgi {
   }
 
   # Extract a list of flag type IDs from field names.
-  my @flagtype_ids = map(/^flag_type-(\d+)$/ ? $1 : (), $cgi->param());
+  my @flagtype_ids = map(/^flag_type-(\d+)$/a ? $1 : (), $cgi->param());
 
   # Extract a list of existing flag IDs.
-  my @flag_ids = map(/^flag-(\d+)$/ ? $1 : (), $cgi->param());
+  my @flag_ids = map(/^flag-(\d+)$/a ? $1 : (), $cgi->param());
 
   return ([], []) unless (scalar(@flagtype_ids) || scalar(@flag_ids));
 

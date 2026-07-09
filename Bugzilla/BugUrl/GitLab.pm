@@ -22,7 +22,7 @@ sub should_handle {
 
   # GitLab issue and merge request URLs can have the form:
   # https://gitlab.com/projectA/subprojectB/subprojectC/../(issues|merge_requests)/53
-  return ($uri->path =~ m!^/.*/(issues|merge_requests)/\d+$!) ? 1 : 0;
+  return ($uri->path =~ m!^/.*/(issues|merge_requests)/\d+$!a) ? 1 : 0;
 }
 
 sub _check_value {

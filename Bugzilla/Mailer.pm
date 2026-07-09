@@ -252,7 +252,7 @@ sub build_thread_marker {
 
   my $sitespec = '@' . Bugzilla->localconfig->urlbase;
   $sitespec =~ s/:\/\//\./;    # Make the protocol look like part of the domain
-  $sitespec =~ s/^([^:\/]+):(\d+)/$1/;    # Remove a port number, to relocate
+  $sitespec =~ s/^([^:\/]+):(\d+)/$1/a;    # Remove a port number, to relocate
   if ($2) {
     $sitespec = "-$2$sitespec";    # Put the port number back in, before the '@'
   }

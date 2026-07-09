@@ -28,11 +28,11 @@ our $VERSION = '1';
 sub _project_honeypot_blocking {
   my ($self, $api_key, $login) = @_;
   my $ip = remote_ip();
-  return unless $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+  return unless $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/a;
   my $lookup = "$api_key.$4.$3.$2.$1.dnsbl.httpbl.org";
   return unless my $packed = gethostbyname($lookup);
   my $honeypot = inet_ntoa($packed);
-  return unless $honeypot =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+  return unless $honeypot =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/a;
   my ($status, $days, $threat, $type) = ($1, $2, $3, $4);
 
   return

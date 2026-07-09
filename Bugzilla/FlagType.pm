@@ -696,7 +696,7 @@ sub sqlify_criteria {
     push(@criteria, "flagtypes.is_active = $is_active");
   }
   if (exists($criteria->{active_or_has_flags})
-    && $criteria->{active_or_has_flags} =~ /^\d+$/)
+    && $criteria->{active_or_has_flags} =~ /^\d+$/a)
   {
     push(@$tables,
           "LEFT JOIN flags AS f ON flagtypes.id = f.type_id "

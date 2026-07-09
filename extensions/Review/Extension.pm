@@ -558,7 +558,7 @@ sub _check_review_flag {
   my $cgi = Bugzilla->cgi;
 
   # extract the set flag-types
-  my @flagtype_ids = map { /^flag_type-(\d+)$/ ? $1 : () } $cgi->param();
+  my @flagtype_ids = map { /^flag_type-(\d+)$/a ? $1 : () } $cgi->param();
   @flagtype_ids = grep { $cgi->param("flag_type-$_") eq '?' } @flagtype_ids;
   return unless scalar(@flagtype_ids);
 

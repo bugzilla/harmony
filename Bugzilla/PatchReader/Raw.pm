@@ -99,7 +99,7 @@ sub next_line {
 
     # section parsing
   }
-  elsif ($line =~ /^@@\s*-(\d+),?(\d*)\s*\+(\d+),?(\d*)\s*(?:@@\s*(.*))?/) {
+  elsif ($line =~ /^@@\s*-(\d+),?(\d*)\s*\+(\d+),?(\d*)\s*(?:@@\s*(.*))?/a) {
     $this->{IN_HEADER} = 0;
 
     $this->_maybe_start_file();
@@ -117,7 +117,7 @@ sub next_line {
     };
 
   }
-  elsif ($line =~ /^(\d+),?(\d*)([acd])(\d+),?(\d*)/) {
+  elsif ($line =~ /^(\d+),?(\d*)([acd])(\d+),?(\d*)/a) {
 
     # Non-universal diff.  Calculate as though it were universal.
     $this->{IN_HEADER} = 0;

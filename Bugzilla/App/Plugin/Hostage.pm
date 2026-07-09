@@ -18,7 +18,7 @@ sub _attachment_host_regex {
   $val =~ s{^https?://}{}s;
   $val =~ s{/$}{}s;
   my $regex = quotemeta $val;
-  $regex =~ s/\\\%bugid\\\%/\\d+/g;
+  $regex =~ s/\\\%bugid\\\%/(?a:\\d+)/g;
   return qr/^$regex$/s;
 }
 
@@ -33,7 +33,7 @@ sub _before_routes {
   state $urlbase               = Bugzilla->localconfig->urlbase;
   state $urlbase_uri           = URI->new($urlbase);
   state $urlbase_host          = $urlbase_uri->host;
-  state $urlbase_host_regex    = qr/^bug(\d+)\.\Q$urlbase_host\E$/;
+  state $urlbase_host_regex    = qr/^bug(\d+)\.\Q$urlbase_host\E$/a;
   state $attachment_base       = Bugzilla->localconfig->attachment_base;
   state $attachment_root       = _attachment_root($attachment_base);
   state $attachment_host_regex = _attachment_host_regex($attachment_base);

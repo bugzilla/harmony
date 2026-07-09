@@ -585,7 +585,7 @@ sub _special_field_syntax {
   return unless defined($word);
 
   # P1-5 Syntax
-  if ($word =~ m/^P(\d+)(?:-(\d+))?$/i) {
+  if ($word =~ m/^P(\d+)(?:-(\d+))?$/ai) {
     my ($p_start, $p_end) = ($1, $2);
     my $legal_priorities = get_legal_field_values('priority');
 

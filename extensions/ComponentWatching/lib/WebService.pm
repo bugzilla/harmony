@@ -24,7 +24,7 @@ sub rest_resources {
   return [
     qr{^/component-watching$},
     {GET => {method => 'list',}, POST => {method => 'add',},},
-    qr{^/component-watching/(\d+)$},
+    qr{^/component-watching/(\d+)$}a,
     {
       GET => {
         method => 'get',

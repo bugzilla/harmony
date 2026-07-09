@@ -120,7 +120,7 @@ sub page_before_template {
   my $date = DateTime->now()->truncate(to => 'day');
   my $defer_until;
   if ( $input->{'defer-until'}
-    && $input->{'defer-until'} =~ /^(\d\d\d\d)-(\d\d)-(\d\d)$/)
+    && $input->{'defer-until'} =~ /^(\d\d\d\d)-(\d\d)-(\d\d)$/a)
   {
     $defer_until = DateTime->new(year => $1, month => $2, day => $3);
     if ($defer_until > $date->clone->add(days => 7)) {

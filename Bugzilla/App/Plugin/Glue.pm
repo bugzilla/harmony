@@ -190,7 +190,7 @@ sub register {
         # In this circumstance we run quotemeta first because we need to
         # insert an active regex meta-character afterward.
         $regex = quotemeta($attach_base);
-        $regex =~ s/\\\%bugid\\\%/\\d+/;
+        $regex =~ s/\\\%bugid\\\%/(?a:\\d+)/;
       }
       $regex = "^$regex";
       return ($c->req->url->to_abs =~ $regex) ? 1 : 0;

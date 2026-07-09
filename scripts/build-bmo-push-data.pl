@@ -47,7 +47,7 @@ foreach my $line (@log) {
   }
 
   my $bug_id;
-  if ($message =~ /\bBug (\d+)/i) {
+  if ($message =~ /\bBug (\d+)/ai) {
     $bug_id = $1;
   }
   else {
@@ -68,7 +68,7 @@ foreach my $line (@log) {
   if ($bug->{status} eq 'RESOLVED' && $bug->{resolution} ne 'FIXED') {
     next;
   }
-  if ($bug->{summary} =~ /\bbackport\s+(?:upstream\s+)?bug\s+(\d+)/i) {
+  if ($bug->{summary} =~ /\bbackport\s+(?:upstream\s+)?bug\s+(\d+)/ai) {
     my $upstream = $1;
     $bug->{summary} = fetch_bug($upstream)->{summary};
   }

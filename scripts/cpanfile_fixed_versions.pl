@@ -45,7 +45,7 @@ sub _check_vers {
 
     # If we come here, then the version is not a valid one.
     # We try to sanitize it.
-    if ($vnum =~ /^((\d+)(\.\d+)*)/) {
+    if ($vnum =~ /^((\d+)(\.\d+)*)/a) {
       $vnum = $1;
     }
   }

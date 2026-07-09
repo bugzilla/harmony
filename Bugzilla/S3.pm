@@ -181,7 +181,7 @@ sub _send_request_expect_nothing {
   my $response = $self->_do_http($request);
   my $content  = $response->content;
 
-  return 1 if $response->code =~ /^2\d\d$/;
+  return 1 if $response->code =~ /^2\d\d$/a;
 
   # anything else is a failure, and we save the parsed result
   $self->_remember_errors($response->content);
@@ -217,7 +217,7 @@ sub _send_request_expect_nothing_probed {
 
   my $content = $response->content;
 
-  return 1 if $response->code =~ /^2\d\d$/;
+  return 1 if $response->code =~ /^2\d\d$/a;
 
   # anything else is a failure, and we save the parsed result
   $self->_remember_errors($response->content);
@@ -226,7 +226,7 @@ sub _send_request_expect_nothing_probed {
 
 sub _check_response {
   my ($self, $response) = @_;
-  return 1 if $response->code =~ /^2\d\d$/;
+  return 1 if $response->code =~ /^2\d\d$/a;
   $self->err("network_error");
   $self->errstr($response->status_line);
   $self->_remember_errors($response->content);
@@ -235,7 +235,7 @@ sub _check_response {
 
 sub _croak_if_response_error {
   my ($self, $response) = @_;
-  unless ($response->code =~ /^2\d\d$/) {
+  unless ($response->code =~ /^2\d\d$/a) {
     $self->err("network_error");
     $self->errstr($response->status_line);
     croak "Bugzilla::S3: Amazon responded with " . $response->status_line . "\n";

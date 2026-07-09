@@ -24,7 +24,7 @@ our @EXPORT = qw(
 );
 
 use constant LANDO_AUTOMATION_USER   => 'lobot@bmo.tld';
-use constant PHAB_ATTACHMENT_PATTERN => qr/^phabricator-D(\d+)/;
+use constant PHAB_ATTACHMENT_PATTERN => qr/^phabricator-D(\d+)/a;
 use constant PHAB_AUTOMATION_USER    => 'phab-bot@bmo.tld';
 use constant PHAB_CONTENT_TYPE       => 'text/x-phabricator-request';
 use constant PHAB_FEED_POLL_SECONDS  => $ENV{PHAB_FEED_POLL} // 5;
