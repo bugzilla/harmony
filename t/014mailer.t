@@ -15,7 +15,7 @@ use warnings;
 
 use lib qw(. lib local/lib/perl5 t);
 use Support::Files;
-use Test::More tests => 18;
+use Test::More tests => 20;
 
 BEGIN {
   use_ok('Bugzilla');
@@ -53,11 +53,13 @@ like($mid, qr/^<bugzilla-[A-Za-z0-9]+\@http\.bugs\.example\.org>$/,
   'simple http urlbase: correct format and sitespec');
 unlike($mid, qr/\@[^>]*\//, 'simple http urlbase: no slash after @');
 
-# Path component after the hostname — the key regression this patch fixes.
-set_urlbase('https://bugs.example.org/bugzilla/');
+# Path component after the hostname — must be relocated in front of the
+# domain (not discarded), so that different Bugzillas hosted in
+# subdirectories of the same domain don't collide on the same sitespec.
+set_urlbase('https://bugs.example.org/subdir/');
 $mid = Bugzilla::Mailer::build_message_id();
-like($mid, qr/^<bugzilla-[A-Za-z0-9]+\@https\.bugs\.example\.org>$/,
-  'https with path: path component stripped from sitespec');
+like($mid, qr/^<bugzilla-[A-Za-z0-9]+-subdir\@https\.bugs\.example\.org>$/,
+  'https with path: path component relocated in front of the domain');
 unlike($mid, qr/\@[^>]*\//, 'https with path: no slash after @');
 
 # Non-standard port — port must move before the '@'.
@@ -67,12 +69,20 @@ like($mid, qr/^<bugzilla-[A-Za-z0-9]+-8080\@https\.bugs\.example\.org>$/,
   'https with port: port relocated before @');
 unlike($mid, qr/\@[^>]*\//, 'https with port: no slash after @');
 
-# Port and path together.
-set_urlbase('https://bugs.example.org:8080/bugzilla/');
+# Port and path together — port then path, domain always last.
+set_urlbase('https://bugs.example.org:8080/subdir/');
 $mid = Bugzilla::Mailer::build_message_id();
-like($mid, qr/^<bugzilla-[A-Za-z0-9]+-8080\@https\.bugs\.example\.org>$/,
-  'https with port and path: path stripped, port relocated');
+like($mid,
+  qr/^<bugzilla-[A-Za-z0-9]+-8080-subdir\@https\.bugs\.example\.org>$/,
+  'https with port and path: both relocated, domain last');
 unlike($mid, qr/\@[^>]*\//, 'https with port and path: no slash after @');
+
+# Nested subdirectory — internal slashes must be sanitized too.
+set_urlbase('https://bugs.example.org/foo/bar/');
+$mid = Bugzilla::Mailer::build_message_id();
+like($mid, qr/^<bugzilla-[A-Za-z0-9]+-foo-bar\@https\.bugs\.example\.org>$/,
+  'nested path: internal slashes sanitized');
+unlike($mid, qr/\//, 'nested path: no slash anywhere in Message-ID');
 
 # ---- build_message_id: user_id handling ----
 
@@ -94,11 +104,11 @@ unlike($mid_no_user, qr/bugzilla--/,
 
 my $marker;
 
-# Path component must be stripped here too.
-set_urlbase('https://bugs.example.org/bugzilla/');
+# Path component must be relocated here too, not stripped.
+set_urlbase('https://bugs.example.org/subdir/');
 $marker = build_thread_marker(99, 7, 1);    # new bug
-like($marker, qr/Message-ID: <bug-99-7\@https\.bugs\.example\.org>/,
-  'new thread with path: path stripped from sitespec');
+like($marker, qr/Message-ID: <bug-99-7-subdir\@https\.bugs\.example\.org>/,
+  'new thread with path: path relocated in front of the domain');
 unlike($marker, qr/\@[^>]*\//, 'new thread with path: no slash after @');
 
 # Port relocation for non-standard port.
