@@ -57,7 +57,7 @@ around 'attrs' => sub {
 # time we need a DBI handle to ensure the connection is alive.
 {
   my @DBI_METHODS = qw(
-    begin_work column_info commit do errstr get_info last_insert_id ping prepare
+    begin_work column_info commit do errstr foreign_key_info get_info last_insert_id ping prepare
     primary_key quote_identifier rollback selectall_arrayref selectall_hashref
     selectcol_arrayref selectrow_array selectrow_arrayref selectrow_hashref table_info
   );
