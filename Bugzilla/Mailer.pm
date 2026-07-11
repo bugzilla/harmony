@@ -98,6 +98,11 @@ sub MessageToMTA {
   $email->header_set('MIME-Version', '1.0')
     if !$email->header('MIME-Version');
 
+  # We ensure there's a Message-ID header set otherwise some mailsystems
+  # treat us as spam.
+  $email->header_set('Message-ID', build_message_id())
+    if !$email->header('Message-ID');
+
   # Encode the headers correctly in quoted-printable
   foreach my $header ($email->header_names) {
     $header = lc $header;
@@ -252,9 +257,18 @@ sub build_thread_marker {
 
   my $sitespec = '@' . Bugzilla->localconfig->urlbase;
   $sitespec =~ s/:\/\//\./;    # Make the protocol look like part of the domain
-  $sitespec =~ s/^([^:\/]+):(\d+)/$1/;    # Remove a port number, to relocate
-  if ($2) {
-    $sitespec = "-$2$sitespec";    # Put the port number back in, before the '@'
+  $sitespec =~ s/\/$//;        # Drop the lone trailing slash every urlbase has
+
+  # Multiple Bugzillas can be hosted in different subdirectories on the same
+  # domain, so relocate any path component in front of the domain (like the
+  # port below) rather than discarding it — '/' is illegal in a domain.
+  if ($sitespec =~ s/^(\@[^\/]+)\/(.+)$/$1/) {
+    (my $path = $2) =~ s/\//-/g;    # sanitize any remaining internal slashes
+    $sitespec = "-$path$sitespec";
+  }
+
+  if ($sitespec =~ s/^([^:\/]+):(\d+)/$1/) {    # Remove port number, to relocate
+    $sitespec = "-$2$sitespec";                  # Put the port number back in, before the '@'
   }
 
   my $threadingmarker = "References: <bug-$bug_id-$user_id$sitespec>";
@@ -270,4 +284,32 @@ sub build_thread_marker {
   return $threadingmarker;
 }
 
+# Builds Message-ID header
+sub build_message_id {
+  my ($user_id) = @_;
+
+  # Don't fall back to current user: this is called from contexts with no logged-in
+  # user (job queue, email_in.pl). The random bits below ensure uniqueness anyway.
+  $user_id //= '';
+
+  my $sitespec = '@' . Bugzilla->localconfig->urlbase;
+  $sitespec =~ s/:\/\//\./;    # Make the protocol look like part of the domain
+  $sitespec =~ s/\/$//;        # Drop the lone trailing slash every urlbase has
+
+  # Multiple Bugzillas can be hosted in different subdirectories on the same
+  # domain, so relocate any path component in front of the domain (like the
+  # port below) rather than discarding it — '/' is illegal in a domain.
+  if ($sitespec =~ s/^(\@[^\/]+)\/(.+)$/$1/) {
+    (my $path = $2) =~ s/\//-/g;    # sanitize any remaining internal slashes
+    $sitespec = "-$path$sitespec";
+  }
+
+  if ($sitespec =~ s/^([^:\/]+):(\d+)/$1/) {    # Remove port number, to relocate
+    $sitespec = "-$2$sitespec";                  # Put the port number back in, before the '@'
+  }
+
+  my $rand_bits  = generate_random_password(10);
+  my $message_id = '<bugzilla-' . ($user_id ne '' ? "$user_id-" : '') . "$rand_bits$sitespec>";
+  return $message_id;
+}
 1;
