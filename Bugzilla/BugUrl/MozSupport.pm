@@ -7,7 +7,7 @@
 
 package Bugzilla::BugUrl::MozSupport;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -23,7 +23,7 @@ sub should_handle {
   # Mozilla support questions normally have the form:
   # https://support.mozilla.org/<language>/questions/<id>
   return ($uri->authority =~ /^support.mozilla.org$/i
-      and $uri->path =~ m|^(/[^/]+)?/questions/\d+$|) ? 1 : 0;
+      and $uri->path =~ m|^(/[^/]+)?/questions/\d+$|a) ? 1 : 0;
 }
 
 sub _check_value {

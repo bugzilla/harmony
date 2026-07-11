@@ -4,7 +4,7 @@
 #
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw( . lib local/lib/perl5 );
@@ -84,6 +84,15 @@ my $angle_link_dom = Mojo::DOM->new($angle_link);
 my $ahref = $angle_link_dom->at('a[href]');
 is($ahref->attr('href'), 'https://searchfox.org/mozilla-central/rev/76fe4bb385348d3f45bbebcf69ba8c7283dfcec7/mobile/android/base/java/org/mozilla/gecko/toolbar/SecurityModeUtil.java#101', 'angle links are parsed properly');
 
-is($parser->render_html('<foo>'), "<p>&lt;foo&gt;</p>\n", "literal tags work");
+# Test that literal tags are not parsed as HTML, but are instead escaped.
+# Need to use a tag that is not likely to get used in a real use case,
+# because the bug_format_comment extension hook is allowed to arbitrarily
+# modify the comment text, and we don't want to accidentally break a real
+# use case where the tag contents might get modified and break our test.
+is(
+  $parser->render_html('<markdownliteraltesttoken>'),
+  "<p>&lt;markdownliteraltesttoken&gt;</p>\n",
+  'literal tags work'
+);
 
 done_testing;

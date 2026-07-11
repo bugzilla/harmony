@@ -71,7 +71,7 @@ $sel->is_text_present_ok("The flag type selenium has been created.");
 $sel->click_ok("link=selenium");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 my $flag_url = $sel->get_location();
-$flag_url =~ /id=(\d+)/;
+$flag_url =~ /id=(\d+)/a;
 my $flagtype1_id = $1;
 
 # Now create a flag type for attachments in 'Another Product'.
@@ -108,7 +108,7 @@ $sel->is_text_present_ok("The flag type selenium_review has been created.");
 $sel->click_ok("link=selenium_review");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $flag_url = $sel->get_location();
-$flag_url =~ /id=(\d+)/;
+$flag_url =~ /id=(\d+)/a;
 my $aflagtype1_id = $1;
 
 # Create a 2nd flag type for attachments, with the same name
@@ -139,7 +139,7 @@ $sel->title_is("Flag Type 'selenium_review' Created");
 $sel->click_ok("link=selenium_review");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $flag_url = $sel->get_location();
-$flag_url =~ /id=(\d+)/;
+$flag_url =~ /id=(\d+)/a;
 my $aflagtype2_id = $1;
 
 # We are done with the admin tasks. Now play with flags in bugs.
@@ -285,7 +285,7 @@ $sel->title_is("Flag Type 'selenium' Created");
 $sel->click_ok("link=selenium");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $flag_url = $sel->get_location();
-$flag_url =~ /id=(\d+)/;
+$flag_url =~ /id=(\d+)/a;
 my $flagtype2_id = $1;
 
 # Now move the bug from c1 into c2. The bug flag should survive.

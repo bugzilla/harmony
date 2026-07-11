@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::PhabBugz::Project;
 
-use 5.10.1;
+use 5.14.0;
 use Moo;
 use Scalar::Util qw(blessed);
 use Types::Standard -all;

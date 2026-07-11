@@ -7,7 +7,7 @@
 
 package Bugzilla::BugUrl::Edge;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -36,9 +36,9 @@ sub _check_value {
 
   $uri = $class->SUPER::_check_value($uri);
 
-  return $uri if $uri->path =~ m{^/en-us/microsoft-edge/platform/issues/\d+/$};
+  return $uri if $uri->path =~ m{^/en-us/microsoft-edge/platform/issues/\d+/$}a;
   return $uri
-    if $uri->path =~ m{^/forums/\d+(?:-[^/]+)?/suggestions/\d+(?:-[^/]+)?};
+    if $uri->path =~ m{^/forums/\d+(?:-[^/]+)?/suggestions/\d+(?:-[^/]+)?}a;
 
   ThrowUserError('bug_url_invalid', {url => "$uri"});
 }

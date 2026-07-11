@@ -21,7 +21,7 @@
 
 package Bugzilla::Extension::SecureMail;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -310,7 +310,7 @@ sub mailer_before_send {
 
       # This is also a bit of a hack, but there's no header with the
       # bug ID in. So we take the first number in the subject.
-      my ($bug_id) = ($email->header('Subject') =~ /\[\D+(\d+)\]/);
+      my ($bug_id) = ($email->header('Subject') =~ /\[\D+(\d+)\]/a);
       my $bug = new Bugzilla::Bug($bug_id);
       if (!_should_secure_bug($bug)) {
         $make_secure = SECURE_NONE;
@@ -336,7 +336,7 @@ sub mailer_before_send {
             $body = $part->body if $content_type && $content_type =~ /^text\/plain/;
           });
         }
-        while ($body =~ /[\r\n]--- Comment #(\d+)/g) {
+        while ($body =~ /[\r\n]--- Comment #(\d+)/ag) {
           my $comment_number = $1;
           if ($comment_number && $comment_is_private->[$comment_number]) {
             $make_secure = SECURE_BODY;
@@ -440,7 +440,7 @@ sub _should_secure_whine {
     my $content_type = $part->content_type;
     return if !$content_type || $content_type !~ /^text\/plain/;
     my $body   = $part->body;
-    my @bugids = $body =~ /Bug (\d+):/g;
+    my @bugids = $body =~ /Bug (\d+):/ag;
     foreach my $id (@bugids) {
       $id = trim($id);
       next if !$id;
@@ -461,7 +461,7 @@ sub _make_secure {
   $email->header_set('X-Bugzilla-Secure-Email', 'Yes');
 
   my $subject = $email->header('Subject');
-  my ($bug_id) = $subject =~ /\[\D+(\d+)\]/;
+  my ($bug_id) = $subject =~ /\[\D+(\d+)\]/a;
 
   my $key_type = 0;
   if ($key && $key =~ /PUBLIC KEY/) {
@@ -686,7 +686,7 @@ sub _filter_bug_links {
     my $updated = 0;
     foreach my $link (@links) {
       my $href     = $link->attr('href');
-      my ($bug_id) = $href =~ /\Qshow_bug.cgi?id=\E(\d+)/;
+      my ($bug_id) = $href =~ /\Qshow_bug.cgi?id=\E(\d+)/a;
       my $bug      = new Bugzilla::Bug($bug_id);
       if ($bug && _should_secure_bug($bug)) {
         $link->attr('title', '(secure bug)');

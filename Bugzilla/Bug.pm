@@ -7,7 +7,7 @@
 
 package Bugzilla::Bug;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -342,7 +342,7 @@ sub new {
   my $param    = shift;
 
   # Remove leading "#" mark if we've just been passed an id.
-  if (!ref $param && $param =~ /^#(\d+)$/) {
+  if (!ref $param && $param =~ /^#(\d+)$/a) {
     $param = $1;
   }
 
@@ -1546,7 +1546,7 @@ sub _check_alias {
   }
 
   # Make sure the alias isn't just a number.
-  if ($alias =~ /^\d+$/) {
+  if ($alias =~ /^\d+$/a) {
     ThrowUserError("alias_is_numeric", {alias => $alias});
   }
 

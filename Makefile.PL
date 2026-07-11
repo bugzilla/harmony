@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -90,8 +90,9 @@ my %requires = (
   'Role::Tiny'                 => '2.000003',
   'Scope::Guard'               => '0.21',
   'Sereal'                     => '4.004',
+  'Sub::Identify'              => 0,
   'Sub::Quote'                 => '2.005000',
-  'Template'                   => '3.008',
+  'Template'                   => '3.009',
   'Text::CSV_XS'               => '1.26',
   'Throwable'                  => '0.200013',
   'Type::Tiny'                 => '1.004004',
@@ -199,7 +200,7 @@ my %optional_features = (
   jsonrpc => {
     description => 'JSON-RPC Interface',
     prereqs     => {
-      runtime => {requires => {'JSON::RPC' => '== 1.01', 'Test::Taint' => '1.06'}}
+      runtime => {requires => {'JSON::RPC' => '1.01', 'Test::Taint' => '1.06'}}
     }
   },
   linux_pdeath => {
@@ -283,7 +284,7 @@ my %optional_features = (
   rest => {
     description => 'REST Interface',
     prereqs     => {
-      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '==1.01',}}
+      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '1.01',}}
     }
   },
   s3 => {
@@ -379,7 +380,7 @@ WriteMakefile(
   VERSION_FROM       => 'Bugzilla.pm',
   ABSTRACT           => 'Bugzilla Bug Tracking System',
   LICENSE            => 'Mozilla_2_0',
-  MIN_PERL_VERSION   => '5.10.1',
+  MIN_PERL_VERSION   => '5.14.0',
   CONFIGURE_REQUIRES =>
     {'ExtUtils::MakeMaker' => $build_requires{'ExtUtils::MakeMaker'}},
   PREREQ_PM      => {%requires},

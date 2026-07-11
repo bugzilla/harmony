@@ -7,7 +7,7 @@
 
 package Bugzilla::Test::Selenium;
 
-use 5.10.1;
+use 5.14.0;
 use Bugzilla::Logging;
 use Bugzilla::Util qw(trim);
 use Mojo::File;

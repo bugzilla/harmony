@@ -10,7 +10,7 @@
 # Usage secbugsreport.pl YYYY MM DD HH MM SS +|-ZZZZ
 #  e.g. secbugsreport.pl $(date +'%Y %m %d %H %M %S %z')
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 

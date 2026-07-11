@@ -67,12 +67,12 @@ $sel->type_ok("comment", "this patch is public. Everyone can see it.");
 $sel->value_is("isprivate", "off");
 $sel->click_ok("create");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->is_text_present_ok('regexp:Attachment #\d+ to bug \d+ created');
+$sel->is_text_present_ok('regexp:Attachment #(?a:\\d+) to bug (?a:\\d+) created');
 
 # We need to store the attachment ID.
 
 my $alink = $sel->get_attribute('//a[@title="public attachment, v2"]@href');
-$alink =~ /id=(\d+)/;
+$alink =~ /id=(\d+)/a;
 my $attachment1_id = $1;
 
 # Be sure to redisplay the same bug, and make sure the new attachment is visible.
@@ -133,10 +133,10 @@ $sel->type_ok('//input[@name="description"]',
 $sel->type_ok("comment", "This is my patch!");
 $sel->click_ok("create");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->is_text_present_ok('regexp:Attachment #\d+ to bug \d+ created');
+$sel->is_text_present_ok('regexp:Attachment #(?a:\\d+) to bug (?a:\\d+) created');
 $alink = $sel->get_attribute(
   '//a[@title="My patch, which I should see, always"]@href');
-$alink =~ /id=(\d+)/;
+$alink =~ /id=(\d+)/a;
 my $attachment2_id = $1;
 go_to_bug($sel, $bug1_id);
 $sel->is_text_present_ok("My patch, which I should see, always");

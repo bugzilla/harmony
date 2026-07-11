@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::TagNewUsers;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -232,7 +232,7 @@ sub mailer_before_send {
   my ($self, $args) = @_;
   my $email = $args->{email};
 
-  my ($bug_id)       = ($email->header('Subject') =~ /^[^\d]+(\d+)/);
+  my ($bug_id)       = ($email->header('Subject') =~ /^[^\d]+(\d+)/a);
   my $changer_login  = $email->header('X-Bugzilla-Who');
   my $changed_fields = $email->header('X-Bugzilla-Changed-Fields');
 

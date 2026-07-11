@@ -7,7 +7,7 @@
 
 package Bugzilla::BugUrl::MantisBT;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use base qw(Bugzilla::BugUrl);
@@ -21,7 +21,7 @@ use Bugzilla::Util;
 
 sub should_handle {
   my ($class, $uri) = @_;
-  return ($uri->path_query =~ m|view\.php\?id=\d+$|) ? 1 : 0;
+  return ($uri->path_query =~ m|view\.php\?id=\d+$|a) ? 1 : 0;
 }
 
 sub _check_value {
