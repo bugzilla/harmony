@@ -15,7 +15,7 @@ use base qw(Bugzilla::BugUrl);
 
 sub should_handle {
   my ($class, $uri) = @_;
-  return $uri =~ m#^https?://hellosplat\.com/s/beanbag/tickets/\d+#;
+  return $uri =~ m#^https?://hellosplat\.com/s/beanbag/tickets/\d+#a;
 }
 
 sub _check_value {

@@ -179,8 +179,8 @@ sub _get_highest_status_firefox {
 
   my @status_flags
     = sort { $b <=> $a }
-    map { $_->name =~ /(\d+)$/; $1 }
-    grep { $_->is_active && $_->name =~ /^cf_status_firefox\d/ } @$flags;
+    map { $_->name =~ /(\d+)$/a; $1 }
+    grep { $_->is_active && $_->name =~ /^cf_status_firefox\d/a } @$flags;
   return @status_flags ? $status_flags[0] : undef;
 }
 
@@ -678,7 +678,7 @@ sub quicksearch_map {
   my $map = $args->{'map'};
 
   foreach my $name (keys %$map) {
-    if ($name =~ /^cf_(blocking|tracking|status)_([a-z]+)?(\d+)?$/) {
+    if ($name =~ /^cf_(blocking|tracking|status)_([a-z]+)?(\d+)?$/a) {
       my $type    = $1;
       my $product = $2;
       my $version = $3;

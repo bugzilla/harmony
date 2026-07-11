@@ -58,10 +58,10 @@ sub do_namedqueries($$) {
 
     foreach my $row (@$query) {
       my ($id, $query) = @$row;
-      if ( ($query =~ /field\d+-\d+-\d+=bug_group/)
-        && ($query =~ /(?:^|&|;)value\d+-\d+-\d+=$old(?:;|&|$)/))
+      if ( ($query =~ /field\d+-\d+-\d+=bug_group/a)
+        && ($query =~ /(?:^|&|;)value\d+-\d+-\d+=$old(?:;|&|$)/a))
       {
-        $query =~ s/((?:^|&|;)value\d+-\d+-\d+=)$old(;|&|$)/$1$new$2/;
+        $query =~ s/((?:^|&|;)value\d+-\d+-\d+=)$old(;|&|$)/$1$new$2/a;
         $sth->execute($query, $id);
         $replace_count++;
       }
@@ -94,10 +94,10 @@ sub do_series($$) {
     foreach my $row (@$query) {
       my ($series_id, $query) = @$row;
 
-      if ( ($query =~ /field\d+-\d+-\d+=bug_group/)
-        && ($query =~ /(?:^|&|;)value\d+-\d+-\d+=$old(?:;|&|$)/))
+      if ( ($query =~ /field\d+-\d+-\d+=bug_group/a)
+        && ($query =~ /(?:^|&|;)value\d+-\d+-\d+=$old(?:;|&|$)/a))
       {
-        $query =~ s/((?:^|&|;)value\d+-\d+-\d+=)$old(;|&|$)/$1$new$2/;
+        $query =~ s/((?:^|&|;)value\d+-\d+-\d+=)$old(;|&|$)/$1$new$2/a;
         $sth->execute($query, $series_id);
         $replace_count++;
       }

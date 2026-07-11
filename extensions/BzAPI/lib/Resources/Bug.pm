@@ -190,9 +190,9 @@ sub get_bug_count_resource {
     $names{"row"}{$row}++;
     $names{"tbl"}{$tbl}++;
 
-    $col_isnumeric &&= ($col =~ /^-?\d+(\.\d+)?$/o);
-    $row_isnumeric &&= ($row =~ /^-?\d+(\.\d+)?$/o);
-    $tbl_isnumeric &&= ($tbl =~ /^-?\d+(\.\d+)?$/o);
+    $col_isnumeric &&= ($col =~ /^-?\d+(\.\d+)?$/ao);
+    $row_isnumeric &&= ($row =~ /^-?\d+(\.\d+)?$/ao);
+    $tbl_isnumeric &&= ($tbl =~ /^-?\d+(\.\d+)?$/ao);
   }
 
   my @col_names = get_names($names{"col"}, $col_isnumeric, $col_field);
@@ -338,7 +338,7 @@ sub search_bugs_request {
 
     # First, search types. These are found in the value of any field ending
     # _type, and the value of any field matching type\d-\d-\d.
-    if ($key =~ /^type(\d+)-(\d+)-(\d+)$|_type$/) {
+    if ($key =~ /^type(\d+)-(\d+)-(\d+)$/a || $key =~ /_type$/) {
       $params->{$key} = BOOLEAN_TYPE_MAP->{$params->{$key}} || $params->{$key};
     }
 
@@ -348,7 +348,7 @@ sub search_bugs_request {
       $key =~ /^(field\d+-\d+-\d+|
                     changed_field|
                     (x|y|z)_axis_field)$
-                    /x
+                    /ax
       )
     {
       $params->{$key} = $FIELD_NEW_TO_OLD->{$params->{$key}} || $params->{$key};
@@ -376,7 +376,7 @@ sub search_bugs_request {
   }
 
   # Other convenience search variables used by BzAPI
-  my @field_ids = grep(/^f(\d+)$/, keys %$params);
+  my @field_ids = grep(/^f(\d+)$/a, keys %$params);
   my $last_field_id = @field_ids ? max @field_ids + 1 : 1;
   foreach my $field (qw(setters.login_name requestees.login_name)) {
     if (my $value = delete $params->{$field}) {

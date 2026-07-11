@@ -383,7 +383,7 @@ sub parse_bounty_attachment_description {
   my ($desc) = @_;
 
   my %map = (true => 1, false => 0);
-  my $date = qr/\d{4}-\d{2}-\d{2}/;
+  my $date = qr/\d{4}-\d{2}-\d{2}/a;
   $desc =~ m!
         ^
         (?<reporter_email> [^,]+)          \s*,\s*
@@ -714,7 +714,7 @@ sub bug_format_comment {
   push(
     @$regexes,
     {
-      match   => qr/(?<!\/|=)\b((?:CVE|CAN)-\d{4}-(?:\d{4}|[1-9]\d{4,})(?!\d))\b/,
+      match   => qr/(?<!\/|=)\b((?:CVE|CAN)-\d{4}-(?:\d{4}|[1-9]\d{4,})(?!\d))\b/a,
       replace => sub {
         my $args  = shift;
         my $match = html_quote($args->{matches}->[0]);
@@ -728,7 +728,7 @@ sub bug_format_comment {
   push(
     @$regexes,
     {
-      match   => qr/(^|\s)r(\d{4,})\b/,
+      match   => qr/(^|\s)r(\d{4,})\b/a,
       replace => sub {
         my $args  = shift;
         my $match = html_quote($args->{matches}->[1]);
@@ -865,7 +865,7 @@ sub bug_format_comment {
   push(
     @$regexes,
     {
-      match   => qr/\b(($hgrepos)\s+changeset:?\s+(?:\d+:)?([0-9a-fA-F]{12}))\b/,
+      match   => qr/\b(($hgrepos)\s+changeset:?\s+(?:\d+:)?([0-9a-fA-F]{12}))\b/a,
       replace => sub {
         my $args = shift;
         my $text = html_quote($args->{matches}->[0]);
@@ -1061,7 +1061,7 @@ sub _bug_missing_sec_approval {
   $flags = [grep { $_->name =~ /^cf_status_firefox/ } @$flags];
   return 0 unless @$flags;
 
-  my $nightly = last_value { $_->name !~ /_esr\d+$/ } @$flags;
+  my $nightly = last_value { $_->name !~ /_esr\d+$/a } @$flags;
   my $set = 0;
   foreach my $flag (@$flags) {
     my $value = $flag->bug_flag($self->id)->value;
@@ -1730,7 +1730,7 @@ sub _log_sent_email {
   my $subject = $email->header('Subject');
 
   my $bug_id = $email->header('X-Bugzilla-ID');
-  if (!$bug_id && $subject =~ /[\[\(]Bug (\d+)/i) {
+  if (!$bug_id && $subject =~ /[\[\(]Bug (\d+)/ai) {
     $bug_id = $1;
   }
   $bug_id = $bug_id ? "bug-$bug_id" : '-';
@@ -1749,7 +1749,7 @@ sub _log_sent_email {
   }
   $message_type ||= $type || '?';
 
-  $subject =~ s/[\[\(]Bug \d+[\]\)]\s*//;
+  $subject =~ s/[\[\(]Bug \d+[\]\)]\s*//a;
 
   _syslog("[bugmail] $recipient ($message_type) $bug_id $subject");
 }
@@ -2011,7 +2011,7 @@ sub _post_gear_bug {
   my $bug   = $vars->{bug};
   my $input = Bugzilla->input_params;
 
-  my ($team, $code) = $input->{teamcode} =~ /^(.+?) \((\d+)\)$/;
+  my ($team, $code) = $input->{teamcode} =~ /^(.+?) \((\d+)\)$/a;
   my @request = (
     "Date Required: $input->{date_required}",
     "$input->{firstname} $input->{lastname}",
@@ -2430,7 +2430,7 @@ sub query_database {
     $vars->{executed} = 1;
 
     # add limit if missing
-    if ($query !~ /\sLIMIT\s+\d+\s*$/si) {
+    if ($query !~ /\sLIMIT\s+\d+\s*$/asi) {
       $query .= ' LIMIT 1000';
       $vars->{query} = $query;
     }
@@ -2669,7 +2669,7 @@ sub _get_product_version {
 
   # Return major version by default
   return 0 unless $version;
-  my ($major_version) = $version =~ /^(\d+)/;
+  my ($major_version) = $version =~ /^(\d+)/a;
   return $major_version;
 }
 
@@ -2809,7 +2809,7 @@ sub app_startup {
   # (arbitrary) name to a regular expression and a destination.
   #
   # The REWRITE_ prefix is only significant because it is removed from the fake
-  # CGI environment in Bugzilla::App::CGI 
+  # CGI environment in Bugzilla::App::CGI
   $r->any('/:REWRITE_itrequest' => [REWRITE_itrequest => qr{form[\.:]itrequest}])
     ->to('CGI#enter_bug_cgi' =>
       {'product' => 'Infrastructure & Operations', 'format' => 'itrequest'});

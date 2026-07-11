@@ -599,8 +599,8 @@ sub _get_diffs {
       $diff->{isprivate} = $diff->{new};
     }
     elsif ($diff->{field_name} =~ /^(?:dependson|blocked|regress(?:ed_by|es))$/) {
-      push @$referenced_bugs, grep {/^\d+$/} split(/[\s,]+/, $diff->{old});
-      push @$referenced_bugs, grep {/^\d+$/} split(/[\s,]+/, $diff->{new});
+      push @$referenced_bugs, grep {/^\d+$/a} split(/[\s,]+/, $diff->{old});
+      push @$referenced_bugs, grep {/^\d+$/a} split(/[\s,]+/, $diff->{new});
     }
     elsif ($diff->{field_name} eq 'see_also') {
       foreach my $field ('new', 'old') {
@@ -676,9 +676,9 @@ sub _get_new_bugmail_fields {
 sub _parse_see_also {
   my (@links) = @_;
   my $urlbase = Bugzilla->localconfig->urlbase;
-  my $bug_link_re = qr/^\Q$urlbase\Eshow_bug\.cgi\?id=(\d+)$/;
+  my $bug_link_re = qr/^\Q$urlbase\Eshow_bug\.cgi\?id=(\d+)$/a;
 
-  return grep { /^\d+$/ } map { /$bug_link_re/ ? int($1) : () } @links;
+  return grep { /^\d+$/a } map { /$bug_link_re/ ? int($1) : () } @links;
 }
 
 1;

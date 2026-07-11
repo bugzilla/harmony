@@ -40,18 +40,18 @@ my $mozreview_url_re = qr{
       | /diff/\#index_header
     )?
     $
-}ix;
+}aix;
 
 sub phabricator_url_re {
   my $phab_uri
     = Bugzilla->params->{phabricator_base_uri} || 'https://example.com';
-  return qr/^\Q${phab_uri}\ED\d+$/i;
+  return qr/^\Q${phab_uri}\ED\d+$/ai;
 }
 
 our %autodetect_attach_urls = (
   github_pr => {
     title        => 'GitHub Pull Request',
-    regex        => qr#^https://github\.com/[^/]+/[^/]+/pull/\d+/?$#i,
+    regex        => qr#^https://github\.com/[^/]+/[^/]+/pull/\d+/?$#ai,
     content_type => 'text/x-github-pull-request',
     can_review   => 1,
   },

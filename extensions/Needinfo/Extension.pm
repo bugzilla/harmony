@@ -114,7 +114,7 @@ sub bug_start_of_update {
 
   my @needinfo_overrides;
   foreach my $key (grep(/^needinfo_override_/, keys %$params)) {
-    my ($id) = $key =~ /(\d+)$/;
+    my ($id) = $key =~ /(\d+)$/a;
 
     # Should always be true if key exists (checkbox) but better to be sure
     push(@needinfo_overrides, $id) if $id && $params->{$key};

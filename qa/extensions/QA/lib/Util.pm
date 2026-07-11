@@ -19,7 +19,7 @@ sub parse_output {
 
   $vars->{error} = ($output =~ /software error/i) ? 1 : 0;
   $vars->{output} = $output;
-  $vars->{bug_id} ||= ($output =~ /Created bug (\d+)/i) ? $1 : undef;
+  $vars->{bug_id} ||= ($output =~ /Created bug (\d+)/ai) ? $1 : undef;
 }
 
 1;

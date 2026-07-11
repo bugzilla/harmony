@@ -23,7 +23,7 @@ sub should_handle {
   # https://webcompat.com/issues/1111
   my $host = lc($uri->authority);
   return ($host eq 'webcompat.com' || $host eq 'www.webcompat.com')
-    && $uri->path =~ m#^/issues/\d+$#;
+    && $uri->path =~ m#^/issues/\d+$#a;
 }
 
 sub _check_value {

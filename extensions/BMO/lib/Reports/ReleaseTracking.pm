@@ -120,13 +120,13 @@ sub report {
         if (scalar keys %{$flag_type->inclusions}) {
           my $inclusions = $flag_type->inclusions;
           foreach my $key (keys %$inclusions) {
-            push @inclusion_ids, ($inclusions->{$key} =~ /^(\d+)/);
+            push @inclusion_ids, ($inclusions->{$key} =~ /^(\d+)/a);
           }
         }
         elsif (scalar keys %{$flag_type->exclusions}) {
           my $exclusions = $flag_type->exclusions;
           foreach my $key (keys %$exclusions) {
-            push @exclusion_ids, ($exclusions->{$key} =~ /^(\d+)/);
+            push @exclusion_ids, ($exclusions->{$key} =~ /^(\d+)/a);
           }
         }
         else {
@@ -347,7 +347,7 @@ sub _parse_query {
   # date_range -> from_ymd to_ymd
   my $date_range = shift @query;
   if ($date_range ne '*') {
-    $date_range =~ /^(\d\d\d\d)(\d\d)(\d\d)-(\d\d\d\d)(\d\d)(\d\d)$/
+    $date_range =~ /^(\d\d\d\d)(\d\d)(\d\d)-(\d\d\d\d)(\d\d)(\d\d)$/a
       or ThrowUserError('report_invalid_parameter', {name => 'date_range'});
     $query->{start_date} = "$1-$2-$3";
     $query->{end_date}   = "$4-$5-$6";
@@ -361,7 +361,7 @@ sub _parse_query {
 
   # product_id
   my $product_id = shift @query;
-  $product_id =~ /^(\d+)$/
+  $product_id =~ /^(\d+)$/a
     or ThrowUserError('report_invalid_parameter', {name => 'product_id'});
   $query->{product_id} = $1;
 
@@ -374,7 +374,7 @@ sub _parse_query {
   # fields
   my @fields;
   foreach my $field (@query) {
-    $field =~ /^(\d+)([\-\+])$/
+    $field =~ /^(\d+)([\-\+])$/a
       or ThrowUserError('report_invalid_parameter', {name => 'fields'});
     my ($id, $value) = ($1, $2);
     my $field_obj = Bugzilla::Field->new($id)

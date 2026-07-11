@@ -20,13 +20,13 @@ use base qw(Bugzilla::BugUrl);
 sub should_handle {
   my ($class, $uri) = @_;
 
-  return $uri =~ m!^https?://[^.]+\.aha\.io/features/(\w+-\d+)!;
+  return $uri =~ m!^https?://[^.]+\.aha\.io/features/(\w+-\d+)!a;
 }
 
 sub get_feature_id {
   my ($self) = @_;
 
-  if ($self->{value} =~ m!^https?://[^.]+\.aha\.io/features/(\w+-\d+)!) {
+  if ($self->{value} =~ m!^https?://[^.]+\.aha\.io/features/(\w+-\d+)!a) {
     return $1;
   }
 }

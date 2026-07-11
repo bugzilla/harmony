@@ -51,7 +51,7 @@ $headers->parse("$header_str\r\n\r\n");
 foreach my $name (@{$headers->names}) {
   $C->res->headers->header($name => $headers->header($name));
 }
-my ($code) = $headers->header('Status') =~ /^(\d+)/;
+my ($code) = $headers->header('Status') =~ /^(\d+)/a;
 $C->res->code($code) if $code;
 $C->write($body);
 exit;

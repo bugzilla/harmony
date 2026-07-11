@@ -33,7 +33,7 @@ sub _check_value {
   #   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1234
   #   http://bugs.debian.org/1234
   my $bug_id;
-  if ($uri->path =~ m|^/(\d+)$|) {
+  if ($uri->path =~ m|^/(\d+)$|a) {
     $bug_id = $1;
   }
   elsif ($uri->path =~ /bugreport\.cgi$/) {

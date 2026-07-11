@@ -76,7 +76,7 @@ $sel->title_is("Flag Type 'SeleniumBugFlag1Test' Created");
 $sel->is_text_present_ok(
   "The flag type SeleniumBugFlag1Test has been created.");
 my $flagtype_url = $sel->get_attribute('link=SeleniumBugFlag1Test@href');
-$flagtype_url =~ /id=(\d+)$/;
+$flagtype_url =~ /id=(\d+)$/a;
 my $flagtype1_id = $1;
 
 # Clone the flag type, but set the request group to 'editbugs' and the sortkey to 950.
@@ -117,7 +117,7 @@ $sel->title_is("Flag Type 'SeleniumBugFlag2Test' Created");
 $sel->is_text_present_ok(
   "The flag type SeleniumBugFlag2Test has been created.");
 $flagtype_url = $sel->get_attribute('link=SeleniumBugFlag2Test@href');
-$flagtype_url =~ /id=(\d+)$/;
+$flagtype_url =~ /id=(\d+)$/a;
 my $flagtype2_id = $1;
 
 # Clone the first flag type again, but with different attributes.
@@ -142,7 +142,7 @@ $sel->title_is("Flag Type 'SeleniumBugFlag3Test' Created");
 $sel->is_text_present_ok(
   "The flag type SeleniumBugFlag3Test has been created.");
 $flagtype_url = $sel->get_attribute('link=SeleniumBugFlag3Test@href');
-$flagtype_url =~ /id=(\d+)$/;
+$flagtype_url =~ /id=(\d+)$/a;
 my $flagtype3_id = $1;
 
 # We now create a flag type for attachments.
@@ -177,7 +177,7 @@ $sel->title_is("Flag Type 'SeleniumAttachmentFlag1Test' Created");
 $sel->is_text_present_ok(
   "The flag type SeleniumAttachmentFlag1Test has been created.");
 $flagtype_url = $sel->get_attribute('link=SeleniumAttachmentFlag1Test@href');
-$flagtype_url =~ /id=(\d+)$/;
+$flagtype_url =~ /id=(\d+)$/a;
 my $aflagtype1_id = $1;
 
 # Clone the flag type.
@@ -206,7 +206,7 @@ $sel->title_is("Flag Type 'SeleniumAttachmentFlag2Test' Created");
 $sel->is_text_present_ok(
   "The flag type SeleniumAttachmentFlag2Test has been created.");
 $flagtype_url = $sel->get_attribute('link=SeleniumAttachmentFlag2Test@href');
-$flagtype_url =~ /id=(\d+)$/;
+$flagtype_url =~ /id=(\d+)$/a;
 my $aflagtype2_id = $1;
 
 # Clone the flag type again, and set it as inactive.
@@ -226,7 +226,7 @@ $sel->title_is("Flag Type 'SeleniumAttachmentFlag3Test' Created");
 $sel->is_text_present_ok(
   "The flag type SeleniumAttachmentFlag3Test has been created.");
 $flagtype_url = $sel->get_attribute('link=SeleniumAttachmentFlag3Test@href');
-$flagtype_url =~ /id=(\d+)$/;
+$flagtype_url =~ /id=(\d+)$/a;
 my $aflagtype3_id = $1;
 
 # All flag types have been created. Now "real" tests can start.
@@ -375,12 +375,12 @@ $sel->type_ok("requestee_type-$aflagtype2_id", $config->{admin_user_login});
 $sel->type_ok("comment", "patch for testing purposes only");
 $sel->click_ok("create");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->is_text_present_ok('regexp:Attachment #\d+ to bug \d+ created');
+$sel->is_text_present_ok('regexp:Attachment #(?a:\\d+) to bug (?a:\\d+) created');
 
 # Store the flag ID.
 
 my $alink = $sel->get_attribute('//a[@title="patch, v1"]@href');
-$alink =~ /id=(\d+)/;
+$alink =~ /id=(\d+)/a;
 my $attachment1_id = $1;
 
 # Now create another attachment, and set requestees.
@@ -405,9 +405,9 @@ $sel->type_ok("requestee_type-$aflagtype2_id",
 $sel->type_ok("comment", "second patch, with requestee");
 $sel->click_ok("create");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->is_text_present_ok('regexp:Attachment #\d+ to bug \d+ created');
+$sel->is_text_present_ok('regexp:Attachment #(?a:\\d+) to bug (?a:\\d+) created');
 $alink = $sel->get_attribute('//a[@title="patch, v2"]@href');
-$alink =~ /id=(\d+)/;
+$alink =~ /id=(\d+)/a;
 my $attachment2_id = $1;
 
 # Create a third attachment, but we now set the MIME type manually.
@@ -424,9 +424,9 @@ $sel->select_ok("flag_type-$aflagtype1_id", "label=+");
 $sel->type_ok("comment", "one +, the other one blank");
 $sel->click_ok("create");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->is_text_present_ok('regexp:Attachment #\d+ to bug \d+ created');
+$sel->is_text_present_ok('regexp:Attachment #(?a:\\d+) to bug (?a:\\d+) created');
 $alink = $sel->get_attribute('//a[@title="patch, v3"]@href');
-$alink =~ /id=(\d+)/;
+$alink =~ /id=(\d+)/a;
 my $attachment3_id = $1;
 
 # Display the bug and check flags are correctly set.
@@ -513,7 +513,7 @@ $sel->select_ok("flag_type-$aflagtype2_id", "label=+");
 $sel->type_ok("comment", "granting again");
 $sel->click_ok("create");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->is_text_present_ok('regexp:Attachment #\d+ to bug \d+ created');
+$sel->is_text_present_ok('regexp:Attachment #(?a:\\d+) to bug (?a:\\d+) created');
 go_to_bug($sel, $bug1_id, 1);
 $sel->is_element_present_ok(
   qq{//div[\@class="attach-flag"]/div/span[text()="$config->{unprivileged_user_nick}"]/../..//a[normalize-space(text())="SeleniumAttachmentFlag2Test+"]}

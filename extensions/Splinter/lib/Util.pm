@@ -158,7 +158,7 @@ sub add_review_links_to_email {
   my $new_body = 0;
   my $bug;
 
-  if ($email->header('Subject') =~ /^\[Bug\s+(\d+)\]/
+  if ($email->header('Subject') =~ /^\[Bug\s+(\d+)\]/a
     && Bugzilla->user->can_see_bug($1))
   {
     $bug = Bugzilla::Bug->new({id => $1, cache => 1});
@@ -166,18 +166,18 @@ sub add_review_links_to_email {
 
   return unless defined $bug;
 
-  if ($body =~ /Review\s+of\s+attachment\s+\d+\s*:/) {
+  if ($body =~ /Review\s+of\s+attachment\s+\d+\s*:/a) {
     $body =~ s~(Review\s+of\s+attachment\s+(\d+)\s*:)
                   ~"$1\015\012 --> (" . get_review_url($bug, $2, 1) . ")"
-                  ~egx;
+                  ~egxa;
     $new_body = 1;
   }
 
-  if ($body =~ /Created attachment \d+\015\012 --> /) {
+  if ($body =~ /Created attachment \d+\015\012 --> /a) {
     $body =~ s~(Created\ attachment\ (\d+)\015\012)
                    \ -->\ \(([^\015\012]*)\)[^\015\012]*
                   ~munge_create_attachment($bug, $1, $2, $3)
-                  ~egx;
+                  ~egxa;
     $new_body = 1;
   }
 

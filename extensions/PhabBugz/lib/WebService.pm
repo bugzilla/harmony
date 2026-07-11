@@ -208,7 +208,7 @@ sub bug_revisions {
 sub rest_resources {
   return [
     # Bug permission checks
-    qr{^/phabbugz/check_bug/(\d+)/(\d+)$},
+    qr{^/phabbugz/check_bug/(\d+)/(\d+)$}a,
     {
       GET => {
         method => 'check_user_permission_for_bug',
@@ -217,7 +217,7 @@ sub rest_resources {
         }
       }
     },
-    qr{^/phabbugz/check_enter_bug/([^/]+)/(\d+)$},
+    qr{^/phabbugz/check_enter_bug/([^/]+)/(\d+)$}a,
     {
       GET => {
         method => 'check_user_enter_bug_permission',
@@ -226,7 +226,7 @@ sub rest_resources {
         },
       },
     },
-    qr{^/phabbugz/bug_revisions/(\d+)$},
+    qr{^/phabbugz/bug_revisions/(\d+)$}a,
     {
       GET => {
         method => 'bug_revisions',

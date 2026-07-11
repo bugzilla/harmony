@@ -15,7 +15,7 @@ use base qw(Bugzilla::BugUrl);
 
 sub should_handle {
   my ($class, $uri) = @_;
-  return $uri =~ m{^https?://sentry[.]prod[.]mozaws[.]net/operations/[^/]+/issues/\d+/?$}sxm;
+  return $uri =~ m{^https?://sentry[.]prod[.]mozaws[.]net/operations/[^/]+/issues/\d+/?$}asxm;
 }
 
 sub _check_value {

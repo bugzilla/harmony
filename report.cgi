@@ -153,9 +153,9 @@ foreach my $result (@$results) {
   $names{"row"}{$row}++;
   $names{"tbl"}{$tbl}++;
 
-  $col_isnumeric &&= ($col =~ /^-?\d+(\.\d+)?$/o);
-  $row_isnumeric &&= ($row =~ /^-?\d+(\.\d+)?$/o);
-  $tbl_isnumeric &&= ($tbl =~ /^-?\d+(\.\d+)?$/o);
+  $col_isnumeric &&= ($col =~ /^-?\d+(\.\d+)?$/ao);
+  $row_isnumeric &&= ($row =~ /^-?\d+(\.\d+)?$/ao);
+  $tbl_isnumeric &&= ($tbl =~ /^-?\d+(\.\d+)?$/ao);
 }
 
 my @col_names = get_names($names{"col"}, $col_isnumeric, $col_field);

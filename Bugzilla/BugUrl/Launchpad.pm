@@ -34,7 +34,7 @@ sub _check_value {
   #   https://bugs.launchpad.net/ubuntu/+bug/1234
   #   https://launchpad.net/bugs/1234
   # All variations end with either "/bugs/1234" or "/+bug/1234"
-  if ($uri->path =~ m|bugs?/(\d+)$|) {
+  if ($uri->path =~ m|bugs?/(\d+)$|a) {
 
     # This is the shortest standard URL form for Launchpad bugs,
     # and so we reduce all URLs to this.
