@@ -261,7 +261,7 @@ sub db_schema_abstract_schema {
         REFERENCES => {TABLE => 'products', COLUMN => 'id', DELETE => 'CASCADE',},
       },
       component_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 0,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE',},
       },
@@ -289,6 +289,11 @@ sub install_update_db {
   $dbh->bz_add_column('tracking_flags_values', 'comment',
     {TYPE => 'TEXT', NOTNULL => 0,},
   );
+
+  # Bug 2052640 - justdave@bugzilla.org
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'tracking_flags_visibility', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
+  ]);
 }
 
 sub install_filesystem {
