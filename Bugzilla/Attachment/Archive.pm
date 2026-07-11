@@ -7,7 +7,7 @@
 
 package Bugzilla::Attachment::Archive;
 
-use 5.10.1;
+use 5.14.0;
 use Moo;
 use Digest::SHA qw(sha256_hex);
 use Carp;

@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::Splinter;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -114,7 +114,7 @@ sub object_end_of_create {
 
   if ($class eq 'Bugzilla::Comment') {
     my $comment = $args->{object};
-    if ($comment->body =~ /^Review of attachment (\d+)\s*:\n-{65}\n\n/s) {
+    if ($comment->body =~ /^Review of attachment (\d+)\s*:\n-{65}\n\n/as) {
       $comment->set_is_markdown(0);
       $comment->update;
     }
@@ -139,13 +139,13 @@ sub bug_format_comment {
                ~(push(@$regexes, { match => qr/__REVIEW__$2/,
                                    replace => get_review_link("$2", "[review]") })) &&
                 (attachment_id_is_patch($2) ? "$1 __REVIEW__$2" : $1)
-               ~egmx;
+               ~egmxa;
 
   # And linkify "Review of attachment", this is less of a workaround since
   # there is no issue with overlap; note that there is an assumption that
   # there is only one match in the text we are linkifying, since they all
   # get the same link.
-  my $REVIEW_RE = qr/Review\s+of\s+attachment\s+(\d+)\s*:/;
+  my $REVIEW_RE = qr/Review\s+of\s+attachment\s+(\d+)\s*:/a;
 
   if ($$text =~ $REVIEW_RE) {
     my $attach_id   = $1;

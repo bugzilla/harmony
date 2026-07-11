@@ -10,7 +10,7 @@ package Bugzilla::Install::DB;
 # NOTE: This package may "use" any modules that it likes,
 # localconfig is available, and params are up to date.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -821,6 +821,15 @@ sub update_table_definitions {
     {table => 'user_request_log', column => 'attach_id', definition => {TYPE => 'INT5', NOTNULL => 0}},
   ]);
 
+  # Bug 903895 - sgreen@redhat.com
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'flaginclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'flagexclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'bugs',           column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'component_cc',    column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'components',      column => 'id',           definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}},
+  ]);
+
   _populate_attachment_storage_class();
 
 
@@ -961,7 +970,7 @@ sub _populate_longdescs {
       my $buffer = "";
       foreach my $line (split(/\n/, $desc)) {
         $line =~ s/\s+$//g;    # Trim trailing whitespace.
-        if ($line =~ /^------- Additional Comments From ([^\s]+)\s+(\d.+\d)\s+-------$/)
+        if ($line =~ /^------- Additional Comments From ([^\s]+)\s+((?a:\d.+\d))\s+-------$/)
         {
           my $name = $1;
           my $date = str2time($2);
@@ -1214,7 +1223,7 @@ sub _populate_milestones_table {
 
       # check if the value already exists
       my $sortkey = substr($value, 1);
-      if ($sortkey !~ /^\d+$/) {
+      if ($sortkey !~ /^\d+$/a) {
         $sortkey = 0;
       }
       else {
@@ -1315,7 +1324,7 @@ sub _populate_duplicates_table {
 
     foreach $key (keys(%dupes)) {
       $dupes{$key}
-        =~ /^.*\*\*\* This bug has been marked as a duplicate of (\d+) \*\*\*$/ms;
+        =~ /^.*\*\*\* This bug has been marked as a duplicate of (\d+) \*\*\*$/ams;
       $dupes{$key} = $1;
       $dbh->do("INSERT INTO duplicates VALUES(?, ?)", undef, $dupes{$key}, $key);
 
@@ -1592,6 +1601,9 @@ sub _use_ids_for_products_and_components {
 
     print "Updating the database to use component IDs.\n";
 
+    # NOTE: These columns are now MEDIUMSERIAL/INT3 in the current schema, but
+    # historically were originally created as SMALLSERIAL/INT2. The upgrade steps
+    # are done in order; they will be converted to the correct current type later.
     $dbh->bz_add_column("components", "id",
       {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
     $dbh->bz_add_column("bugs", "component_id", {TYPE => 'INT2', NOTNULL => 1}, 0);
@@ -2368,7 +2380,7 @@ sub _copy_old_charts_into_database {
 
       my @lines = <$in>;
       while (my $line = shift @lines) {
-        if ($line =~ /^(\d+\|.*)/) {
+        if ($line =~ /^(\d+\|.*)/a) {
           my @numbers = split(/\||\r/, $1);
 
           # Only take the first line for each date; it was possible to
@@ -3655,7 +3667,7 @@ sub _fix_illegal_flag_modification_dates {
 
   # If no rows are affected, $dbh->do returns 0E0 instead of 0.
   print "$rows flags had an illegal modification date. Fixed!\n"
-    if ($rows =~ /^\d+$/);
+    if ($rows =~ /^\d+$/a);
 }
 
 sub _add_visibility_value_to_value_tables {
@@ -3754,7 +3766,7 @@ sub _set_attachment_comment_type {
   foreach my $id (@comment_ids) {
     $count++;
     my $text = $comments{$id};
-    next if $text !~ /^\Q$string\E(\d+)/;
+    next if $text !~ /^\Q$string\E(\d+)/a;
     my $attachment_id = $1;
     my @lines = split("\n", $text);
     if ($type == CMT_ATTACHMENT_CREATED) {

@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::Review::WebService;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -145,7 +145,7 @@ sub flag_activity {
     $limit = $max_results;
   }
 
-  if ($after && $after =~ /^(\d{4}-\d{1,2}-\d{1,2})$/) {
+  if ($after && $after =~ /^(\d{4}-\d{1,2}-\d{1,2})$/a) {
     $after = $1;
   }
   else {
@@ -154,7 +154,7 @@ sub flag_activity {
     $after = $now->ymd('-');
   }
 
-  if ($before && $before =~ /^(\d{4}-\d{1,2}-\d{1,2})$/) {
+  if ($before && $before =~ /^(\d{4}-\d{1,2}-\d{1,2})$/a) {
     $before = $1;
   }
   else {
@@ -194,7 +194,7 @@ sub _can_see_attachment {
 sub rest_resources {
   return [
     # bug-id
-    qr{^/review/suggestions/(\d+)$},
+    qr{^/review/suggestions/(\d+)$}a,
     {
       GET => {
         method => 'suggestions',
@@ -231,7 +231,7 @@ sub rest_resources {
     {GET => {method => 'suggestions',},},
 
     # flag activity by flag id
-    qr{^/review/flag_activity/(\d+)$},
+    qr{^/review/flag_activity/(\d+)$}a,
     {
       GET => {
         method => 'flag_activity',

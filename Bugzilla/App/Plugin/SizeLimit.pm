@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::App::Plugin::SizeLimit;
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::JSON qw(decode_json);
 use Bugzilla::Logging;

@@ -26,7 +26,7 @@ BEGIN {
 
 use URI::Escape;
 
-use constant DATETIME_REGEX => qr/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/;
+use constant DATETIME_REGEX => qr/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/a;
 
 sub TYPE {
   my ($self) = @_;

@@ -165,7 +165,7 @@ set_parameters($sel,
 go_to_bug($sel, $bug1_id);
 $sel->click_ok("link=Details");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_like(qr/Attachment \d+ Details for Bug $bug1_id/);
+$sel->title_like(qr/Attachment \d+ Details for Bug $bug1_id/a);
 $sel->is_text_present_ok(
   "The attachment is not viewable in your browser due to security restrictions");
 $sel->click_ok("link=View");
@@ -173,7 +173,7 @@ $sel->click_ok("link=View");
 # Wait 1 second to give the browser a chance to display the attachment.
 # Do not use wait_for_page_to_load_ok() as the File Saver will never go away.
 sleep(1);
-$sel->title_like(qr/Attachment \d+ Details for Bug $bug1_id/);
+$sel->title_like(qr/Attachment \d+ Details for Bug $bug1_id/a);
 ok(!$sel->is_text_present('@@'), "Patch not displayed");
 
 # Enable viewing attachments.

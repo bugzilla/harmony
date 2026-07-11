@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::BugModal;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -93,7 +93,7 @@ sub template_after_create {
           $id = substr($id, 1);
         }
         $id =~ tr/ /-/;
-        $id =~ s/[^a-z\d\-_:\.]/_/g;
+        $id =~ s/[^a-z\d\-_:\.]/_/ag;
         return $id;
       };
     },
