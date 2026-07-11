@@ -7,7 +7,7 @@
 
 package Bugzilla::Error::Base;
 
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base 'Mojo::Exception';
 
 has 'vars' => sub { {} };

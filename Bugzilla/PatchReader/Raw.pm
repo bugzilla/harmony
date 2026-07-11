@@ -13,7 +13,7 @@ package Bugzilla::PatchReader::Raw;
 # $parser->end_lines();
 #
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 no warnings 'utf8';

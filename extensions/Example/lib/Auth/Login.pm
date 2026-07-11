@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::Extension::Example::Auth::Login;
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use base qw(Bugzilla::Auth::Login);

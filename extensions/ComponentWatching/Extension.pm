@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::ComponentWatching;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -83,6 +83,11 @@ sub install_update_db {
   );
   $dbh->bz_add_column('component_watch', 'component_prefix',
     {TYPE => 'VARCHAR(64)', NOTNULL => 0,});
+
+  # Bug 2052640 - justdave@bugzilla.org
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'component_watch', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
+  ]);
 }
 
 #

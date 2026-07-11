@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::App::Plugin::Glue;
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base 'Mojolicious::Plugin';
 
 use Try::Tiny;
