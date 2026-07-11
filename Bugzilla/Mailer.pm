@@ -304,7 +304,7 @@ sub build_message_id {
     $sitespec = "-$path$sitespec";
   }
 
-  if ($sitespec =~ s/^([^:\/]+):(\d+)/$1/) {    # Remove port number, to relocate
+  if ($sitespec =~ s/^([^:\/]+):(\d+)/$1/a) {    # Remove port number, to relocate
     $sitespec = "-$2$sitespec";                  # Put the port number back in, before the '@'
   }
 
