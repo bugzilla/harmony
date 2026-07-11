@@ -421,6 +421,7 @@ sub reorg_move_component {
 
 sub db_schema_abstract_schema {
   my ($self, $args) = @_;
+
   $args->{schema}->{bugmail_filters} = {
     FIELDS => [
       id      => {TYPE => 'INTSERIAL', NOTNULL => 1, PRIMARYKEY => 1,},
@@ -441,7 +442,7 @@ sub db_schema_abstract_schema {
         REFERENCES => {TABLE => 'products', COLUMN => 'id', DELETE => 'CASCADE'},
       },
       component_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 0,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE'},
       },
@@ -467,8 +468,14 @@ sub db_schema_abstract_schema {
 }
 
 sub install_update_db {
-  Bugzilla->dbh->bz_add_column('bugmail_filters', 'changer_id',
+  my $dbh = Bugzilla->dbh;
+  $dbh->bz_add_column('bugmail_filters', 'changer_id',
     {TYPE => 'INT3', NOTNULL => 0,});
+
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'bugmail_filters', column => 'product_id', definition => {TYPE => 'INT2', NOTNULL => 0}},
+    {table => 'bugmail_filters', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
+  ]);
 }
 
 sub db_sanitize {
