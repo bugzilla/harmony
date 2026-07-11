@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::Review;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -837,7 +837,7 @@ sub db_schema_abstract_schema {
       },
       display_name => {TYPE => 'VARCHAR(64)',},
       component_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE',}
       },
@@ -963,6 +963,12 @@ sub install_update_db {
     $def->{TYPE} = 'INT3';
     $dbh->bz_alter_column('flag_state_activity', 'type_id', $def);
   }
+
+  # Bug 2052640 - justdave@bugzilla.org
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'component_reviewers', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+  ]);
+
 }
 
 sub install_filesystem {

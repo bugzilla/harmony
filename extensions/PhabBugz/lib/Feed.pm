@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::PhabBugz::Feed;
 
-use 5.10.1;
+use 5.14.0;
 
 use IO::Async::Timer::Periodic;
 use IO::Async::Loop;
