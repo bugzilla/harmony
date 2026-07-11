@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::App::Plugin::Glue;
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base 'Mojolicious::Plugin';
 
 use Try::Tiny;
@@ -190,7 +190,7 @@ sub register {
         # In this circumstance we run quotemeta first because we need to
         # insert an active regex meta-character afterward.
         $regex = quotemeta($attach_base);
-        $regex =~ s/\\\%bugid\\\%/\\d+/;
+        $regex =~ s/\\\%bugid\\\%/(?a:\\d+)/;
       }
       $regex = "^$regex";
       return ($c->req->url->to_abs =~ $regex) ? 1 : 0;

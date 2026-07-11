@@ -13,7 +13,7 @@ package Bugzilla::DB::Schema::Mysql;
 #
 ###############################################################################
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -366,7 +366,7 @@ sub column_info_to_column {
 
       # If we're not a number, we're a string and need to be
       # quoted.
-      $default = $dbh->quote($default) if !($default =~ /^(-)?(\d+)(.\d+)?$/);
+      $default = $dbh->quote($default) if !($default =~ /^(-)?(\d+)(.\d+)?$/a);
       $column->{DEFAULT} = $default;
     }
   }

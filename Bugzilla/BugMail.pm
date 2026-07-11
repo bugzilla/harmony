@@ -7,7 +7,7 @@
 
 package Bugzilla::BugMail;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -20,6 +20,7 @@ use Bugzilla::Comment;
 use Bugzilla::Mailer;
 use Bugzilla::Hook;
 
+use Encode qw();
 use Date::Parse;
 use Date::Format;
 use Scalar::Util qw(blessed);
@@ -521,6 +522,7 @@ sub _generate_bugmail {
   my @parts = (Email::MIME->create(
     attributes => {content_type => "text/plain",},
     body       => $msg_text,
+    encode_check => Encode::FB_DEFAULT
   ));
   if ($user->setting('email_format') eq 'html') {
     $template->process("email/bugmail.html.tmpl", $vars, \$msg_html)
@@ -529,6 +531,7 @@ sub _generate_bugmail {
       Email::MIME->create(
       attributes => {content_type => "text/html",},
       body       => $msg_html,
+      encode_check => Encode::FB_DEFAULT
       );
   }
 
@@ -596,8 +599,8 @@ sub _get_diffs {
       $diff->{isprivate} = $diff->{new};
     }
     elsif ($diff->{field_name} =~ /^(?:dependson|blocked|regress(?:ed_by|es))$/) {
-      push @$referenced_bugs, grep {/^\d+$/} split(/[\s,]+/, $diff->{old});
-      push @$referenced_bugs, grep {/^\d+$/} split(/[\s,]+/, $diff->{new});
+      push @$referenced_bugs, grep {/^\d+$/a} split(/[\s,]+/, $diff->{old});
+      push @$referenced_bugs, grep {/^\d+$/a} split(/[\s,]+/, $diff->{new});
     }
     elsif ($diff->{field_name} eq 'see_also') {
       foreach my $field ('new', 'old') {
@@ -673,9 +676,9 @@ sub _get_new_bugmail_fields {
 sub _parse_see_also {
   my (@links) = @_;
   my $urlbase = Bugzilla->localconfig->urlbase;
-  my $bug_link_re = qr/^\Q$urlbase\Eshow_bug\.cgi\?id=(\d+)$/;
+  my $bug_link_re = qr/^\Q$urlbase\Eshow_bug\.cgi\?id=(\d+)$/a;
 
-  return grep { /^\d+$/ } map { /$bug_link_re/ ? int($1) : () } @links;
+  return grep { /^\d+$/a } map { /$bug_link_re/ ? int($1) : () } @links;
 }
 
 1;

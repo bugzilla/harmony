@@ -32,6 +32,7 @@
 version.json
 __lbheartbeat__
 .perl-version
+*.bak
 
 /skins/contrib/Dusk/admin.css
 /skins/contrib/Dusk/bug.css

@@ -10,7 +10,7 @@
 #Bugzilla Test 2#
 ####GoodPerl#####
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -89,7 +89,7 @@ foreach my $file (@testitems) {
   while (my $file_line = <FILE>) {
     $found_modern_perl = 1 if $file_line =~ m/^use\s*(?:Moo|Role::Tiny)/;
     $found_mojo = 1 if $file_line =~ m/^use\s(?:Mojo(?:licious::Lite|::Base)\b)/;
-    $found_use_perl     = 1 if $file_line =~ m/^\s*use 5.10.1/;
+    $found_use_perl     = 1 if $file_line =~ m/^\s*use 5.14.0\b/;
     $found_use_strict   = 1 if $file_line =~ m/^\s*use strict/;
     $found_use_warnings = 1 if $file_line =~ m/^\s*use warnings/;
     if ($found_modern_perl || $found_mojo) {
@@ -103,10 +103,10 @@ foreach my $file (@testitems) {
   }
   close(FILE);
   if ($found_use_perl) {
-    ok(1, "$file requires Perl 5.10.1");
+    ok(1, "$file requires Perl 5.14.0");
   }
   else {
-    ok(0, "$file DOES NOT require Perl 5.10.1 --WARNING");
+    ok(0, "$file DOES NOT require Perl 5.14.0 --WARNING");
   }
 
   if ($found_use_strict) {

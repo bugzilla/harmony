@@ -7,7 +7,7 @@
 
 package Bugzilla::Config;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -102,6 +102,16 @@ sub update_params {
   my $new_install = !(keys %$param);
 
   # --- UPDATE OLD PARAMS ---
+
+  # Normalize legacy utf8 values to explicit charset names.
+  if (exists $param->{'utf8'}) {
+    if ($param->{'utf8'} eq '1') {
+      $param->{'utf8'} = 'utf8mb4';
+    }
+    elsif ($param->{'utf8'} eq 'utf8') {
+      $param->{'utf8'} = 'utf8mb3';
+    }
+  }
 
   # Change from usebrowserinfo to defaultplatform/defaultopsys combo
   if (exists $param->{'usebrowserinfo'}) {
@@ -217,7 +227,7 @@ sub update_params {
     $param->{duo_akey} = Bugzilla::Util::generate_random_password(40);
   }
 
-  $param->{'utf8'} = 1 if $new_install;
+  $param->{'utf8'} = 'utf8mb4' if $new_install;
 
   my %oldparams;
 

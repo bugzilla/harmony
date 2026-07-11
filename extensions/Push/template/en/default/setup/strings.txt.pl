@@ -7,7 +7,7 @@
 
 use strict;
 use warnings;
-use 5.10.1;
+use 5.14.0;
 
 %strings = (
   feature_push_amqp  => 'Push: AMQP Support',

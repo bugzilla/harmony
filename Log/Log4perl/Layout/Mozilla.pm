@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Log::Log4perl::Layout::Mozilla;
-use 5.10.1;
+use 5.14.0;
 use Moo;
 use Sys::Hostname;
 use JSON::MaybeXS ();

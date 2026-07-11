@@ -287,7 +287,7 @@ sub bz_test_bug {
 
       like(
         $bug->{$field},
-        qr/^\Q${creation_day}\ET\d\d:\d\d:\d\d/,
+        qr/^\Q${creation_day}\ET\d\d:\d\d:\d\d/a,
         $self->TYPE . ": $field has the right format"
       );
     }

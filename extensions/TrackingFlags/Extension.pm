@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::TrackingFlags;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -179,8 +179,8 @@ sub _get_highest_status_firefox {
 
   my @status_flags
     = sort { $b <=> $a }
-    map { $_->name =~ /(\d+)$/; $1 }
-    grep { $_->is_active && $_->name =~ /^cf_status_firefox\d/ } @$flags;
+    map { $_->name =~ /(\d+)$/a; $1 }
+    grep { $_->is_active && $_->name =~ /^cf_status_firefox\d/a } @$flags;
   return @status_flags ? $status_flags[0] : undef;
 }
 
@@ -261,7 +261,7 @@ sub db_schema_abstract_schema {
         REFERENCES => {TABLE => 'products', COLUMN => 'id', DELETE => 'CASCADE',},
       },
       component_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 0,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE',},
       },
@@ -289,6 +289,11 @@ sub install_update_db {
   $dbh->bz_add_column('tracking_flags_values', 'comment',
     {TYPE => 'TEXT', NOTNULL => 0,},
   );
+
+  # Bug 2052640 - justdave@bugzilla.org
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'tracking_flags_visibility', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
+  ]);
 }
 
 sub install_filesystem {
@@ -673,7 +678,7 @@ sub quicksearch_map {
   my $map = $args->{'map'};
 
   foreach my $name (keys %$map) {
-    if ($name =~ /^cf_(blocking|tracking|status)_([a-z]+)?(\d+)?$/) {
+    if ($name =~ /^cf_(blocking|tracking|status)_([a-z]+)?(\d+)?$/a) {
       my $type    = $1;
       my $product = $2;
       my $version = $3;

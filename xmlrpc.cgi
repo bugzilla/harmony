@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -51,7 +51,7 @@ $headers->parse("$header_str\r\n\r\n");
 foreach my $name (@{$headers->names}) {
   $C->res->headers->header($name => $headers->header($name));
 }
-my ($code) = $headers->header('Status') =~ /^(\d+)/;
+my ($code) = $headers->header('Status') =~ /^(\d+)/a;
 $C->res->code($code) if $code;
 $C->write($body);
 exit;

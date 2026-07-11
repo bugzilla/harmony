@@ -22,13 +22,13 @@ $sel->type_ok("short_desc", $bug_summary);
 $sel->type_ok("comment",    "linkification test");
 $sel->click_ok("commit");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_like(qr/\d+ \S $bug_summary/, "Bug created");
+$sel->title_like(qr/\d+ \S $bug_summary/a, "Bug created");
 my $bug_id = $sel->get_value("//input[\@name='id' and \@type='hidden']");
 
 $sel->type_ok("comment", "bp-63f096f7-253b-4ee2-ae3d-8bb782090824");
 $sel->click_ok("bottom-save-btn");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_like(qr/\d+ \S $bug_summary/, "crash report added");
+$sel->title_like(qr/\d+ \S $bug_summary/a, "crash report added");
 go_to_bug($sel, $bug_id);
 attribute_is($sel, 'bp-63f096f7-253b-4ee2-ae3d-8bb782090824',
   'https://crash-stats.mozilla.org/report/index/63f096f7-253b-4ee2-ae3d-8bb782090824'
@@ -37,7 +37,7 @@ attribute_is($sel, 'bp-63f096f7-253b-4ee2-ae3d-8bb782090824',
 $sel->type_ok("comment", "CVE-2010-2884");
 $sel->click_ok("bottom-save-btn");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_like(qr/\d+ \S $bug_summary/, "cve added");
+$sel->title_like(qr/\d+ \S $bug_summary/a, "cve added");
 go_to_bug($sel, $bug_id);
 attribute_is($sel, 'CVE-2010-2884',
   'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2010-2884');
@@ -45,7 +45,7 @@ attribute_is($sel, 'CVE-2010-2884',
 $sel->type_ok("comment", "r12345");
 $sel->click_ok("bottom-save-btn");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_like(qr/\d+ \S $bug_summary/, "svn revision added");
+$sel->title_like(qr/\d+ \S $bug_summary/a, "svn revision added");
 go_to_bug($sel, $bug_id);
 attribute_is($sel, 'r12345',
   'https://viewvc.svn.mozilla.org/vc?view=rev&revision=12345');

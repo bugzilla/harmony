@@ -9,7 +9,7 @@
 # This script disables users who have not logged into BMO within the last four
 # years.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 

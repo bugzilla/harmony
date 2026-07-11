@@ -7,7 +7,7 @@
 
 package Bugzilla::DB;
 
-use 5.10.1;
+use 5.14.0;
 use Moo;
 
 use DBI;
@@ -277,13 +277,23 @@ sub bz_check_server_version {
 
   my $sql_vers = $self->bz_server_version;
   if (((lc($db->{name}) eq 'mysql') || (lc($db->{name}) eq "mariadb"))
-    && ($sql_vers =~ s/^5\.5\.5-//)) {
-    # Version 5.5.5 of MySQL never existed. MariaDB >= 10 always puts '5.5.5-'
+    && ($sql_vers =~ s/^5\.5\.5-// || $sql_vers =~ /-MariaDB/)) {
+    # Version 5.5.5 of MySQL never existed. MariaDB = 10 always puts '5.5.5-'
     # at the front of its version string to get around a limitation in the
     # replication protocol it shares with MySQL.  So if the version starts with
     # '5.5.5-' then we can assume this is MariaDB and the real version number
-    # will immediately follow that.
-    $db = DB_MODULE->{'mariadb'};
+    # will immediately follow that.  This was removed in MariaDB-11.0.  The
+    # version should always contain "MariaDB" if it is indeed MariaDB.
+    if (lc($db->{name}) eq 'mysql') {
+      if ($output) {
+        Bugzilla::Install::Requirements::_checking_for({
+          package => $db->{name},
+          wanted  => $db->{version},
+          ok      => 0,
+        });
+      }
+      die install_string('db_maria_on_mysql', {vers => $sql_vers});
+    }
   }
   my $sql_dontwant = exists $db->{db_blocklist} ? $db->{db_blocklist} : [];
   my $sql_want   = $db->{db_version};
@@ -307,22 +317,14 @@ sub bz_check_server_version {
   # Check what version of the database server is installed and let
   # the user know if the version is too old to be used with Bugzilla.
   if ($blocklisted) {
-    die <<EOT;
-
-Your $sql_server v$sql_vers is blocklisted. Please check the
-release notes for details or try a different database engine
-or version.
-
-EOT
+    die install_string('db_blocklisted', {server=>$sql_server, vers=>$sql_vers});
   }
   if (!$version_ok) {
-    die <<EOT;
-
-Your $sql_server v$sql_vers is too old. Bugzilla requires version
-$sql_want or later of $sql_server. Please download and install a
-newer version.
-
-EOT
+    die install_string('db_too_old', {
+      server => $sql_server,
+      vers   => $sql_vers,
+      want   => $sql_want,
+    });
   }
 
   # This is used by subclasses.
@@ -335,7 +337,7 @@ sub bz_create_database {
   my $dbh;
 
   # See if we can connect to the actual Bugzilla database.
-  my $conn_success = eval { $dbh = connect_main() };
+  my $conn_success = eval { $dbh = connect_main(); $dbh->ping(); };
   my $db_name      = Bugzilla->localconfig->db_name;
 
   if (!$conn_success) {
@@ -1060,6 +1062,39 @@ sub bz_drop_related_fks {
     $self->bz_drop_fk($table, $column);
   }
   return $related;
+}
+
+sub bz_fk_safe_alter_columns {
+  my ($self, $fixes) = @_;
+
+  foreach my $fix (@$fixes) {
+    my ($table, $column, $target) = @{$fix}{qw(table column definition)};
+    next if !$table || !$column || !$target;
+
+    my $current = $self->bz_column_info($table, $column);
+    next if !$current;
+
+    my $only_if_type = $fix->{only_if_type};
+    if ($only_if_type) {
+      my @allowed_types = ref($only_if_type) eq 'ARRAY'
+        ? @$only_if_type
+        : ($only_if_type);
+      next if !grep { $current->{TYPE} eq $_ } @allowed_types;
+    }
+
+    my $needs_alter = 0;
+    foreach my $key (keys %$target) {
+      if (!defined $current->{$key} || $current->{$key} ne $target->{$key}) {
+        $needs_alter = 1;
+        last;
+      }
+    }
+    next if !$needs_alter;
+
+    warn "Dropping foreign keys on $table.$column\n";
+    $self->bz_drop_related_fks($table, $column);
+    $self->bz_alter_column($table, $column, $target);
+  }
 }
 
 sub bz_drop_index {
@@ -2635,6 +2670,84 @@ data type of the column
 to be NOT NULL, you probably also want to set any existing NULL columns
 to a particular value. Specify that value here. B<NOTE>: The value should
 not already be SQL-quoted.
+
+=back
+
+=item B<Returns> (nothing)
+
+=back
+
+=item C<bz_fk_safe_alter_columns>
+
+=over
+
+=item B<Description>
+
+Performs one or more column alterations in a foreign-key-safe way.
+
+For each requested fix, this method compares the current column
+definition to the target definition, drops related foreign keys when
+needed, and then alters the column.
+
+This is intended for upgrade paths where a referenced or referencing
+column type changes and foreign keys must be dropped before running
+C<bz_alter_column>.
+
+Note that missing foreign keys are replaced later in the installation
+process, so this method does not attempt to re-add them.
+
+Looking for foreign keys is expensive, so this method should only be
+used when you know that foreign keys exist on the columns being
+altered.
+
+=item B<Params>
+
+=over
+
+=item C<$fixes>
+
+An arrayref of hashrefs. Each hashref supports:
+
+=over
+
+=item C<table>
+
+The table containing the column to alter.
+
+=item C<column>
+
+The column to alter.
+
+=item C<definition>
+
+The target abstract column definition (same format used by
+C<bz_alter_column>).
+
+This must be the B<complete> desired definition of the column, not just
+the attributes that are changing: C<bz_alter_column> replaces the whole
+column definition with what you pass, so any omitted attribute (such as
+C<NOTNULL>, C<DEFAULT>, or C<PRIMARYKEY>) will be dropped from the
+column. Foreign keys are the exception -- they are preserved by
+C<bz_alter_column> and re-added later in the installation process, so
+they should not be listed here.
+
+Only scalar attributes are compared when deciding whether an alteration
+is needed (see below), so avoid relying on reference-valued attributes
+in C<definition> to trigger a change.
+
+=item C<only_if_type> (optional)
+
+If specified, the fix is only applied when the current column C<TYPE>
+matches this value. May be a scalar type name or an arrayref of type
+names. This can be used when a column may have had multiple types in
+the past, but you're only doing a specific phase of the upgrade.
+
+=back
+
+Each fix is only applied when the current column definition differs from
+C<definition> in at least one of the attributes listed there, so calling
+this method repeatedly (for example across re-runs of C<checksetup.pl>)
+is safe and idempotent.
 
 =back
 
