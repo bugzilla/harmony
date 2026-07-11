@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -380,7 +380,7 @@ WriteMakefile(
   VERSION_FROM       => 'Bugzilla.pm',
   ABSTRACT           => 'Bugzilla Bug Tracking System',
   LICENSE            => 'Mozilla_2_0',
-  MIN_PERL_VERSION   => '5.10.1',
+  MIN_PERL_VERSION   => '5.14.0',
   CONFIGURE_REQUIRES =>
     {'ExtUtils::MakeMaker' => $build_requires{'ExtUtils::MakeMaker'}},
   PREREQ_PM      => {%requires},
