@@ -7,7 +7,7 @@
 
 package Bugzilla::Attachment::Storage::Base;
 
-use 5.10.1;
+use 5.14.0;
 use Moo::Role;
 
 use Types::Standard qw(Int);

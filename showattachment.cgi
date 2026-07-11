@@ -21,7 +21,7 @@
 # Contributor(s): Terry Weissman <terry@mozilla.org>
 #                 Jacob Steenhagen <jake@bugzilla.org>
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
