@@ -7,7 +7,7 @@
 
 package Bugzilla::BugUrl::Splat;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -15,7 +15,7 @@ use base qw(Bugzilla::BugUrl);
 
 sub should_handle {
   my ($class, $uri) = @_;
-  return $uri =~ m#^https?://hellosplat\.com/s/beanbag/tickets/\d+#;
+  return $uri =~ m#^https?://hellosplat\.com/s/beanbag/tickets/\d+#a;
 }
 
 sub _check_value {

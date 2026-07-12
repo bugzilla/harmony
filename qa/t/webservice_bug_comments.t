@@ -56,7 +56,7 @@ sub test_comments {
     }
     like(
       $comment->{time},
-      qr/^\Q${creation_day}\ET\d\d:\d\d:\d\d/,
+      qr/^\Q${creation_day}\ET\d\d:\d\d:\d\d/a,
       "comment time has the right format"
     );
   }

@@ -10,7 +10,7 @@ package Bugzilla::Extension::BugModal::ActivityStream;
 
 package Bugzilla::Bug;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -267,7 +267,7 @@ sub _add_activities_to_stream {
         foreach my $what (qw(removed added)) {
           my @buglist = split(/[\s,]+/, $change->{$what});
           foreach my $id (@buglist) {
-            if ($id && $id =~ /^\d+$/) {
+            if ($id && $id =~ /^\d+$/a) {
               $visible_bug_ids{$id} = 1;
             }
           }
@@ -282,7 +282,7 @@ sub _add_activities_to_stream {
           foreach my $value (split(/, /, $change->{$f})) {
             my ($bug_id)
               = substr($value, 0, length($url_base)) eq $url_base
-              ? $value =~ /id=(\d+)$/
+              ? $value =~ /id=(\d+)$/a
               : undef;
             push @values, {url => $value, bug_id => $bug_id,};
           }

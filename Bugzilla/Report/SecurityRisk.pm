@@ -7,7 +7,7 @@
 
 package Bugzilla::Report::SecurityRisk;
 
-use 5.10.1;
+use 5.14.0;
 use Moo;
 use MooX::StrictConstructor;
 

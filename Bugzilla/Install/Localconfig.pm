@@ -15,7 +15,7 @@ package Bugzilla::Install::Localconfig;
 # * Files do not have the correct permissions
 # * The database is not up to date
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -68,6 +68,11 @@ use constant LOCALCONFIG_VARS => (
   {name => 'db_port',      default => 0,},
   {name => 'db_sock',      default => '',},
   {name => 'db_check',     default => 1,},
+  {name => 'db_mysql_ssl_ca_file',     default => '',},
+  {name => 'db_mysql_ssl_ca_path',     default => '',},
+  {name => 'db_mysql_ssl_client_cert', default => '',},
+  {name => 'db_mysql_ssl_client_key',  default => '',},
+  {name => 'db_mysql_ssl_get_pubkey',  default => 0,},
   {name => 'index_html',   default => 0,},
   {name => 'cvsbin',       default => sub { bin_loc('cvs') },},
   {name => 'interdiffbin', default => sub { bin_loc('interdiff') },},
@@ -97,6 +102,7 @@ use constant LOCALCONFIG_VARS => (
   {name => 'memcached_namespace', default => "bugzilla:",},
   {name => 'urlbase',             default => 'http://127.0.0.1:3001/'},
   {name => 'canonical_urlbase',   lazy => 1},
+  {name => 'logging_method',      default => 'syslog'},
   {name => 'nobody_user',         default => 'nobody@mozilla.org'},
   {name => 'attachment_base',     default => '',},
   {name => 'ses_username',        default => '',},

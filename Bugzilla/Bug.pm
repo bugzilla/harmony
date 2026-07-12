@@ -7,7 +7,7 @@
 
 package Bugzilla::Bug;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -342,7 +342,7 @@ sub new {
   my $param    = shift;
 
   # Remove leading "#" mark if we've just been passed an id.
-  if (!ref $param && $param =~ /^#(\d+)$/) {
+  if (!ref $param && $param =~ /^#(\d+)$/a) {
     $param = $1;
   }
 
@@ -1546,7 +1546,7 @@ sub _check_alias {
   }
 
   # Make sure the alias isn't just a number.
-  if ($alias =~ /^\d+$/) {
+  if ($alias =~ /^\d+$/a) {
     ThrowUserError("alias_is_numeric", {alias => $alias});
   }
 
@@ -4136,7 +4136,7 @@ sub groups {
       . " THEN 1 ELSE 0 END,"
       . " CASE WHEN groups.id IN($grouplist) THEN 1 ELSE 0 END,"
       . " isactive, membercontrol, othercontrol"
-      . " FROM groups"
+      . " FROM " . $dbh->quote_identifier('groups')
       . " LEFT JOIN bug_group_map"
       . " ON bug_group_map.group_id = groups.id"
       . " AND bug_id = ?"
@@ -4201,7 +4201,7 @@ sub groups {
       # only show the group if it's visible to normal members
       my ($member_control) = $dbh->selectrow_array(
         "SELECT membercontrol
-                FROM groups
+                FROM " . $dbh->quote_identifier('groups') . "
                         LEFT JOIN group_control_map
                                 ON group_control_map.group_id = groups.id
                                 AND group_control_map.product_id = ?

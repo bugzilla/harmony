@@ -1,5 +1,5 @@
 ========================================
-BMO Documentation (bugzilla.mozilla.org)
+Bugzilla Documentation (bugzilla.org)
 ========================================
 
 .. toctree::
@@ -8,6 +8,7 @@ BMO Documentation (bugzilla.mozilla.org)
 
    about/index
    using/index
+   installing/index
    administering/index
    integrating/index
    api/index

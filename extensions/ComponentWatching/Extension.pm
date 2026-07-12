@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::ComponentWatching;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -83,6 +83,11 @@ sub install_update_db {
   );
   $dbh->bz_add_column('component_watch', 'component_prefix',
     {TYPE => 'VARCHAR(64)', NOTNULL => 0,});
+
+  # Bug 2052640 - justdave@bugzilla.org
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'component_watch', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 0}},
+  ]);
 }
 
 #
@@ -245,7 +250,11 @@ sub _check_watch_user {
   if ($value !~ /@(?!invalid).+\.bugs$/i) {
     ThrowUserError('component_watch_invalid_watch_user');
   }
-  return Bugzilla::User->check($value)->id;
+
+  # Use a direct login->id lookup here instead of Bugzilla::User->check.
+  # During checksetup, User->check can try to load full user columns before
+  # schema upgrades are complete.
+  return Bugzilla::User::login_to_id($value, 1);
 }
 
 #
@@ -441,7 +450,7 @@ sub _getWatches {
   my ($user, $watch_id) = @_;
   my $dbh = Bugzilla->dbh;
 
-  $watch_id = (defined $watch_id && $watch_id =~ /^(\d+)$/) ? $1 : undef;
+  $watch_id = (defined $watch_id && $watch_id =~ /^(\d+)$/a) ? $1 : undef;
 
   my $sth = $dbh->prepare("
         SELECT id, product_id, component_id, component_prefix

@@ -7,7 +7,7 @@
 
 package Bugzilla::Attachment::Storage::Database;
 
-use 5.10.1;
+use 5.14.0;
 use Moo;
 
 with 'Bugzilla::Attachment::Storage::Base';
@@ -17,13 +17,24 @@ sub data_type { return 'database'; }
 sub set_data {
   my ($self, $data) = @_;
   my $dbh = Bugzilla->dbh;
-  my $sth
-    = $dbh->prepare(
-    "REPLACE INTO attach_data (id, thedata) VALUES (?, ?)"
-    );
-  $sth->bind_param(1, $self->attach_id);
-  $sth->bind_param(2, $data, $dbh->BLOB_TYPE);
-  $sth->execute();
+  if ($self->data_exists()) {
+    my $sth
+      = $dbh->prepare(
+      "UPDATE attach_data SET thedata = ? WHERE id = ?"
+      );
+    $sth->bind_param(1, $data, $dbh->BLOB_TYPE);
+    $sth->bind_param(2, $self->attach_id);
+    $sth->execute();
+  }
+  else {
+    my $sth
+      = $dbh->prepare(
+      "INSERT INTO attach_data (id, thedata) VALUES (?, ?)"
+      );
+    $sth->bind_param(1, $self->attach_id);
+    $sth->bind_param(2, $data, $dbh->BLOB_TYPE);
+    $sth->execute();
+  }
   return $self;
 }
 

@@ -7,13 +7,13 @@
 
 package Bugzilla::Extension::AntiSpam;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
 use constant NAME => 'AntiSpam';
 use constant REQUIRED_MODULES =>
-  [{package => 'Email-Address', module => 'Email::Address', version => 0,},];
+  [{package => 'Email-Address-XS', module => 'Email::Address::XS', version => 1.01,},];
 use constant OPTIONAL_MODULES => [];
 
 __PACKAGE__->NAME;

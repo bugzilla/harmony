@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw(. lib local/lib/perl5);
@@ -45,7 +45,7 @@ sub _check_vers {
 
     # If we come here, then the version is not a valid one.
     # We try to sanitize it.
-    if ($vnum =~ /^((\d+)(\.\d+)*)/) {
+    if ($vnum =~ /^((\d+)(\.\d+)*)/a) {
       $vnum = $1;
     }
   }
@@ -54,8 +54,8 @@ sub _check_vers {
   # Must do a string comparison as $vnum may be of the form 5.10.1.
   my $vok
     = ($vnum ne '-1' && version->new($vnum) >= version->new($wanted)) ? 1 : 0;
-  if ($vok && $params->{blacklist}) {
-    $vok = 0 if grep($vnum =~ /$_/, @{$params->{blacklist}});
+  if ($vok && $params->{blocklist}) {
+    $vok = 0 if grep($vnum =~ /$_/, @{$params->{blocklist}});
   }
 
   return {module => $module, ok => $vok, wanted => $wanted, found => $vnum,};

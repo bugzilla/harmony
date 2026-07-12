@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::Review;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -558,7 +558,7 @@ sub _check_review_flag {
   my $cgi = Bugzilla->cgi;
 
   # extract the set flag-types
-  my @flagtype_ids = map { /^flag_type-(\d+)$/ ? $1 : () } $cgi->param();
+  my @flagtype_ids = map { /^flag_type-(\d+)$/a ? $1 : () } $cgi->param();
   @flagtype_ids = grep { $cgi->param("flag_type-$_") eq '?' } @flagtype_ids;
   return unless scalar(@flagtype_ids);
 
@@ -837,7 +837,7 @@ sub db_schema_abstract_schema {
       },
       display_name => {TYPE => 'VARCHAR(64)',},
       component_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'components', COLUMN => 'id', DELETE => 'CASCADE',}
       },
@@ -856,7 +856,7 @@ sub db_schema_abstract_schema {
       flag_when => {TYPE => 'DATETIME', NOTNULL => 1,},
 
       type_id => {
-        TYPE       => 'INT2',
+        TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'flagtypes', COLUMN => 'id', DELETE => 'CASCADE'}
       },
@@ -954,6 +954,21 @@ sub install_update_db {
 
   # Bug 1588221 - dkl@mozilla.com
   $dbh->bz_alter_column('flag_state_activity', 'attachment_id', {TYPE => 'INT5'});
+
+  # Bug 1634711 - justdave@bugzilla.org
+  my $def = $dbh->bz_column_info('flag_state_activity', 'type_id');
+  if ($def->{TYPE} eq 'INT2') {
+    warn "Dropping foreign keys on flag_state_activity\n";
+    $dbh->bz_drop_related_fks('flag_state_activity', 'type_id');
+    $def->{TYPE} = 'INT3';
+    $dbh->bz_alter_column('flag_state_activity', 'type_id', $def);
+  }
+
+  # Bug 2052640 - justdave@bugzilla.org
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'component_reviewers', column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+  ]);
+
 }
 
 sub install_filesystem {

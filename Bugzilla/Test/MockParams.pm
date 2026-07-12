@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 package Bugzilla::Test::MockParams;
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use Try::Tiny;

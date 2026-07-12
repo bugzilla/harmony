@@ -21,7 +21,7 @@ For interface details see L<Bugzilla::DB> and L<DBI>.
 
 package Bugzilla::DB::Oracle;
 
-use 5.10.1;
+use 5.14.0;
 use Moo;
 
 extends qw(Bugzilla::DB);
@@ -320,7 +320,7 @@ sub adjust_statement {
 
   # Oracle doesn't have LIMIT, so if we find the LIMIT comment, wrap the
   # query with "SELECT * FROM (...) WHERE rownum < $limit"
-  my ($limit, $offset) = ($part =~ m{/\* LIMIT (\d*) (\d*) \*/}o);
+  my ($limit, $offset) = ($part =~ m{/\* LIMIT (\d*) (\d*) \*/}ao);
 
   push @result, $part;
   while (@parts) {
@@ -351,11 +351,11 @@ sub adjust_statement {
     $nonstring =~ s/\bAS\b//ig;
 
     # Take the first 4000 chars for comparison
-    $nonstring =~ s/\(\s*(longdescs_\d+\.thetext|attachdata_\d+\.thedata)/
+    $nonstring =~ s/\(\s*(longdescs_(?a:\d+)\.thetext|attachdata_(?a:\d+)\.thedata)/
                       \(DBMS_LOB.SUBSTR\($1, 4000, 1\)/ig;
 
     # Look for a LIMIT clause
-    ($limit) = ($nonstring =~ m(/\* LIMIT (\d*) \*/)o);
+    ($limit) = ($nonstring =~ m(/\* LIMIT (\d*) \*/)ao);
 
     if (!length($string)) {
       push @result, EMPTY_STRING;

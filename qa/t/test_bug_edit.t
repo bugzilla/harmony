@@ -43,7 +43,7 @@ check_page_load($sel,
   q{http://HOSTNAME/editgroups.cgi?action=changeform&group=25});
 $sel->title_is("Change Group: Master");
 my $group_url = $sel->get_location();
-$group_url =~ /group=(\d+)$/;
+$group_url =~ /group=(\d+)$/a;
 my $master_gid = $1;
 
 clear_canedit_on_testproduct($sel, $master_gid);

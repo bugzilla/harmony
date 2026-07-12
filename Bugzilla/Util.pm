@@ -7,7 +7,7 @@
 
 package Bugzilla::Util;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -29,7 +29,8 @@ use base qw(Exporter);
   get_text template_var disable_utf8
   enable_utf8 detect_encoding email_filter
   round extract_nicks);
-use Bugzilla::Logging;
+# Bugzilla::Logging cannot be used it this file due to circular dependency
+#use Bugzilla::Logging;
 use Bugzilla::Constants;
 use Bugzilla::RNG qw(irand);
 
@@ -38,7 +39,7 @@ use Date::Parse;
 use DateTime::TimeZone;
 use DateTime;
 use Digest;
-use Email::Address;
+use Email::Address::XS;
 use Encode qw(encode decode resolve_alias);
 use Encode::Guess;
 use English qw(-no_match_vars $EGID);
@@ -75,13 +76,13 @@ sub with_readonly_database(&) {
 }
 
 sub detaint_natural {
-  my $match = $_[0] =~ /^(\d+)$/;
+  my $match = $_[0] =~ /^(\d+)$/a;
   $_[0] = $match ? int($1) : undef;
   return (defined($_[0]));
 }
 
 sub detaint_signed {
-  my $match = $_[0] =~ /^([-+]?\d+)$/;
+  my $match = $_[0] =~ /^([-+]?\d+)$/a;
 
   # The "int()" call removes any leading plus sign.
   $_[0] = $match ? int($1) : undef;
@@ -227,13 +228,19 @@ sub html_light_quote {
 sub email_filter {
   my ($toencode) = @_;
   if (!Bugzilla->user->id) {
-    my @emails = Email::Address->parse($toencode);
-    if (scalar @emails) {
-      my @hosts = map { quotemeta($_->host) } @emails;
-      my $hosts_re = join('|', @hosts);
-      $toencode =~ s/\@(?:$hosts_re)//g;
-      return $toencode;
+    my $email_re = qr/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+    my @hosts;
+    while ($toencode =~ /$email_re/g) {
+      my @emails = Email::Address::XS->parse($1);
+      if (scalar @emails) {
+        my @these_hosts = map { quotemeta($_->host) } @emails;
+        push @hosts, @these_hosts;
+      }
     }
+    my $hosts_re = join('|', @hosts);
+
+    $toencode =~ s/\@(?:$hosts_re)//g;
+    return $toencode;
   }
   return $toencode;
 }
@@ -300,7 +307,7 @@ sub is_webserver_group {
       $web_server_gid = $effective_gids[0];
     }
 
-    elsif ($web_server_group =~ /^\d+$/) {
+    elsif ($web_server_group =~ /^\d+$/a) {
       $web_server_gid = $web_server_group;
     }
 
@@ -323,7 +330,6 @@ sub do_ssl_redirect_if_required {
 
   # If we're already running under SSL, never redirect.
   return if $ENV{HTTPS} && $ENV{HTTPS} eq 'on';
-  DEBUG("Redirect to HTTPS because \$ENV{HTTPS}=$ENV{HTTPS}");
   Bugzilla->cgi->redirect_to_https();
 }
 
@@ -342,11 +348,11 @@ sub is_ipv4 {
   my $ip = shift;
   return unless defined $ip;
 
-  my @octets = $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  my @octets = $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/a;
   return unless scalar(@octets) == 4;
 
   foreach my $octet (@octets) {
-    return unless ($octet >= 0 && $octet <= 255 && $octet !~ /^0\d{1,2}$/);
+    return unless ($octet >= 0 && $octet <= 255 && $octet !~ /^0\d{1,2}$/a);
   }
 
   # The IP address is valid and can now be detainted.
@@ -545,7 +551,7 @@ sub format_time {
   # If $format is not set, try to guess the correct date format.
   if (!$format) {
     if (!ref $date
-      && $date =~ /^(\d{4})[-\.](\d{2})[-\.](\d{2}) (\d{2}):(\d{2})(:(\d{2}))?$/)
+      && $date =~ /^(\d{4})[-\.](\d{2})[-\.](\d{2}) (\d{2}):(\d{2})(:(\d{2}))?$/a)
     {
       my $sec = $7;
       if (defined $sec) {
@@ -578,7 +584,7 @@ sub datetime_from {
   my @time;
 
   # Most dates will be in this format, avoid strptime's generic parser
-  if ($date =~ /^(\d{4})[\.-](\d{2})[\.-](\d{2})(?: (\d{2}):(\d{2}):(\d{2}))?$/) {
+  if ($date =~ /^(\d{4})[\.-](\d{2})[\.-](\d{2})(?: (\d{2}):(\d{2}):(\d{2}))?$/a) {
     @time = ($6, $5, $4, $3, $2 - 1, $1 - 1900, undef);
   }
   else {
@@ -740,15 +746,10 @@ sub validate_email_syntax {
   my $match  = Bugzilla->params->{'emailregexp'};
   my $email  = $addr . Bugzilla->params->{'emailsuffix'};
 
-  # This regexp follows RFC 2822 section 3.4.1.
-  my $addr_spec = $Email::Address::addr_spec;
-
-  # RFC 2822 section 2.1 specifies that email addresses must
-  # be made of US-ASCII characters only.
-  # Email::Address::addr_spec doesn't enforce this.
+  my $address = Email::Address::XS->parse_bare_address($email);
   if ( $addr =~ /$match/
+    && $address->is_valid
     && $email !~ /\P{ASCII}/
-    && $email =~ /^$addr_spec$/
     && length($email) <= 127)
   {
     return 1;
@@ -765,8 +766,8 @@ sub validate_date {
   if ($ts) {
     $date2 = time2str("%Y-%m-%d", $ts);
 
-    $date =~ s/(\d+)-0*(\d+?)-0*(\d+?)/$1-$2-$3/;
-    $date2 =~ s/(\d+)-0*(\d+?)-0*(\d+?)/$1-$2-$3/;
+    $date  =~ s/(\d+)-0*(\d+?)-0*(\d+?)/$1-$2-$3/a;
+    $date2 =~ s/(\d+)-0*(\d+?)-0*(\d+?)/$1-$2-$3/a;
   }
   my $ret = ($ts && $date eq $date2);
   return $ret ? 1 : 0;
@@ -780,7 +781,7 @@ sub validate_time {
   my $ts = str2time($time);
   if ($ts) {
     $time2 = time2str("%H:%M:%S", $ts);
-    if ($time =~ /^(\d{1,2}):(\d\d)(?::(\d\d))?$/) {
+    if ($time =~ /^(\d{1,2}):(\d\d)(?::(\d\d))?$/a) {
       $time = sprintf("%02d:%02d:%02d", $1, $2, $3 || 0);
     }
   }
@@ -948,7 +949,7 @@ sub extract_nicks {
     $name =~ /
             # This negative lookbehind lets us
             # match colons that are not followed by numbers.
-            (?<!\d)
+            (?<!(?a:\d))
             :
             # try tp capture a "word", plus some symbols
             # this covers most everything people use for IRC nicks

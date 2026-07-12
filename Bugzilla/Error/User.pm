@@ -7,7 +7,7 @@
 
 package Bugzilla::Error::User;
 
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base 'Bugzilla::Error::Base';
 
 1;

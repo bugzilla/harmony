@@ -142,7 +142,7 @@ foreach my $rpc (@clients) {
 
     # The sortkey for milestones can be negative.
     cmp_ok($first_value->{sortkey},
-      '=~', qr/^-?\d+$/, "The first value has a numeric sortkey");
+      '=~', qr/^-?\d+$/a, "The first value has a numeric sortkey");
 
     ok(defined $first_value->{visibility_values},
       "$field has visibility_values defined on its first value")

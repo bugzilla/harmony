@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw(. lib local/lib/perl5);
@@ -37,7 +37,7 @@ while (my $line = <CSV>) {
   my @values = $csv->fields();
   next if !@values;
   my ($bug_id, $comment_id) = @values;
-  next if $bug_id !~ /^\d+$/;
+  next if $bug_id !~ /^\d+$/a;
   print "Deleting comment '$comment_id' from bug '$bug_id' ";
   my $bug = Bugzilla::Bug->check({id => $bug_id});
   my $comment = Bugzilla::Comment->new($comment_id);
