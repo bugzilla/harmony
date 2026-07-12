@@ -6,7 +6,10 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::Extension::ShadowBugs;
+
+use 5.14.0;
 use strict;
+use warnings;
 
 use constant NAME             => 'ShadowBugs';
 use constant REQUIRED_MODULES => [];

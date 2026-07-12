@@ -30,8 +30,13 @@ our @extensions = grep { $_ ne 'extensions/create.pl' && !-e "$_/disabled" }
   glob('extensions/*');
 
 foreach my $extension (@extensions) {
-  find(sub { push(@files, $File::Find::name) if $_ =~ /\.pm$|\.pl$/; },
-    $extension);
+  find(
+    sub {
+      return if $File::Find::name =~ m{^extensions/.+/template/};
+      push(@files, $File::Find::name) if $_ =~ /\.pm$|\.pl$/;
+    },
+    $extension
+  );
 }
 
 our @test_files = glob('t/*.t xt/*/*.t');

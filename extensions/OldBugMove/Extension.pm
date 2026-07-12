@@ -20,7 +20,11 @@
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 
 package Bugzilla::Extension::OldBugMove;
+
+use 5.14.0;
 use strict;
+use warnings;
+
 use base qw(Bugzilla::Extension);
 use Bugzilla::Constants;
 use Bugzilla::Error;
