@@ -5,9 +5,8 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use strict;
-use warnings;
-use 5.14.0;
+# This file is loaded inside a Safe compartment, so keep it as plain package
+# data: do not add strict/warnings pragmas or lexical %strings declarations.
 
 %strings = (
   feature_push_amqp  => 'Push: AMQP Support',

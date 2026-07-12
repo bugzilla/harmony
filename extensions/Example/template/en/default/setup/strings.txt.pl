@@ -17,9 +17,8 @@
 # Contributor(s):
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 
-use 5.14.0;
-use strict;
-use warnings;
+# This file is loaded inside a Safe compartment, so keep it as plain package
+# data: do not add strict/warnings pragmas or lexical %strings declarations.
 
 %strings = (feature_example_acme => 'Example Extension: Acme Feature',);
 

@@ -9,6 +9,9 @@
 # installation code to display strings before Template-Toolkit can safely
 # be loaded.
 #
+# This file is loaded inside a Safe compartment, so keep it as plain package
+# data: do not add strict/warnings pragmas or lexical %strings declarations.
+#
 # Each string supports a very simple substitution system, where you can
 # have variables named like ##this## and they'll be replaced by the string
 # variable with that name.
