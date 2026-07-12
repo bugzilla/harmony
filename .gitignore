@@ -23,6 +23,7 @@
 /template_cache
 /Makefile
 /MYMETA.*
+/cpanfile
 /pm_to_blib
 /blib
 /Bugzilla-*.*/
