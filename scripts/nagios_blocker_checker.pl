@@ -183,8 +183,8 @@ try {
     $where .= " AND bug_severity IN ($severities)";
   }
 
-  my $sql = <<"EOF";
-        SELECT bug_id, bug_severity, UNIX_TIMESTAMP(bugs.creation_ts) AS ts
+    my $sql = <<"EOF";
+      SELECT bug_id, bug_severity, @{[$dbh->sql_date_to_epoch('bugs.creation_ts')]} AS ts
           FROM bugs
          WHERE $where
                AND COALESCE(resolution, '') = ''
