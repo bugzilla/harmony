@@ -86,7 +86,7 @@ jobs:
 
   test_release:
     name: Perl Test Suite
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
