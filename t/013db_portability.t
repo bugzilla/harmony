@@ -35,8 +35,8 @@ push @files, grep { !$seen_file{$_}++ } @script_files;
 my @rules = (
   {
     token => qr/\bUNIX_TIMESTAMP\s*\(/,
-    helper => 'sql_date_format',
-    message => 'use $dbh->sql_date_format(...) instead of UNIX_TIMESTAMP()',
+    helper => 'sql_date_to_epoch',
+    message => 'use $dbh->sql_date_to_epoch(...) instead of UNIX_TIMESTAMP()',
   },
   {
     token => qr/\bDATE_FORMAT\s*\(/,

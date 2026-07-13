@@ -155,6 +155,12 @@ sub sql_date_math {
   return "$date $operator $interval * INTERVAL '1 $units'";
 }
 
+sub sql_date_to_epoch {
+  my ($self, $date) = @_;
+
+  return "CAST(EXTRACT(EPOCH FROM $date) AS BIGINT)";
+}
+
 sub sql_string_concat {
   my ($self, @params) = @_;
 
