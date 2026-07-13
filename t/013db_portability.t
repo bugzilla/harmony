@@ -12,12 +12,25 @@ use warnings;
 use lib qw(. lib local/lib/perl5 t);
 
 use Support::Files;
+use File::Find;
 
 use Test::More;
 
 my %seen_file;
 my @files = grep { $_ ne 't/013db_portability.t' && !$seen_file{$_}++ }
   (@Support::Files::testitems, @Support::Files::test_files);
+
+my @script_files;
+find(
+  sub {
+    return if -d;
+    return unless /\.pl$/;
+    push @script_files, $File::Find::name;
+  },
+  'scripts'
+);
+
+push @files, grep { !$seen_file{$_}++ } @script_files;
 
 my @rules = (
   {
