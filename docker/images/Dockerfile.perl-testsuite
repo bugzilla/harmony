@@ -30,7 +30,7 @@ RUN apt-get update && apt-get -y dist-upgrade && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy just enough to get the list of dependencies
-COPY Bugzilla.pm Makefile.PL gen-cpanfile.pl /app/
+COPY --parents Bugzilla.pm Makefile.PL gen-cpanfile.pl extensions/*/Config.pm extensions/*/disabled /app/
 
 # Run Makefile.PL and install dependencies
 RUN perl Makefile.PL && \
