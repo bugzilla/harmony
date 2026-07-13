@@ -358,7 +358,7 @@ sub _add_duplicates_to_stream {
 
   my $sth = $dbh->prepare("
         SELECT longdescs.who,
-               UNIX_TIMESTAMP(bug_when), " . $dbh->sql_date_format('bug_when') . ",
+        " . $dbh->sql_date_format('bug_when') . ",
                type,
                extra_data
           FROM longdescs
@@ -368,7 +368,8 @@ sub _add_duplicates_to_stream {
     ");
   $sth->execute($bug->id, CMT_HAS_DUPE, CMT_DUPE_OF);
 
-  while (my ($who, $time, $when, $type, $dupe_id) = $sth->fetchrow_array) {
+  while (my ($who, $when, $type, $dupe_id) = $sth->fetchrow_array) {
+    my $time = date_str_to_time($when);
     _add_activity_to_stream(
       $stream, $time, $who,
       {
