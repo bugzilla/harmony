@@ -293,15 +293,15 @@ sub _build_events {
   . $dbh->sql_string_concat('removed') . qq{ AS removed,
       }
   . $dbh->sql_string_concat('added') . qq{ AS added
-    FROM
-      bugs_activity
-      JOIN fielddefs AS field ON fieldid = field.id
-      JOIN bugs AS bug USING (bug_id)
-    WHERE
-      bug_id IN ($bug_ids)
-      AND field.name IN ('keywords' , 'bug_status')
-      AND bug_when >= '$start_date'
-    GROUP BY bug_id , bug_when , field.name
+        FROM
+            bugs_activity
+            JOIN fielddefs AS field ON fieldid = field.id
+            JOIN bugs AS bug USING (bug_id)
+        WHERE
+            bug_id IN ($bug_ids)
+            AND field.name IN ('keywords' , 'bug_status')
+            AND bug_when >= '$start_date'
+        GROUP BY bug_id , bug_when , field.name
   };
   # Don't use selectall_hashref as it only gets the latest event each bug.
   my $result = $dbh->selectall_arrayref($query);
