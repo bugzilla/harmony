@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::ComponentWatching::WebService;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -24,7 +24,7 @@ sub rest_resources {
   return [
     qr{^/component-watching$},
     {GET => {method => 'list',}, POST => {method => 'add',},},
-    qr{^/component-watching/(\d+)$},
+    qr{^/component-watching/(\d+)$}a,
     {
       GET => {
         method => 'get',

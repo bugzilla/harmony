@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -57,8 +57,9 @@ my %requires = (
   'Devel::NYTProf'             => '6.04',
   'Digest::SHA'                => '5.47',
   'EV'                         => '4.0',
+  'Email::Address::XS'         => '1.05',
   'Email::MIME'                => '1.904',
-  'Email::Send'                => '1.911',
+  'Email::Sender'              => '2.600',
   'FFI::Platypus'              => 0,
   'Future'                     => '0.34',
   'HTML::Escape'               => '1.10',
@@ -89,8 +90,9 @@ my %requires = (
   'Role::Tiny'                 => '2.000003',
   'Scope::Guard'               => '0.21',
   'Sereal'                     => '4.004',
+  'Sub::Identify'              => 0,
   'Sub::Quote'                 => '2.005000',
-  'Template'                   => '2.24',
+  'Template'                   => '3.009',
   'Text::CSV_XS'               => '1.26',
   'Throwable'                  => '0.200013',
   'Type::Tiny'                 => '1.004004',
@@ -158,6 +160,12 @@ my %optional_features = (
       runtime => {requires => {'File::Which' => 0, 'File::Copy::Recursive' => 0,}}
     },
   },
+  docker => {
+    description => 'Run Bugzilla inside Docker',
+    prereqs     => {
+      runtime => {requires => {'File::Copy::Recursive' => 0,}}
+    },
+  },
   graphical_reports => {
     description => 'Graphical Reports',
     prereqs     => {
@@ -192,7 +200,7 @@ my %optional_features = (
   jsonrpc => {
     description => 'JSON-RPC Interface',
     prereqs     => {
-      runtime => {requires => {'JSON::RPC' => '== 1.01', 'Test::Taint' => '1.06'}}
+      runtime => {requires => {'JSON::RPC' => '1.01', 'Test::Taint' => '1.06'}}
     }
   },
   linux_pdeath => {
@@ -232,11 +240,18 @@ my %optional_features = (
     prereqs     =>
       {runtime => {requires => {'MIME::Parser' => '5.406', 'XML::Twig' => 0}}},
   },
+  mariadb => {
+    description => 'MariaDB database support',
+    prereqs     => {
+      runtime =>
+        {requires => {'DBD::MariaDB' => 0, 'DateTime::Format::MySQL' => '0.06'}}
+    }
+  },
   mysql => {
     description => 'MySQL database support',
     prereqs     => {
       runtime =>
-        {requires => {'DBD::mysql' => '4.037', 'DateTime::Format::MySQL' => '0.06'}}
+        {requires => {'DBD::mysql' => '5.003', 'DateTime::Format::MySQL' => '0.06'}}
     }
   },
   new_charts => {
@@ -269,7 +284,7 @@ my %optional_features = (
   rest => {
     description => 'REST Interface',
     prereqs     => {
-      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '==1.01',}}
+      runtime => {requires => {'Test::Taint' => '1.06', 'JSON::RPC' => '1.01',}}
     }
   },
   s3 => {
@@ -365,7 +380,7 @@ WriteMakefile(
   VERSION_FROM       => 'Bugzilla.pm',
   ABSTRACT           => 'Bugzilla Bug Tracking System',
   LICENSE            => 'Mozilla_2_0',
-  MIN_PERL_VERSION   => '5.10.1',
+  MIN_PERL_VERSION   => '5.14.0',
   CONFIGURE_REQUIRES =>
     {'ExtUtils::MakeMaker' => $build_requires{'ExtUtils::MakeMaker'}},
   PREREQ_PM      => {%requires},
@@ -386,7 +401,7 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D better_xff -D mysql -D jsonrpc -D xmlrpc
+GEN_CPANFILE_ARGS = -D better_xff -D mariadb -D jsonrpc -D xmlrpc -D documentation -D pg
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
 

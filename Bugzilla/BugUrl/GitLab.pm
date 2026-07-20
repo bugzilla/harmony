@@ -7,7 +7,7 @@
 
 package Bugzilla::BugUrl::GitLab;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -22,7 +22,7 @@ sub should_handle {
 
   # GitLab issue and merge request URLs can have the form:
   # https://gitlab.com/projectA/subprojectB/subprojectC/../(issues|merge_requests)/53
-  return ($uri->path =~ m!^/.*/(issues|merge_requests)/\d+$!) ? 1 : 0;
+  return ($uri->path =~ m!^/.*/(issues|merge_requests)/\d+$!a) ? 1 : 0;
 }
 
 sub _check_value {

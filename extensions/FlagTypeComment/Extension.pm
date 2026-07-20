@@ -20,7 +20,7 @@
 
 package Bugzilla::Extension::FlagTypeComment;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -42,7 +42,7 @@ sub db_schema_abstract_schema {
   $args->{'schema'}->{'flagtype_comments'} = {
     FIELDS => [
       type_id => {
-        TYPE       => 'SMALLINT(6)',
+        TYPE       => 'INT3',
         NOTNULL    => 1,
         REFERENCES => {TABLE => 'flagtypes', COLUMN => 'id', DELETE => 'CASCADE'}
       },
@@ -51,6 +51,19 @@ sub db_schema_abstract_schema {
     ],
     INDEXES => [flagtype_comments_idx => ['type_id'],],
   };
+}
+
+sub install_update_db {
+  my $dbh   = Bugzilla->dbh;
+
+  # Bug 1634711 - justdave@bugzilla.org
+  my $def = $dbh->bz_column_info('flagtype_comments', 'type_id');
+  if ($def->{TYPE} eq 'INT2') {
+    warn "Dropping foreign keys on flagtype_comments\n";
+    $dbh->bz_drop_related_fks('flagtype_comments', 'type_id');
+    $def->{TYPE} = 'INT3';
+    $dbh->bz_alter_column('flagtype_comments', 'type_id', $def);
+  }
 }
 
 #############
@@ -72,7 +85,7 @@ sub _set_ftc_states {
   my $dbh = Bugzilla->dbh;
 
   my $ftc_flags;
-  my $db_result;
+  my $db_result = [];
   if ($file =~ /^admin\//) {
 
     # admin
@@ -121,11 +134,13 @@ sub _set_ftc_states {
 
     my $types = join(',', map { $_->id } @$flag_types);
     my $states = "'" . join("','", FLAGTYPE_COMMENT_STATES) . "'";
-    $db_result = $dbh->selectall_arrayref(
-      "SELECT type_id AS flagtype, on_status AS state, comment AS text
-               FROM flagtype_comments
-              WHERE type_id IN ($types) AND on_status IN ($states)", {Slice => {}}
-    );
+    if ($types) {
+      $db_result = $dbh->selectall_arrayref(
+        "SELECT type_id AS flagtype, on_status AS state, comment AS text
+                 FROM flagtype_comments
+                WHERE type_id IN ($types) AND on_status IN ($states)", {Slice => {}}
+      );
+    }
   }
 
   foreach my $row (@$db_result) {

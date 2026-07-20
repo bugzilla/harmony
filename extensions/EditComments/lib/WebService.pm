@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::EditComments::WebService;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -71,7 +71,7 @@ sub update_comment {
   my $user = Bugzilla->login(LOGIN_REQUIRED);
 
   my $comment_id
-    = (defined $params->{comment_id} && $params->{comment_id} =~ /^(\d+)$/)
+    = (defined $params->{comment_id} && $params->{comment_id} =~ /^(\d+)$/a)
     ? $1
     : undef;
 
@@ -163,12 +163,12 @@ sub modify_revision {
     unless $user->is_edit_comments_admin;
 
   my $comment_id
-    = (defined $params->{comment_id} && $params->{comment_id} =~ /^(\d+)$/)
+    = (defined $params->{comment_id} && $params->{comment_id} =~ /^(\d+)$/a)
     ? $1
     : undef;
   my $change_when
     = (defined $params->{change_when}
-      && $params->{change_when} =~ /^(\d{4}-\d{2}-\d{2}\ \d{2}:\d{2}:\d{2})$/)
+      && $params->{change_when} =~ /^(\d{4}-\d{2}-\d{2}\ \d{2}:\d{2}:\d{2})$/a)
     ? $1
     : undef;
   my $is_hidden
@@ -200,7 +200,7 @@ sub modify_revision {
 
 sub rest_resources {
   return [
-    qr{^/editcomments/comment/(\d+)$},
+    qr{^/editcomments/comment/(\d+)$}a,
     {
       GET => {
         method => 'comments',

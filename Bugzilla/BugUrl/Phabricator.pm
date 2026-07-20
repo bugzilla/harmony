@@ -7,7 +7,7 @@
 
 package Bugzilla::BugUrl::Phabricator;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use base qw(Bugzilla::BugUrl);
@@ -21,7 +21,7 @@ sub should_handle {
   # https://admin.phacility.com/PHI\d+
   # https://secure.phabricator.com/T\d+
   # https://secure.phabricator.com/D\d+
-  return ($uri->path =~ m#/(PHI|D|T)\d+$#) ? 1 : 0;
+  return ($uri->path =~ m#/(PHI|D|T)\d+$#a) ? 1 : 0;
 }
 
 sub _check_value {

@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::Push::BacklogMessage;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 

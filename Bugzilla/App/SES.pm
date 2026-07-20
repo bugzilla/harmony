@@ -7,7 +7,7 @@ package Bugzilla::App::SES;
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base qw( Mojolicious::Controller );
 
 use Bugzilla::Constants qw(BOUNCE_COUNT_MAX ERROR_MODE_DIE);

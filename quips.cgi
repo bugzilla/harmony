@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -128,7 +128,7 @@ if ($action eq "delete") {
     || ThrowUserError("auth_failure",
     {group => "bz_quip_moderators", action => "delete", object => "quips"});
   my $quipid = $cgi->param("quipid");
-  ThrowCodeError("need_quipid") unless $quipid =~ /(\d+)/;
+  ThrowCodeError("need_quipid") unless $quipid =~ /(\d+)/a;
   $quipid = $1;
   check_hash_token($token, ['quips', $quipid]);
 

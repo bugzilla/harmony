@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::Extension::Example;
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use base qw(Bugzilla::Extension);
@@ -405,7 +405,7 @@ sub email_in_before_parse {
   my $subject = $args->{mail}->header('Subject');
 
   # Correctly extract the bug ID from email subjects of the form [Bug comp/NNN].
-  if ($subject =~ /\[.*(\d+)\].*/) {
+  if ($subject =~ /\[.*(\d+)\].*/a) {
     $args->{fields}->{bug_id} = $1;
   }
 }

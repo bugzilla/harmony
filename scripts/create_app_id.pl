@@ -8,7 +8,7 @@
 #
 # Usage: perl scripts/create_app_key.pl <callback_url> <description>
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
