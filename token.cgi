@@ -303,7 +303,7 @@ sub changeEmail {
   # Update the user's email address and delete the token
   # from the tokens table.
 
-  my $user_email = Bugzilla::User::Email->new('name' => $old_email);
+  my $user_email = Bugzilla::User::Email->new({name => $old_email});
   $user_email->set_email($new_email);
   $user_email->update();
 
