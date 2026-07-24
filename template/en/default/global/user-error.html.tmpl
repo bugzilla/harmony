@@ -71,7 +71,7 @@
   [% ELSIF error == "account_exists" %]
     [% title = "Account Already Exists" %]
     There is already an account with
-    [% IF email %]
+    [% IF login %]
       the login name [% login FILTER html %].
     [% ELSE %]
       that login name.

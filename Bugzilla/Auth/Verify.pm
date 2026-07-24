@@ -76,7 +76,7 @@ sub create_or_update_user {
       validate_email_syntax($email) || return {
         failure => AUTH_ERROR,
         error   => 'auth_invalid_email',
-        details => {addr => $login}
+        details => {addr => $email}
       };
 
       # external authentication
