@@ -106,7 +106,7 @@ sub issue_new_user_account_token {
     # But to prevent using this way to mailbomb an email address, make sure
     # the last request is old enough before sending a new email (default: 10 minutes).
 
-    my $regexp = "^$email:";
+    my $regexp = "^" . quotemeta($email) . ":";
     my $pending_requests = $dbh->selectrow_array(
         'SELECT COUNT(*)
            FROM tokens
