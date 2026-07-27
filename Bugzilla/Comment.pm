@@ -7,7 +7,7 @@
 
 package Bugzilla::Comment;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -81,56 +81,6 @@ use constant VALIDATOR_DEPENDENCIES => {
   work_time  => ['who', 'bug_id'],
   isprivate  => ['who'],
 };
-
-with 'Bugzilla::Elastic::Role::ChildObject';
-
-use constant ES_TYPE         => 'comment';
-use constant ES_PARENT_CLASS => 'Bugzilla::Bug';
-
-sub ES_OBJECTS_AT_ONCE {50}
-
-sub ES_PROPERTIES {
-  return {
-    body       => {type => "string", analyzer => 'bz_text_analyzer'},
-    is_private => {type => "boolean"},
-    tags       => {type => "string"},
-  };
-}
-
-sub ES_SELECT_UPDATED_SQL {
-  my ($class, $mtime) = @_;
-
-  my $sql = q{
-        SELECT DISTINCT
-            comment_id
-        FROM
-            bugs_activity AS event
-                JOIN
-            fielddefs ON fieldid = fielddefs.id
-        WHERE
-            fielddefs.name = 'longdescs.isprivate'
-                AND bug_when > FROM_UNIXTIME(?)
-        UNION SELECT DISTINCT
-            comment_id
-        FROM
-            longdescs_activity
-        WHERE
-            change_when > FROM_UNIXTIME(?)
-    };
-  return ($sql, [$mtime, $mtime]);
-}
-
-sub es_parent_id {
-  my ($self) = @_;
-
-  return $self->ES_PARENT_CLASS->ES_TYPE . '_' . $self->bug_id,;
-}
-
-sub es_document {
-  my ($self) = @_;
-
-  return {body => $self->body, is_private => $self->is_private,};
-}
 
 #########################
 # Database Manipulation #
@@ -516,7 +466,7 @@ sub _check_tag {
     and ThrowUserError('comment_tag_too_short', {tag => $tag});
   length($tag) > MAX_COMMENT_TAG_LENGTH
     and ThrowUserError('comment_tag_too_long', {tag => $tag});
-  $tag =~ /^[\w\d\._-]+$/ or ThrowUserError('comment_tag_invalid', {tag => $tag});
+  $tag =~ /^[\w\._-]+$/ or ThrowUserError('comment_tag_invalid', {tag => $tag});
   return $tag;
 }
 

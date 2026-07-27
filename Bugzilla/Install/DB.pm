@@ -10,7 +10,7 @@ package Bugzilla::Install::DB;
 # NOTE: This package may "use" any modules that it likes,
 # localconfig is available, and params are up to date.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -483,9 +483,13 @@ sub update_table_definitions {
   $dbh->bz_drop_column('profiles', 'refreshed_when');
   $dbh->bz_drop_column('groups',   'last_changed');
 
-  # 2006-08-06 LpSolit@gmail.com - Bug 347521
-  $dbh->bz_alter_column('flagtypes', 'id',
-    {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
+  # 2019-01-31 dylan@hardison.net - Bug TODO
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'flaginclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flagexclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flags',          column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flagtypes',      column => 'id',      definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}}
+  ]);
 
   $dbh->bz_alter_column('keyworddefs', 'id',
     {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
@@ -809,13 +813,23 @@ sub update_table_definitions {
   $dbh->bz_add_column('profiles', 'bounce_count', {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0});
 
   # Bug 1588221 - dkl@mozilla.com
-  $dbh->bz_alter_column('bugs_activity', 'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('attachments', 'attach_id',
-    {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('attach_data', 'id',
-    {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'bugs_activity',    column => 'attach_id', definition => {TYPE => 'INT5'}},
+    {table => 'attachments',      column => 'attach_id', definition => {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1}},
+    {table => 'attach_data',      column => 'id',        definition => {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1}},
+    {table => 'flags',            column => 'attach_id', definition => {TYPE => 'INT5'}},
+    {table => 'user_request_log', column => 'attach_id', definition => {TYPE => 'INT5', NOTNULL => 0}},
+  ]);
+
+  # Bug 903895 - sgreen@redhat.com
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'flaginclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'flagexclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'bugs',           column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'component_cc',    column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'components',      column => 'id',           definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}},
+  ]);
+
   _populate_attachment_storage_class();
 
 
@@ -956,7 +970,7 @@ sub _populate_longdescs {
       my $buffer = "";
       foreach my $line (split(/\n/, $desc)) {
         $line =~ s/\s+$//g;    # Trim trailing whitespace.
-        if ($line =~ /^------- Additional Comments From ([^\s]+)\s+(\d.+\d)\s+-------$/)
+        if ($line =~ /^------- Additional Comments From ([^\s]+)\s+((?a:\d.+\d))\s+-------$/)
         {
           my $name = $1;
           my $date = str2time($2);
@@ -1209,7 +1223,7 @@ sub _populate_milestones_table {
 
       # check if the value already exists
       my $sortkey = substr($value, 1);
-      if ($sortkey !~ /^\d+$/) {
+      if ($sortkey !~ /^\d+$/a) {
         $sortkey = 0;
       }
       else {
@@ -1310,7 +1324,7 @@ sub _populate_duplicates_table {
 
     foreach $key (keys(%dupes)) {
       $dupes{$key}
-        =~ /^.*\*\*\* This bug has been marked as a duplicate of (\d+) \*\*\*$/ms;
+        =~ /^.*\*\*\* This bug has been marked as a duplicate of (\d+) \*\*\*$/ams;
       $dupes{$key} = $1;
       $dbh->do("INSERT INTO duplicates VALUES(?, ?)", undef, $dupes{$key}, $key);
 
@@ -1587,6 +1601,9 @@ sub _use_ids_for_products_and_components {
 
     print "Updating the database to use component IDs.\n";
 
+    # NOTE: These columns are now MEDIUMSERIAL/INT3 in the current schema, but
+    # historically were originally created as SMALLSERIAL/INT2. The upgrade steps
+    # are done in order; they will be converted to the correct current type later.
     $dbh->bz_add_column("components", "id",
       {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
     $dbh->bz_add_column("bugs", "component_id", {TYPE => 'INT2', NOTNULL => 1}, 0);
@@ -1703,7 +1720,8 @@ sub _convert_groups_system_from_groupset {
     $dbh->bz_drop_index('groups', 'groups_name_idx');
     my @primary_key = $dbh->primary_key(undef, undef, 'groups');
     if (@primary_key) {
-      $dbh->do("ALTER TABLE groups DROP PRIMARY KEY");
+      $dbh->do(
+        'ALTER TABLE ' . $dbh->quote_identifier('groups') . ' DROP PRIMARY KEY');
     }
 
     $dbh->bz_add_column('groups', 'id',
@@ -1714,7 +1732,8 @@ sub _convert_groups_system_from_groupset {
 
     # Convert all existing groupset records to map entries before removing
     # groupset fields or removing "bit" from groups.
-    my $sth = $dbh->prepare("SELECT bit, id FROM groups WHERE bit > 0");
+    my $sth = $dbh->prepare(
+      'SELECT bit, id FROM ' . $dbh->quote_identifier('groups') . ' WHERE bit > 0');
     $sth->execute();
     while (my ($bit, $gid) = $sth->fetchrow_array) {
 
@@ -1809,7 +1828,7 @@ sub _convert_groups_system_from_groupset {
 
         # Get names of groups added.
         my $sth2 = $dbh->prepare(
-          "SELECT name FROM groups
+          "SELECT name FROM " . $dbh->quote_identifier('groups') . "
                                            WHERE (bit & $added) != 0
                                                  AND (bit & $removed) = 0"
         );
@@ -1821,7 +1840,7 @@ sub _convert_groups_system_from_groupset {
 
         # Get names of groups removed.
         $sth2 = $dbh->prepare(
-          "SELECT name FROM groups
+          "SELECT name FROM " . $dbh->quote_identifier('groups') . "
                                         WHERE (bit & $removed) != 0
                                               AND (bit & $added) = 0"
         );
@@ -1834,9 +1853,7 @@ sub _convert_groups_system_from_groupset {
         # Get list of group bits added that correspond to
         # missing groups.
         $sth2 = $dbh->prepare(
-          "SELECT ($added & ~BIT_OR(bit))
-                                         FROM groups"
-        );
+          "SELECT ($added & ~BIT_OR(bit)) FROM " . $dbh->quote_identifier('groups'));
         $sth2->execute();
         my ($miss) = $sth2->fetchrow_array;
         if ($miss) {
@@ -1848,9 +1865,7 @@ sub _convert_groups_system_from_groupset {
         # Get list of group bits deleted that correspond to
         # missing groups.
         $sth2 = $dbh->prepare(
-          "SELECT ($removed & ~BIT_OR(bit))
-                                         FROM groups"
-        );
+          "SELECT ($removed & ~BIT_OR(bit)) FROM " . $dbh->quote_identifier('groups'));
         $sth2->execute();
         ($miss) = $sth2->fetchrow_array;
         if ($miss) {
@@ -1886,7 +1901,7 @@ sub _convert_groups_system_from_groupset {
 
         # Get names of groups added.
         my $sth2 = $dbh->prepare(
-          "SELECT name FROM groups
+          "SELECT name FROM " . $dbh->quote_identifier('groups') . "
                                            WHERE (bit & $added) != 0
                                                  AND (bit & $removed) = 0"
         );
@@ -1898,7 +1913,7 @@ sub _convert_groups_system_from_groupset {
 
         # Get names of groups removed.
         $sth2 = $dbh->prepare(
-          "SELECT name FROM groups
+          "SELECT name FROM " . $dbh->quote_identifier('groups') . "
                                         WHERE (bit & $removed) != 0
                                               AND (bit & $added) = 0"
         );
@@ -1927,12 +1942,12 @@ sub _convert_groups_system_from_groupset {
 
     # Identify admin group.
     my ($admin_gid)
-      = $dbh->selectrow_array("SELECT id FROM groups WHERE name = 'admin'");
+      = $dbh->selectrow_array(
+      "SELECT id FROM " . $dbh->quote_identifier('groups') . " WHERE name = 'admin'");
     if (!$admin_gid) {
-      $dbh->do(
-        q{INSERT INTO groups (name, description)
-                                   VALUES ('admin', 'Administrators')}
-      );
+      $dbh->do("INSERT INTO "
+          . $dbh->quote_identifier('groups')
+          . " (name, description) VALUES ('admin', 'Administrators')");
       $admin_gid = $dbh->bz_last_key('groups', 'id');
     }
 
@@ -2365,7 +2380,7 @@ sub _copy_old_charts_into_database {
 
       my @lines = <$in>;
       while (my $line = shift @lines) {
-        if ($line =~ /^(\d+\|.*)/) {
+        if ($line =~ /^(\d+\|.*)/a) {
           my @numbers = split(/\||\r/, $1);
 
           # Only take the first line for each date; it was possible to
@@ -2559,7 +2574,8 @@ sub _fix_group_with_empty_name {
   # Note that there can be at most one such group (because of
   # the SQL index on the name column).
   my ($emptygroupid)
-    = $dbh->selectrow_array("SELECT id FROM groups where name = ''");
+    = $dbh->selectrow_array(
+    "SELECT id FROM " . $dbh->quote_identifier('groups') . " where name = ''");
   if ($emptygroupid) {
 
     # There is a group with an empty name; find a name to rename it
@@ -2567,7 +2583,8 @@ sub _fix_group_with_empty_name {
     # group_$gid and add _<n> if necessary.
     my $trycount = 0;
     my $trygroupname;
-    my $sth         = $dbh->prepare("SELECT 1 FROM groups where name = ?");
+    my $sth = $dbh->prepare(
+      'SELECT 1 FROM ' . $dbh->quote_identifier('groups') . ' where name = ?');
     my $name_exists = 1;
 
     while ($name_exists) {
@@ -2578,7 +2595,8 @@ sub _fix_group_with_empty_name {
       $name_exists = $dbh->selectrow_array($sth, undef, $trygroupname);
       $trycount++;
     }
-    $dbh->do("UPDATE groups SET name = ? WHERE id = ?",
+    $dbh->do(
+      'UPDATE ' . $dbh->quote_identifier('groups') . ' SET name = ? WHERE id = ?',
       undef, $trygroupname, $emptygroupid);
     print "Group $emptygroupid had an empty name; renamed as",
       " '$trygroupname'.\n";
@@ -2749,7 +2767,8 @@ sub _change_all_mysql_booleans_to_tinyint {
     my $quip_info_sth = $dbh->column_info(undef, undef, 'quips', '%');
     my $quips_cols    = $quip_info_sth->fetchall_hashref("COLUMN_NAME");
     my $approved_col  = $quips_cols->{'approved'};
-    if (  $approved_col->{TYPE_NAME} eq 'TINYINT'
+    if ($approved_col->{TYPE_NAME} eq 'TINYINT'
+      and defined $approved_col->{COLUMN_SIZE}
       and $approved_col->{COLUMN_SIZE} == 1)
     {
       # series.public could have been renamed to series.is_public,
@@ -3011,8 +3030,11 @@ EOT
 sub _rederive_regex_groups {
   my $dbh = Bugzilla->dbh;
 
-  my $regex_groups_exist = $dbh->selectrow_array(
-    "SELECT 1 FROM groups WHERE userregexp = '' " . $dbh->sql_limit(1));
+  my $regex_groups_exist
+    = $dbh->selectrow_array("SELECT 1 FROM "
+      . $dbh->quote_identifier('groups')
+      . " WHERE userregexp = '' "
+      . $dbh->sql_limit(1));
   return if !$regex_groups_exist;
 
   my $regex_derivations
@@ -3027,7 +3049,7 @@ sub _rederive_regex_groups {
   my $sth = $dbh->prepare(
     "SELECT profiles.userid, profiles.login_name, groups.id,
                 groups.userregexp, user_group_map.group_id
-           FROM (profiles CROSS JOIN groups)
+           FROM (profiles CROSS JOIN " . $dbh->quote_identifier('groups') . ")
                 LEFT JOIN user_group_map
                        ON user_group_map.user_id = profiles.userid
                           AND user_group_map.group_id = groups.id
@@ -3645,7 +3667,7 @@ sub _fix_illegal_flag_modification_dates {
 
   # If no rows are affected, $dbh->do returns 0E0 instead of 0.
   print "$rows flags had an illegal modification date. Fixed!\n"
-    if ($rows =~ /^\d+$/);
+    if ($rows =~ /^\d+$/a);
 }
 
 sub _add_visibility_value_to_value_tables {
@@ -3744,7 +3766,7 @@ sub _set_attachment_comment_type {
   foreach my $id (@comment_ids) {
     $count++;
     my $text = $comments{$id};
-    next if $text !~ /^\Q$string\E(\d+)/;
+    next if $text !~ /^\Q$string\E(\d+)/a;
     my $attachment_id = $1;
     my @lines = split("\n", $text);
     if ($type == CMT_ATTACHMENT_CREATED) {
@@ -4227,15 +4249,17 @@ sub _migrate_group_owners {
   my $dbh = Bugzilla->dbh;
   return if $dbh->bz_column_info('groups', 'owner_user_id');
   $dbh->bz_add_column('groups', 'owner_user_id', {TYPE => 'INT3'});
-  my $nobody = Bugzilla::User->check('nobody@mozilla.org');
-  $dbh->do('UPDATE groups SET owner_user_id = ?', undef, $nobody->id);
+  my $nobody = Bugzilla::User->check(Bugzilla->localconfig->nobody_user);
+  $dbh->do(
+    'UPDATE ' . $dbh->quote_identifier('groups') . ' SET owner_user_id = ?',
+    undef, $nobody->id);
 }
 
 sub _migrate_nicknames {
   my $dbh = Bugzilla->dbh;
   my $sth
     = $dbh->prepare(
-    'SELECT userid FROM profiles WHERE realname LIKE "%:%" AND is_enabled = 1 AND NOT nickname'
+    "SELECT userid FROM profiles WHERE realname LIKE '%:%' AND is_enabled = 1 AND nickname = ''"
     );
   $sth->execute();
   while (my ($user_id) = $sth->fetchrow_array) {

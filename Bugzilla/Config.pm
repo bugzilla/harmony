@@ -7,7 +7,7 @@
 
 package Bugzilla::Config;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -103,6 +103,16 @@ sub update_params {
 
   # --- UPDATE OLD PARAMS ---
 
+  # Normalize legacy utf8 values to explicit charset names.
+  if (exists $param->{'utf8'}) {
+    if ($param->{'utf8'} eq '1') {
+      $param->{'utf8'} = 'utf8mb4';
+    }
+    elsif ($param->{'utf8'} eq 'utf8') {
+      $param->{'utf8'} = 'utf8mb3';
+    }
+  }
+
   # Change from usebrowserinfo to defaultplatform/defaultopsys combo
   if (exists $param->{'usebrowserinfo'}) {
     if (!$param->{'usebrowserinfo'}) {
@@ -150,18 +160,19 @@ sub update_params {
   }
 
   # Old mail_delivery_method choices contained no uppercase characters
-  if (exists $param->{'mail_delivery_method'}
-    && $param->{'mail_delivery_method'} !~ /[A-Z]/)
-  {
-    my $method      = $param->{'mail_delivery_method'};
-    my %translation = (
-      'sendmail' => 'Sendmail',
-      'smtp'     => 'SMTP',
-      'qmail'    => 'Qmail',
-      'testfile' => 'Test',
-      'none'     => 'None'
-    );
-    $param->{'mail_delivery_method'} = $translation{$method};
+  my $mta = $param->{'mail_delivery_method'};
+  if ($mta) {
+      if ($mta !~ /[A-Z]/) {
+          my %translation = (
+              'sendmail' => 'Sendmail',
+              'smtp'     => 'SMTP',
+              'qmail'    => 'Qmail',
+              'testfile' => 'Test',
+              'none'     => 'None');
+          $param->{'mail_delivery_method'} = $translation{$mta};
+      }
+      # This will force the parameter to be reset to its default value.
+      delete $param->{'mail_delivery_method'} if $param->{'mail_delivery_method'} eq 'Qmail';
   }
 
   # Convert the old "ssl" parameter to the new "ssl_redirect" parameter.
@@ -216,7 +227,7 @@ sub update_params {
     $param->{duo_akey} = Bugzilla::Util::generate_random_password(40);
   }
 
-  $param->{'utf8'} = 1 if $new_install;
+  $param->{'utf8'} = 'utf8mb4' if $new_install;
 
   my %oldparams;
 

@@ -7,7 +7,7 @@
 
 package Bugzilla::Search;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -133,7 +133,7 @@ use constant NUMBER_REGEX => qr/
         \d+
     )?
     $
-/x;
+  /ax;
 
 # If you specify a search type in the boolean charts, this describes
 # which operator maps to which internal function here.
@@ -1431,8 +1431,9 @@ sub _translate_join {
   if ($extra_condition) {
     $extra_condition = " AND $extra_condition";
   }
-
-  my @join_sql = "$join JOIN $table AS $name"
+  my $sql_table
+    = $table eq 'groups' ? Bugzilla->dbh->quote_identifier($table) : $table;
+  my @join_sql  = "$join JOIN $sql_table AS $name "
     . " ON $from_table.$from = $name.$to$extra_condition";
   return @join_sql;
 }
@@ -1700,7 +1701,7 @@ sub _special_parse_chfield {
   # chfieldto is supposed to be a relative date or a date of the form
   # YYYY-MM-DD, i.e. without the time appended to it. We append the
   # time ourselves so that the end date is correctly taken into account.
-  $date_to .= ' 23:59:59' if $date_to =~ /^\d{4}-\d{1,2}-\d{1,2}$/;
+  $date_to .= ' 23:59:59' if $date_to =~ /^\d{4}-\d{1,2}-\d{1,2}$/a;
 
   my $join_clause = new Bugzilla::Search::Clause('OR');
 
@@ -1738,11 +1739,11 @@ sub _special_parse_email {
   my ($self) = @_;
   my $params = $self->_params;
 
-  my @email_params = grep { $_ =~ /^email\d+$/ } keys %$params;
+  my @email_params = grep { $_ =~ /^email\d+$/a } keys %$params;
 
   my $clause = new Bugzilla::Search::Clause();
   foreach my $param (@email_params) {
-    $param =~ /(\d+)$/;
+    $param =~ /(\d+)$/a;
     my $id    = $1;
     my $email = trim($params->{"email$id"});
     next if !$email;
@@ -1845,20 +1846,20 @@ sub _boolean_charts {
   my $params     = $self->_params;
   my @param_list = keys %$params;
 
-  my @all_field_params = grep {/^field-?\d+/} @param_list;
-  my @chart_ids = map { /^field(-?\d+)/; $1 } @all_field_params;
+  my @all_field_params = grep {/^field-?\d+/a} @param_list;
+  my @chart_ids        = map  { /^field(-?\d+)/a; $1 } @all_field_params;
   @chart_ids = sort { $a <=> $b } uniq @chart_ids;
 
   my $clause = new Bugzilla::Search::Clause();
   foreach my $chart_id (@chart_ids) {
-    my @all_and = grep {/^field$chart_id-\d+/} @param_list;
-    my @and_ids = map { /^field$chart_id-(\d+)/; $1 } @all_and;
+    my @all_and = grep {/^field$chart_id-\d+/a} @param_list;
+    my @and_ids = map  { /^field$chart_id-(\d+)/a; $1 } @all_and;
     @and_ids = sort { $a <=> $b } uniq @and_ids;
 
     my $and_clause = new Bugzilla::Search::Clause();
     foreach my $and_id (@and_ids) {
-      my @all_or = grep {/^field$chart_id-$and_id-\d+/} @param_list;
-      my @or_ids = map { /^field$chart_id-$and_id-(\d+)/; $1 } @all_or;
+      my @all_or = grep {/^field$chart_id-$and_id-\d+/a} @param_list;
+      my @or_ids = map  { /^field$chart_id-$and_id-(\d+)/a; $1 } @all_or;
       @or_ids = sort { $a <=> $b } uniq @or_ids;
 
       my $or_clause = new Bugzilla::Search::Clause('OR');
@@ -1932,8 +1933,8 @@ sub _field_ids {
   my $params     = $self->_params;
   my @param_list = keys %$params;
 
-  my @field_params = grep {/^f\d+$/} @param_list;
-  my @field_ids = map { /(\d+)/; $1 } @field_params;
+  my @field_params = grep {/^f\d+$/a} @param_list;
+  my @field_ids    = map  { /(\d+)/a; $1 } @field_params;
   @field_ids = sort { $a <=> $b } @field_ids;
   return @field_ids;
 }
@@ -2266,7 +2267,7 @@ sub _timestamp_translate {
   my $value = $args->{value};
   my $dbh   = Bugzilla->dbh;
 
-  return if $value !~ /^(?:[\+\-]?\d+[hdwmy]s?|now)$/i && $value !~ /^%\w+%$/;
+  return if $value !~ /^(?:[\+\-]?\d+[hdwmy]s?|now)$/ai && $value !~ /^%\w+%$/;
 
   $value = SqlifyDate($value);
 
@@ -2319,7 +2320,7 @@ sub SqlifyDate {
     return $pronoun->{date};
   }
 
-  if ($str =~ /^(-|\+)?(\d+)([hdwmy])(s?)$/i) {    # relative date
+  if ($str =~ /^(-|\+)?(\d+)([hdwmy])(s?)$/ai) {    # relative date
     my ($sign, $amount, $unit, $startof, $date) = ($1, $2, lc $3, lc $4, time);
     my ($sec, $min, $hour, $mday, $month, $year, $wday) = localtime($date);
     if ($sign && $sign eq '+') { $amount = -$amount; }
@@ -3256,7 +3257,7 @@ sub _multiselect_table {
   }
   elsif ($field eq 'bug_group') {
     $args->{full_field} = 'groups.name';
-    return "bug_group_map INNER JOIN groups
+    return "bug_group_map INNER JOIN " . $dbh->quote_identifier('groups') . "
                                       ON bug_group_map.group_id = groups.id";
   }
   elsif ($field eq 'blocked' or $field eq 'dependson') {

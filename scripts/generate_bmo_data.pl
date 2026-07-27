@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw(. lib local/lib/perl5);
@@ -147,7 +147,7 @@ $group->update();
 
 my @users = (
   {
-    login    => 'nobody@mozilla.org',
+    login    => Bugzilla->localconfig->nobody_user,
     realname => 'Nobody; OK to take it and work on it',
     password => '*'
   },
@@ -232,7 +232,7 @@ my @products = (
       name        => 'General',
       description => 'For bugs in Firefox which do not fit into '
         . 'other more specific Firefox components',
-      initialowner   => 'nobody@mozilla.org',
+      initialowner   => Bugzilla->localconfig->nobody_user,
       initialqaowner => '',
       initial_cc     => [],
       watch_user     => 'general@firefox.bugs'
@@ -251,7 +251,7 @@ my @products = (
       description =>
         'This is the component for issues specific to bugzilla.mozilla.org '
         . 'that do not belong in other components.',
-      initialowner   => 'nobody@mozilla.org',
+      initialowner   => Bugzilla->localconfig->nobody_user,
       initialqaowner => '',
       initial_cc     => [],
       watch_user     => 'general@bugzilla.bugs'
@@ -400,7 +400,9 @@ foreach my $group (@groups) {
     my $new_group;
     if (exists $group->{no_admin} && $group->{no_admin}) {
       $dbh->do(
-        'INSERT INTO groups (name, description, isbuggroup, isactive)
+            'INSERT INTO '
+          . $dbh->quote_identifier('groups')
+          . ' (name, description, isbuggroup, isactive)
                       VALUES (?, ?, 1, 1)', undef,
         ($group->{name}, $group->{description})
       );

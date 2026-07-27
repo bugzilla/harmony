@@ -55,7 +55,7 @@ $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("User Preferences");
 my $ssname = $sel->get_attribute(
   '//input[@type="checkbox" and @alt="Shared Selenium buglist"]@name');
-$ssname =~ /(?:link_in_footer_(\d+))/;
+$ssname =~ /(?:link_in_footer_(\d+))/a;
 my $saved_search1_id = $1;
 $sel->is_checked_ok("link_in_footer_$saved_search1_id");
 
@@ -139,7 +139,7 @@ $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("User Preferences");
 $ssname
   = $sel->get_attribute('//input[@type="checkbox" and @alt="helpwanted"]@name');
-$ssname =~ /(?:link_in_footer_(\d+))/;
+$ssname =~ /(?:link_in_footer_(\d+))/a;
 my $saved_search2_id = $1;
 
 # Our own saved searches are displayed in the Search Bar by default.

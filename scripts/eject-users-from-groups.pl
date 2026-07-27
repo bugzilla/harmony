@@ -5,7 +5,7 @@
 #
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw(. lib local/lib/perl5);
@@ -22,7 +22,7 @@ Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
 
 my $dbh = Bugzilla->dbh;
 my @remove_group_names;
-my $nobody_name = 'nobody@mozilla.org';
+my $nobody_name = Bugzilla->localconfig->nobody_user;
 my $admin_name  = 'automation@bmo.tld';
 
 GetOptions(

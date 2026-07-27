@@ -23,7 +23,7 @@
 
 package Bugzilla::Extension::BMO;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -383,7 +383,7 @@ sub parse_bounty_attachment_description {
   my ($desc) = @_;
 
   my %map = (true => 1, false => 0);
-  my $date = qr/\d{4}-\d{2}-\d{2}/;
+  my $date = qr/\d{4}-\d{2}-\d{2}/a;
   $desc =~ m!
         ^
         (?<reporter_email> [^,]+)          \s*,\s*
@@ -714,7 +714,7 @@ sub bug_format_comment {
   push(
     @$regexes,
     {
-      match   => qr/(?<!\/|=)\b((?:CVE|CAN)-\d{4}-(?:\d{4}|[1-9]\d{4,})(?!\d))\b/,
+      match   => qr/(?<!\/|=)\b((?:CVE|CAN)-\d{4}-(?:\d{4}|[1-9]\d{4,})(?!\d))\b/a,
       replace => sub {
         my $args  = shift;
         my $match = html_quote($args->{matches}->[0]);
@@ -728,7 +728,7 @@ sub bug_format_comment {
   push(
     @$regexes,
     {
-      match   => qr/(^|\s)r(\d{4,})\b/,
+      match   => qr/(^|\s)r(\d{4,})\b/a,
       replace => sub {
         my $args  = shift;
         my $match = html_quote($args->{matches}->[1]);
@@ -865,7 +865,7 @@ sub bug_format_comment {
   push(
     @$regexes,
     {
-      match   => qr/\b(($hgrepos)\s+changeset:?\s+(?:\d+:)?([0-9a-fA-F]{12}))\b/,
+      match   => qr/\b(($hgrepos)\s+changeset:?\s+(?:\d+:)?([0-9a-fA-F]{12}))\b/a,
       replace => sub {
         my $args = shift;
         my $text = html_quote($args->{matches}->[0]);
@@ -972,7 +972,8 @@ sub object_end_of_create {
     # Add default searches to new user's footer
     my $dbh = Bugzilla->dbh;
 
-    my $sharer = Bugzilla::User->new({name => 'nobody@mozilla.org'}) or return;
+    my $sharer = Bugzilla::User->new({name => Bugzilla->localconfig->nobody_user})
+      or return;
     my $group = Bugzilla::Group->new({name => 'everyone'}) or return;
 
     foreach my $definition (@default_named_queries) {
@@ -1012,7 +1013,7 @@ sub _bug_reporters_hw_os {
 sub _bug_is_unassigned {
   my ($self) = @_;
   my $assignee = $self->assigned_to->login;
-  return $assignee eq 'nobody@mozilla.org' || $assignee =~ /@(?!invalid).+\.bugs$/;
+  return $assignee eq Bugzilla->localconfig->nobody_user || $assignee =~ /@(?!invalid).+\.bugs$/;
 }
 
 sub _bug_has_current_patch {
@@ -1060,7 +1061,7 @@ sub _bug_missing_sec_approval {
   $flags = [grep { $_->name =~ /^cf_status_firefox/ } @$flags];
   return 0 unless @$flags;
 
-  my $nightly = last_value { $_->name !~ /_esr\d+$/ } @$flags;
+  my $nightly = last_value { $_->name !~ /_esr\d+$/a } @$flags;
   my $set = 0;
   foreach my $flag (@$flags) {
     my $value = $flag->bug_flag($self->id)->value;
@@ -1192,7 +1193,7 @@ sub object_start_of_update {
 
   # and the assignee isn't a real person
   return
-    unless $new_bug->assigned_to->login eq 'nobody@mozilla.org'
+    unless $new_bug->assigned_to->login eq Bugzilla->localconfig->nobody_user
     || $new_bug->assigned_to->login =~ /@(?!invalid).+\.bugs$/;
 
   # and the user can set the status to NEW
@@ -1476,7 +1477,9 @@ sub install_update_db {
 
     # if there are no groups, then we're creating a database from scratch
     # and there's nothing to migrate
-    my ($group_count) = $dbh->selectrow_array("SELECT COUNT(*) FROM groups");
+    my ($group_count)
+      = $dbh->selectrow_array(
+      "SELECT COUNT(*) FROM " . $dbh->quote_identifier('groups'));
     if ($group_count) {
 
       # Migrate old product_sec_group mappings from the time this change was made
@@ -1727,7 +1730,7 @@ sub _log_sent_email {
   my $subject = $email->header('Subject');
 
   my $bug_id = $email->header('X-Bugzilla-ID');
-  if (!$bug_id && $subject =~ /[\[\(]Bug (\d+)/i) {
+  if (!$bug_id && $subject =~ /[\[\(]Bug (\d+)/ai) {
     $bug_id = $1;
   }
   $bug_id = $bug_id ? "bug-$bug_id" : '-';
@@ -1746,7 +1749,7 @@ sub _log_sent_email {
   }
   $message_type ||= $type || '?';
 
-  $subject =~ s/[\[\(]Bug \d+[\]\)]\s*//;
+  $subject =~ s/[\[\(]Bug \d+[\]\)]\s*//a;
 
   _syslog("[bugmail] $recipient ($message_type) $bug_id $subject");
 }
@@ -1927,7 +1930,8 @@ sub _post_employee_incident_bug {
   my ($investigate_bug, $ssh_key_bug);
   my $old_user = Bugzilla->user;
   eval {
-    Bugzilla->set_user(Bugzilla::User->new({name => 'nobody@mozilla.org'}));
+    Bugzilla->set_user(Bugzilla::User->new(
+      {name => Bugzilla->localconfig->nobody_user}));
     my $new_user = Bugzilla->user;
 
     # HACK: User needs to be in the editbugs and primary bug's group to allow
@@ -2007,7 +2011,7 @@ sub _post_gear_bug {
   my $bug   = $vars->{bug};
   my $input = Bugzilla->input_params;
 
-  my ($team, $code) = $input->{teamcode} =~ /^(.+?) \((\d+)\)$/;
+  my ($team, $code) = $input->{teamcode} =~ /^(.+?) \((\d+)\)$/a;
   my @request = (
     "Date Required: $input->{date_required}",
     "$input->{firstname} $input->{lastname}",
@@ -2426,7 +2430,7 @@ sub query_database {
     $vars->{executed} = 1;
 
     # add limit if missing
-    if ($query !~ /\sLIMIT\s+\d+\s*$/si) {
+    if ($query !~ /\sLIMIT\s+\d+\s*$/asi) {
       $query .= ' LIMIT 1000';
       $vars->{query} = $query;
     }
@@ -2479,7 +2483,9 @@ sub _group_always_settable {
 }
 
 sub _default_security_group {
-  return $_[0]->default_security_group_obj->name;
+  my $security_group = $_[0]->default_security_group_obj;
+
+  return defined($security_group) ? $security_group->name : undef;
 }
 
 sub _default_security_group_obj {
@@ -2663,7 +2669,7 @@ sub _get_product_version {
 
   # Return major version by default
   return 0 unless $version;
-  my ($major_version) = $version =~ /^(\d+)/;
+  my ($major_version) = $version =~ /^(\d+)/a;
   return $major_version;
 }
 
@@ -2793,6 +2799,17 @@ sub app_startup {
     }
   );
 
+  # In previous versions of bugzilla, an .htaccess file was used to redirect
+  # urls (often in the form of form:name or form.name) to different .cgi
+  # endpoints.
+  #
+  # Since the port to Mojolicious, we do this by adding additional routes.
+  # This is accomplished with a placeholder that we consistently prefix with
+  # REWRITE_, and as you can see below is followed by an arrayref mapping the
+  # (arbitrary) name to a regular expression and a destination.
+  #
+  # The REWRITE_ prefix is only significant because it is removed from the fake
+  # CGI environment in Bugzilla::App::CGI
   $r->any('/:REWRITE_itrequest' => [REWRITE_itrequest => qr{form[\.:]itrequest}])
     ->to('CGI#enter_bug_cgi' =>
       {'product' => 'Infrastructure & Operations', 'format' => 'itrequest'});

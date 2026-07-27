@@ -7,7 +7,7 @@
 
 package Bugzilla::CGI;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -151,7 +151,7 @@ sub canonicalize_query {
 
     # Remove the Boolean Charts for standard query.cgi fields
     # They are listed in the query URL already
-    next if $key =~ /^(field|type|value)(-\d+){3}$/;
+    next if $key =~ /^(field|type|value)(-\d+){3}$/a;
 
     my $esc_key = url_quote($key);
 
@@ -183,7 +183,7 @@ sub clean_search_url {
 
     # Custom Search stuff is empty if it's "noop". We also keep around
     # the old Boolean Chart syntax for backwards-compatibility.
-    if ( ($param =~ /\d-\d-\d/ || $param =~ /^[[:alpha:]]\d+$/)
+    if ( ($param =~ /\d-\d-\d/a || $param =~ /^[[:alpha:]]\d+$/a)
       && defined $self->param($param)
       && $self->param($param) eq 'noop')
     {
@@ -192,7 +192,7 @@ sub clean_search_url {
 
     # Any "join" for custom search that's an AND can be removed, because
     # that's the default.
-    if (($param =~ /^j\d+$/ || $param eq 'j_top') && $self->param($param) eq 'AND')
+    if (($param =~ /^j\d+$/a || $param eq 'j_top') && $self->param($param) eq 'AND')
     {
       $self->delete($param);
     }

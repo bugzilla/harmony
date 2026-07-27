@@ -9,7 +9,7 @@
 
 use strict;
 use warnings;
-use 5.10.1;
+use 5.14.0;
 
 use lib qw(. lib local/lib/perl5);
 
@@ -23,7 +23,7 @@ use Bugzilla::User;
 use Bugzilla::Util qw(trim);
 
 my $dbh    = Bugzilla->dbh;
-my $nobody = Bugzilla::User->check({name => 'nobody@mozilla.org'});
+my $nobody = Bugzilla::User->check({name => Bugzilla->localconfig->nobody_user});
 my $field  = Bugzilla::Field->check({name => 'attachments.mimetype'});
 
 # grab list of suitable attachments
@@ -57,7 +57,7 @@ foreach my $attachment (@$attachments) {
   # check payload
   my $url = trim($attachment->{thedata});
   next if $url =~ /\s/;
-  next unless $url =~ m#^https://github\.com/[^/]+/[^/]+/pull/\d+\/?$#i;
+  next unless $url =~ m#^https://github\.com/[^/]+/[^/]+/pull/\d+\/?$#ai;
 
   $dbh->bz_start_transaction;
 

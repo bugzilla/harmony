@@ -8,7 +8,7 @@
 
 use strict;
 use warnings;
-use 5.10.1;
+use 5.14.0;
 
 use lib qw(. lib local/lib/perl5);
 
@@ -55,7 +55,7 @@ printf "About to fix %s bugs\n", scalar(@$bugs);
 print "Press <Ctrl-C> to stop or <Enter> to continue...\n";
 getc();
 
-my $nobody = Bugzilla::User->check({name => 'nobody@mozilla.org'});
+my $nobody = Bugzilla::User->check({name => Bugzilla->localconfig->nobody_user});
 my $field = Bugzilla::Field->check({name => 'status_whiteboard'});
 my $when = $dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
 

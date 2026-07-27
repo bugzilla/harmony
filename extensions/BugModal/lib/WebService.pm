@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::Extension::BugModal::WebService;
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -46,7 +46,7 @@ sub rest_resources {
 
     # return all the lazy-loaded data; kept in sync with the UI's
     # requirements.
-    qr{^/bug_modal/edit/(\d+)$},
+    qr{^/bug_modal/edit/(\d+)$}a,
     {
       GET => {
         method => 'edit',
@@ -57,7 +57,7 @@ sub rest_resources {
     },
 
     # returns pre-formatted HTML, enabling reuse of the user template
-    qr{^/bug_modal/cc/(\d+)$},
+    qr{^/bug_modal/cc/(\d+)$}a,
     {
       GET => {
         method => 'cc',
@@ -68,7 +68,7 @@ sub rest_resources {
     },
 
     # returns fields that require touching when the product is changed
-    qw{^/bug_modal/new_product/(\d+)$},
+    qr{^/bug_modal/new_product/(\d+)$}a,
     {
       GET => {
         method => 'new_product',
@@ -244,9 +244,9 @@ sub new_product {
     $version->{selected} = $true;
     $selected_version = $version;
   }
-  elsif ($current_version =~ /^(\d+) Branch$/
-    || $current_version =~ /^Firefox (\d+)$/
-    || $current_version =~ /^(\d+)$/)
+  elsif ($current_version =~ /^(\d+) Branch$/a
+    || $current_version =~ /^Firefox (\d+)$/a
+    || $current_version =~ /^(\d+)$/a)
   {
     # Firefox, with its three version naming schemes
     my $branch = $1;

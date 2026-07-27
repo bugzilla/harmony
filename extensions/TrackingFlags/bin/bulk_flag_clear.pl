@@ -8,7 +8,7 @@
 
 use strict;
 use warnings;
-use 5.10.1;
+use 5.14.0;
 
 use lib qw(. lib local/lib/perl5);
 
@@ -104,7 +104,7 @@ if (!$config->{update_db}) {
 
 # update bugs
 
-my $nobody = Bugzilla::User->check({name => 'nobody@mozilla.org'});
+my $nobody = Bugzilla::User->check({name => Bugzilla->localconfig->nobody_user});
 
 # put our nobody user into all groups to avoid permissions issues
 $nobody->{groups} = [Bugzilla::Group->get_all];

@@ -7,7 +7,7 @@
 
 package Bugzilla::App::BouncedEmails;
 
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base qw( Mojolicious::Controller );
 
 use Bugzilla::Constants;

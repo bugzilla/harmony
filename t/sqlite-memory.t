@@ -4,7 +4,7 @@
 #
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw( . lib local/lib/perl5 );
@@ -12,7 +12,6 @@ use Test::More;
 use Test2::Tools::Mock;
 use Try::Tiny;
 use Capture::Tiny qw(capture_merged);
-use Bugzilla::Test::MockParams;
 
 BEGIN {
   $ENV{LOCALCONFIG_ENV} = 'BMO';
@@ -20,6 +19,7 @@ BEGIN {
   $ENV{BMO_db_name}     = ':memory:';
 }
 use Bugzilla;
+use Bugzilla::Test::MockParams;
 BEGIN { Bugzilla->extensions }
 
 

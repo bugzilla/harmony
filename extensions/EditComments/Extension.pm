@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::EditComments;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -248,7 +248,7 @@ sub bug_end_of_update {
 
   my $updated = 0;
   foreach my $param (grep(/^edit_comment_textarea_/, keys %$params)) {
-    my ($comment_id) = $param =~ /edit_comment_textarea_(\d+)$/;
+    my ($comment_id) = $param =~ /edit_comment_textarea_(\d+)$/a;
     next if !detaint_natural($comment_id);
 
     # The comment ID must belong to this bug.

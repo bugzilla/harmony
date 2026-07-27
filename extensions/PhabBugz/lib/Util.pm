@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::PhabBugz::Util;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -129,7 +129,7 @@ sub get_bug_role_phids {
 }
 
 sub is_bug_assigned {
-  return $_[0]->assigned_to->email ne 'nobody@mozilla.org';
+  return $_[0]->assigned_to->email ne Bugzilla->localconfig->nobody_user;
 }
 
 sub is_attachment_phab_revision {

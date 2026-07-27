@@ -68,15 +68,15 @@ $sel->is_text_present_ok("found");
 
 $sel->click_ok("timesummary");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_like(qr/^Time Summary \(\d+ bugs selected\)/);
+$sel->title_like(qr/^Time Summary \(\d+ bugs selected\)/a);
 $sel->check_ok("monthly");
 $sel->check_ok("detailed");
 $sel->type_ok("start_date", "2009-01-01");
 $sel->type_ok("end_date",   "2009-04-30");
 $sel->click_ok("summarize");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_like(qr/^Time Summary \(\d+ bugs selected\)/);
-$sel->is_text_present_ok('regexp:Total of \d+\.\d+ hours worked');
+$sel->title_like(qr/^Time Summary \(\d+ bugs selected\)/a);
+$sel->is_text_present_ok('regexp:Total of (?a:\\d+)\.(?a:\\d+) hours worked');
 $sel->is_text_present_ok("2009-01-01 to 2009-01-31");
 $sel->is_text_present_ok("2009-02-01 to 2009-02-28");
 $sel->is_text_present_ok("2009-04-01 to 2009-04-30");

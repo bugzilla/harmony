@@ -7,7 +7,7 @@
 
 package Bugzilla::Search::Quicksearch;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -585,7 +585,7 @@ sub _special_field_syntax {
   return unless defined($word);
 
   # P1-5 Syntax
-  if ($word =~ m/^P(\d+)(?:-(\d+))?$/i) {
+  if ($word =~ m/^P(\d+)(?:-(\d+))?$/ai) {
     my ($p_start, $p_end) = ($1, $2);
     my $legal_priorities = get_legal_field_values('priority');
 
@@ -641,9 +641,6 @@ sub _default_quicksearch_word {
     if $longdesc_initial || $ELASTIC;
   addChart('content', 'matches', _matches_phrase($word), $negate)
     if $fulltext && !$ELASTIC;
-
-# BMO Bug 664124 - Include the crash signature (sig:) field in default quicksearches
-  addChart('cf_crash_signature', 'substring', $word, $negate);
 }
 
 sub _handle_urls {

@@ -146,8 +146,8 @@ sub post_success {
   cmp_ok($attachment->{creation_time},
     '=~', $rpc->DATETIME_REGEX, "creation_time is in the right format");
   is($attachment->{is_obsolete}, 0, 'is_obsolete is 0');
-  cmp_ok($attachment->{bug_id}, '=~', qr/^\d+$/, "bug_id is an integer");
-  cmp_ok($attachment->{id},     '=~', qr/^\d+$/, "id is an integer");
+  cmp_ok($attachment->{bug_id}, '=~', qr/^\d+$/a, "bug_id is an integer");
+  cmp_ok($attachment->{id},     '=~', qr/^\d+$/a, "id is an integer");
   is($attachment->{content_type}, 'application/x-perl',
     "content_type is correct");
   cmp_ok($attachment->{file_name},

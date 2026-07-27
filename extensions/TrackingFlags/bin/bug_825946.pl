@@ -8,7 +8,7 @@
 
 use strict;
 use warnings;
-use 5.10.1;
+use 5.14.0;
 
 use lib qw(. lib local/lib/perl5);
 
@@ -24,7 +24,7 @@ use Bugzilla::Bug qw(LogActivityEntry);
 
 Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
 my $dbh = Bugzilla->dbh;
-my $user = Bugzilla::User->check({name => 'nobody@mozilla.org'});
+my $user = Bugzilla::User->check({name => Bugzilla->localconfig->nobody_user});
 
 my $tf_vis = $dbh->selectall_arrayref(<<SQL);
     SELECT

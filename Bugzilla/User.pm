@@ -7,7 +7,7 @@
 
 package Bugzilla::User;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -34,8 +34,7 @@ use Role::Tiny::With;
 
 use base qw(Bugzilla::Object Exporter);
 
-with 'Bugzilla::Elastic::Role::Object', 'Bugzilla::Role::Storable',
-  'Bugzilla::Role::FlattenToHash';
+with 'Bugzilla::Role::Storable', 'Bugzilla::Role::FlattenToHash';
 
 @Bugzilla::User::EXPORT = qw(is_available_username
   login_to_id user_id_to_login
@@ -137,105 +136,6 @@ use constant VALIDATOR_DEPENDENCIES => {
 
 use constant EXTRA_REQUIRED_FIELDS => qw(is_enabled);
 
-sub ES_INDEX {
-  my ($class) = @_;
-  sprintf("%s_%s", Bugzilla->params->{elasticsearch_index}, $class->ES_TYPE);
-}
-
-sub ES_TYPE {'user'}
-
-sub ES_OBJECTS_AT_ONCE {5000}
-
-sub ES_SELECT_UPDATED_SQL {
-  my ($class, $mtime) = @_;
-
-  my $sql = q{
-        SELECT DISTINCT
-            object_id
-        FROM
-            audit_log
-        WHERE
-            class = 'Bugzilla::User' AND at_time > FROM_UNIXTIME(?)
-    };
-  return ($sql, [$mtime]);
-}
-
-sub ES_SELECT_ALL_SQL {
-  my ($class, $last_id) = @_;
-
-  my $id    = $class->ID_FIELD;
-  my $table = $class->DB_TABLE;
-
-  return (
-    "SELECT $id FROM $table WHERE $id > ? AND is_enabled AND NOT disabledtext ORDER BY $id",
-    [$last_id // 0]
-  );
-}
-
-sub ES_SETTINGS {
-  return {
-    number_of_shards => 2,
-    analysis         => {
-      filter => {
-        asciifolding_original => {type => "asciifolding", preserve_original => \1,},
-      },
-      analyzer => {
-        autocomplete => {
-          type      => 'custom',
-          tokenizer => 'keyword',
-          filter    => ['lowercase', 'asciifolding_original'],
-        },
-        folding => {
-          tokenizer => 'standard',
-          filter    => ['standard', 'lowercase', 'asciifolding_original'],
-        },
-      }
-    }
-  };
-}
-
-sub ES_PROPERTIES {
-  return {
-    suggest_user => {
-      type            => 'completion',
-      analyzer        => 'folding',
-      search_analyzer => 'folding',
-      payloads        => \1,
-    },
-    suggest_nick =>
-      {type => 'completion', analyzer => 'autocomplete', payloads => \1,},
-    login      => {type => 'string'},
-    name       => {type => 'string'},
-    is_enabled => {type => 'boolean'},
-  };
-}
-
-sub es_document {
-  my ($self, $timestamp) = @_;
-  my $doc = {
-    login        => $self->login,
-    name         => $self->name,
-    is_enabled   => $self->is_enabled,
-    suggest_user => {
-      input   => [$self->login, $self->name],
-      output  => $self->identity,
-      payload => {name => $self->login, real_name => $self->name},
-    },
-  };
-  my $name  = $self->name;
-  my @nicks = extract_nicks($name);
-
-  if (@nicks) {
-    $doc->{suggest_nick} = {
-      input   => \@nicks,
-      output  => $self->login,
-      payload => {name => $self->login, real_name => $self->name},
-    };
-  }
-
-  return $doc;
-}
-
 ################################################################################
 # Functions
 ################################################################################
@@ -255,7 +155,19 @@ sub new {
       $_[0] = $param;
     }
   }
-  return $class->SUPER::new(@_);
+
+  $user = $class->SUPER::new(@_);
+
+  # MySQL considers some non-ascii characters such as umlauts to equal
+  # ascii characters returning a user when it should not.
+  if ($user && ref $param eq 'HASH' && exists $param->{name}) {
+    my $login = $param->{name};
+    if (lc $login ne lc $user->login) {
+      $user = undef;
+    }
+  }
+
+  return $user;
 }
 
 sub super_user {
@@ -658,7 +570,7 @@ sub _set_groups_to_object {
     # Go through the array, and turn items into group objects
     my @groups = ();
     foreach my $value (@{$changes->{$key}}) {
-      my $type = $value =~ /^\d+$/ ? 'id' : 'name';
+      my $type  = $value =~ /^\d+$/a ? 'id' : 'name';
       my $group = Bugzilla::Group->new({$type => $value});
 
       if (!$group || !$user->can_bless($group->id)) {
@@ -1922,7 +1834,7 @@ sub visible_groups_direct {
   }
   else {
     # All groups are visible if usevisibilitygroups is off.
-    $sth = $dbh->prepare('SELECT id FROM groups');
+    $sth = $dbh->prepare('SELECT id FROM ' . $dbh->quote_identifier('groups'));
   }
   $sth->execute();
 
@@ -1986,7 +1898,7 @@ sub derive_regexp_groups {
 
   $sth = $dbh->prepare(
     "SELECT id, userregexp, user_group_map.group_id
-                            FROM groups
+                            FROM " . $dbh->quote_identifier('groups') . "
                        LEFT JOIN user_group_map
                               ON groups.id = user_group_map.group_id
                              AND user_group_map.user_id = ?
@@ -2210,7 +2122,7 @@ sub match_field {
         # The field is a requestee field; in order for its name
         # to show up correctly on the confirmation page, we need
         # to find out the name of its flag type.
-        if ($field_name =~ /^requestee(_type)?-(\d+)$/) {
+        if ($field_name =~ /^requestee(_type)?-(\d+)$/a) {
           my $flag_type;
           if ($1) {
             require Bugzilla::FlagType;
