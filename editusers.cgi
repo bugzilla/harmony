@@ -91,7 +91,8 @@ elsif ($action eq 'list') {
   my $query = 'SELECT DISTINCT ' . $select_fields . ' FROM profiles';
   
   # Join the two tables by userid
-  $query .= ' INNER JOIN profiles_emails ON profiles.userid = profiles_emails.user_id';
+  $query .= ' LEFT JOIN profiles_emails ON profiles.userid = profiles_emails.user_id'
+    +   . ' AND profiles_emails.is_primary_email = 1';
 
   my $expr;
   if ($matchvalue eq 'email') {
