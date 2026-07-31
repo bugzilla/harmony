@@ -17,6 +17,7 @@ use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::User;
+use Bugzilla::User::Email;
 use Bugzilla::Bug;
 use Bugzilla::BugMail;
 use Bugzilla::Flag;
@@ -92,7 +93,7 @@ elsif ($action eq 'list') {
   
   # Join the two tables by userid
   $query .= ' LEFT JOIN profiles_emails ON profiles.userid = profiles_emails.user_id'
-    +   . ' AND profiles_emails.is_primary_email = 1';
+         . ' AND profiles_emails.is_primary_email = 1';
 
   my $expr;
   if ($matchvalue eq 'email') {
@@ -234,6 +235,7 @@ elsif ($action eq 'new') {
 
   my $new_user = Bugzilla::User->create({
     login_name    => scalar $cgi->param('login'),
+    email         => scalar $cgi->param('email'),
     cryptpassword => $password,
     realname      => scalar $cgi->param('name'),
     disabledtext  => scalar $cgi->param('disabledtext'),
@@ -304,6 +306,31 @@ elsif ($action eq 'update') {
   }
 
   $changes = $otherUser->update();
+
+  # Bug 1963773 - persist the primary email address in profiles_emails.
+  if ($editusers) {
+    my $new_email = trim($cgi->param('email') || '');
+    my $old_email = Bugzilla::User::Email->get_primary_email_of_user($otherUserID);
+
+    if ($new_email && (!defined $old_email || lc($old_email) ne lc($new_email))) {
+      Bugzilla::User::Email->check_email_for_creation($new_email);
+
+      if (defined $old_email) {
+        my $email_obj = Bugzilla::User::Email->new({name => $old_email});
+        $email_obj->set_email($new_email);
+        $email_obj->update();
+      }
+      else {
+        Bugzilla::User::Email->create({
+          user_id          => $otherUserID,
+          email            => $new_email,
+          is_primary_email => 1,
+        });
+      }
+
+      $changes->{email} = [$old_email, $new_email];
+    }
+  }
 
   # Update group settings.
   my $sth_add_mapping = $dbh->prepare(
