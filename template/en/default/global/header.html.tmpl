@@ -301,7 +301,7 @@
         <input role="searchbox" id="quicksearch_top" class="dropdown-button" name="quicksearch" autocomplete="off"
                value="[% quicksearch FILTER html %]" placeholder="Search [% terms.Bugs %]"
                title="Enter a [% terms.bug %] number or some search terms" aria-controls="header-search-dropdown"
-               aria-label="Quick Search">
+               aria-labelledby="header-search-label">
         [% PROCESS "global/header-search-dropdown.html.tmpl" %]
       </section>
     </form>
@@ -405,7 +405,7 @@
       <ul id="header-login" class="links">
           [% PROCESS "account/auth/signup-small.html.tmpl" qs_suffix = "_top" %]
         [% IF user.authorizer.can_login %]
-          [% PROCESS "account/auth/login-small.html.tmpl" qs_suffix = "_top" %]
+          [% PROCESS "account/auth/login-small.html.tmpl" qs_suffix = "_top" use_login_page = use_login_page %]
         [% END %]
       </ul>
     [% END %]

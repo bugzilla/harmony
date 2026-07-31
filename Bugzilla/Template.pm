@@ -8,7 +8,7 @@
 
 package Bugzilla::Template;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -229,7 +229,7 @@ sub quoteUrls {
 
   # attachment links
   # BMO: don't make diff view the default for patches (Bug 652332)
-  $text =~ s~\b(attachment$s*\#?$s*(\d+)(?:$s+\[diff\])?(?:\s+\[details\])?)
+  $text =~ s~\b(attachment$s*\#?$s*((?a:\d+))(?:$s+\[diff\])?(?:\s+\[details\])?)
               ~($things[$count++] = get_attachment_link($2, $1, $user)) &&
                ("\x{FDD2}" . ($count-1) . "\x{FDD3}")
               ~egmxi;
@@ -239,8 +239,8 @@ sub quoteUrls {
   # Also, we can't use $bug_re?$comment_re? because that will match the
   # empty string
   my $bug_word   = template_var('terms')->{bug};
-  my $bug_re     = qr/\Q$bug_word\E$s*\#?$s*(\d+)/i;
-  my $comment_re = qr/comment$s*\#?$s*(\d+)/i;
+  my $bug_re     = qr/\Q$bug_word\E$s*\#?$s*((?a:\d+))/i;
+  my $comment_re = qr/comment$s*\#?$s*((?a:\d+))/i;
   $text =~ s~\b($bug_re(?:$s*,?$s*$comment_re)?|$comment_re)
               ~ # We have several choices. $1 here is the link, and $2-4 are set
                 # depending on which part matched
@@ -251,7 +251,7 @@ sub quoteUrls {
   # Old duplicate markers. These don't use $bug_word because they are old
   # and were never customizable.
   $text =~ s~(?<=^\*\*\*\ This\ bug\ has\ been\ marked\ as\ a\ duplicate\ of\ )
-               (\d+)
+               ((?a:\d+))
                (?=\ \*\*\*\Z)
               ~$bug_link_func->($1, $1, { user => $user })
               ~egmx;
@@ -794,7 +794,7 @@ sub create {
        # so we do not allow it to happen. We only do this for logged-in users.
         $var =~ s/\\/\x{FF3C}/g if Bugzilla->user->id;
         $var =~ s/\"/\"\"/g;
-        if ($var !~ /^-?(\d+\.)?\d*$/) {
+        if ($var !~ /^-?(\d+\.)?\d*$/a) {
           $var = "\"$var\"";
         }
         return $var;
@@ -930,7 +930,7 @@ sub create {
 
       'bugzilla_version' => sub {
         my $version = Bugzilla->VERSION;
-        if (my @ver = $version =~ /^(\d{4})(\d{2})(\d{2})\.(\d+)$/s) {
+        if (my @ver = $version =~ /^(\d{4})(\d{2})(\d{2})\.(\d+)$/as) {
           if ($ver[3] eq '1') {
             return join('.', @ver[0, 1, 2]);
           }

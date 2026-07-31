@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::Ember::WebService;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -741,7 +741,7 @@ sub rest_resources {
     {GET => {method => 'create'}},
 
     # show bug page - single bug id
-    qr{^/ember/show/(\d+)$},
+    qr{^/ember/show/(\d+)$}a,
     {
       GET => {
         method => 'show',
@@ -757,7 +757,7 @@ sub rest_resources {
     {GET => {method => 'search',},},
 
     # get current bug attributes without field information - single bug id
-    qr{^/ember/bug/(\d+)$},
+    qr{^/ember/bug/(\d+)$}a,
     {
       GET => {
         method => 'bug',
@@ -769,7 +769,7 @@ sub rest_resources {
 
     # attachments - wrapper around SUPER::attachments that also includes
     # can_edit attribute
-    qr{^/ember/bug/(\d+)/attachments$},
+    qr{^/ember/bug/(\d+)/attachments$}a,
     {
       GET => {
         method => 'get_attachments',
@@ -778,7 +778,7 @@ sub rest_resources {
         }
       }
     },
-    qr{^/ember/bug/attachments/(\d+)$},
+    qr{^/ember/bug/attachments/(\d+)$}a,
     {
       GET => {
         method => 'get_attachments',

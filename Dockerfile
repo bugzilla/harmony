@@ -1,14 +1,7 @@
-FROM mozillabteam/bmo-perl-slim:20200505.1
+ARG BZDB="-mysql"
+FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
 
-ENV DEBIAN_FRONTEND noninteractive
-
-ARG CI
-ARG CIRCLE_SHA1
-ARG CIRCLE_BUILD_URL
-
-ENV CI=${CI}
-ENV CIRCLE_BUILD_URL=${CIRCLE_BUILD_URL}
-ENV CIRCLE_SHA1=${CIRCLE_SHA1}
+ENV DEBIAN_FRONTEND=noninteractive
 
 ENV LOG4PERL_CONFIG_FILE=log4perl-json.conf
 
@@ -23,7 +16,7 @@ WORKDIR /app
 
 COPY . /app
 
-RUN chown -R app.app /app && \
+RUN chown -R app:app /app && \
     perl -I/app -I/app/local/lib/perl5 -c -E 'use Bugzilla; BEGIN { Bugzilla->extensions }' && \
     perl -c /app/scripts/entrypoint.pl
 

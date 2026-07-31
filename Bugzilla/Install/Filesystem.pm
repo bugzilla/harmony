@@ -15,7 +15,7 @@ package Bugzilla::Install::Filesystem;
 # * Files do not have the correct permissions.
 # * The database does not exist.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -419,7 +419,7 @@ sub update_filesystem {
   # Delete old files that no longer need to exist
 
   # 2001-04-29 jake@bugzilla.org - Remove oldemailtech
-  #   http://bugzilla.mozilla.org/show_bugs.cgi?id=71552
+  #   http://bugzilla.mozilla.org/show_bug.cgi?id=71552
   if (-d 'shadow') {
     print "Removing shadow directory...\n";
     rmtree("shadow");
@@ -579,7 +579,7 @@ sub _update_old_charts {
         @declared_fields = map uc, (split /\||\r/, $1);
         print OUT "# fields: ", join('|', @out_fields), "\n";
       }
-      elsif (/^(\d+\|.*)/) {
+      elsif (/^(\d+\|.*)/a) {
         my @data = split(/\||\r/, $1);
         my %data;
         if (@data == @declared_fields) {

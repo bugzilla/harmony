@@ -23,6 +23,9 @@
 # and so do not need to be added here. Doing so will cause warnings.
 # See 008filter.t for more details.
 #
+# This file is loaded by 008filter.t with do(), so keep it as plain package
+# data and avoid strict/warnings pragmas or lexical variable declarations.
+#
 # Comments                        - [%#...
 # Directives                      - [% IF|ELSE|UNLESS|FOREACH...
 # Assignments                     - [% foo = ...

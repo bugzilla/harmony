@@ -17,6 +17,9 @@
 # Contributor(s):
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 
+# This file is loaded inside a Safe compartment, so keep it as plain package
+# data: do not add strict/warnings pragmas or lexical %strings declarations.
+
 %strings = (feature_example_acme => 'Example Extension: Acme Feature',);
 
 1;

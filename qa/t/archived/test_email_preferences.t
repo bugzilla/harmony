@@ -463,7 +463,7 @@ sub set_flag {
   if (defined $login) {
     my $flag_name
       = $sel->get_attribute("//table[\@id='flags']//input[\@value='$login']\@name");
-    $flag_name =~ /^requestee-(\d+)$/;
+    $flag_name =~ /^requestee-(\d+)$/a;
     $flag_id = $1;
   }
 

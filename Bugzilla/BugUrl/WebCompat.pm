@@ -7,7 +7,7 @@
 
 package Bugzilla::BugUrl::WebCompat;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -23,7 +23,7 @@ sub should_handle {
   # https://webcompat.com/issues/1111
   my $host = lc($uri->authority);
   return ($host eq 'webcompat.com' || $host eq 'www.webcompat.com')
-    && $uri->path =~ m#^/issues/\d+$#;
+    && $uri->path =~ m#^/issues/\d+$#a;
 }
 
 sub _check_value {

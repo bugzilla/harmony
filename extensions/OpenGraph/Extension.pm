@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::OpenGraph;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -16,5 +16,11 @@ use lib qw(. lib local/lib/perl5);
 use base qw(Bugzilla::Extension);
 
 our $VERSION = '1';
+
+sub config_add_panels {
+  my ($self, $args) = @_;
+  my $modules = $args->{panel_modules};
+  $modules->{OpenGraph} = "Bugzilla::Extension::OpenGraph::Config";
+}
 
 __PACKAGE__->NAME;

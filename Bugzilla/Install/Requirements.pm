@@ -13,7 +13,7 @@ package Bugzilla::Install::Requirements;
 # Subroutines may "require" and "import" from modules, but they
 # MUST NOT "use."
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -265,8 +265,8 @@ sub check_font_file {
 
 sub _checking_for {
   my ($params) = @_;
-  my ($package, $ok, $wanted, $blacklisted, $found)
-    = @$params{qw(package ok wanted blacklisted found)};
+  my ($package, $ok, $wanted, $blocklisted, $found)
+    = @$params{qw(package ok wanted blocklisted found)};
 
   my $ok_string = $ok ? install_string('module_ok') : '';
 
@@ -294,10 +294,10 @@ sub _checking_for {
     $ok_string = install_string('module_not_found');
   }
 
-  my $black_string = $blacklisted ? install_string('blacklisted') : '';
+  my $block_string = $blocklisted ? install_string('blocklisted') : '';
   my $want_string = $wanted ? "$wanted" : install_string('any');
 
-  my $str = sprintf "%s %20s %-11s $ok_string $black_string\n",
+  my $str = sprintf "%s %20s %-11s $ok_string $block_string\n",
     (' ' x $checking_for_indent) . install_string('checking_for'), $package,
     "($want_string)";
   print $ok ? $str : colored($str, COLOR_ERROR);

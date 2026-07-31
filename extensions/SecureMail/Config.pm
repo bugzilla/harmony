@@ -21,14 +21,13 @@
 
 package Bugzilla::Extension::SecureMail;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
 use constant NAME => 'SecureMail';
 
 use constant REQUIRED_MODULES => [
-  {package => 'Crypt-OpenPGP', module => 'Crypt::OpenPGP', version => '1.12',},
   {package => 'Crypt-SMIME',   module => 'Crypt::SMIME',   version => 0,},
   {package => 'HTML-Tree',     module => 'HTML::Tree',     version => 0,},
   {

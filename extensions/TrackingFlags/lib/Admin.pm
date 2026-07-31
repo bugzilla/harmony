@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::TrackingFlags::Admin;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -123,10 +123,10 @@ sub admin_edit {
         {item => 'flag', id => $vars->{copy_from}});
 
       # increment the number at the end of the name and description
-      if ($flag->name =~ /^(\D+)(\d+)$/) {
+      if ($flag->name =~ /^(\D+)(\d+)$/a) {
         $flag->set_name("$1" . ($2 + 1));
       }
-      if ($flag->description =~ /^(\D+)([\d\.]+)$/) {
+      if ($flag->description =~ /^(\D+)([\d\.]+)$/a) {
         my $description = $1;
         my $version     = $2;
         if ($version =~ /\./) {

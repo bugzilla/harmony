@@ -6,7 +6,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -153,9 +153,9 @@ foreach my $result (@$results) {
   $names{"row"}{$row}++;
   $names{"tbl"}{$tbl}++;
 
-  $col_isnumeric &&= ($col =~ /^-?\d+(\.\d+)?$/o);
-  $row_isnumeric &&= ($row =~ /^-?\d+(\.\d+)?$/o);
-  $tbl_isnumeric &&= ($tbl =~ /^-?\d+(\.\d+)?$/o);
+  $col_isnumeric &&= ($col =~ /^-?\d+(\.\d+)?$/ao);
+  $row_isnumeric &&= ($row =~ /^-?\d+(\.\d+)?$/ao);
+  $tbl_isnumeric &&= ($tbl =~ /^-?\d+(\.\d+)?$/ao);
 }
 
 my @col_names = get_names($names{"col"}, $col_isnumeric, $col_field);
@@ -216,13 +216,6 @@ $vars->{'width'}  = $width  if $width;
 $vars->{'height'} = $height if $height;
 $vars->{'queries'} = $extra_data;
 
-if ( $cgi->param('debug')
-  && Bugzilla->params->{debug_group}
-  && Bugzilla->user->in_group(Bugzilla->params->{debug_group}))
-{
-  $vars->{'debug'} = 1;
-}
-
 if ($action eq "wrap") {
 
   # So which template are we using? If action is "wrap", we will be using
@@ -271,23 +264,8 @@ else {
 my $format = $template->get_format("reports/report", $formatparam,
   scalar($cgi->param('ctype')));
 
-# If we get a template or CGI error, it comes out as HTML, which isn't valid
-# PNG data, and the browser just displays a "corrupt PNG" message. So, you can
-# set debug=1 to always get an HTML content-type, and view the error.
-$format->{'ctype'} = "text/html" if $cgi->param('debug');
-
 $cgi->set_dated_content_disp("inline", "report", $format->{extension});
 print $cgi->header($format->{'ctype'});
-
-# Problems with this CGI are often due to malformed data. Setting debug=1
-# prints out both data structures.
-if ($cgi->param('debug')) {
-  require Data::Dumper;
-  print "<pre>data hash:\n";
-  print html_quote(Data::Dumper::Dumper(%data)) . "\n\n";
-  print "data array:\n";
-  print html_quote(Data::Dumper::Dumper(@image_data)) . "\n\n</pre>";
-}
 
 # All formats point to the same section of the documentation.
 $vars->{'doc_section'} = 'reporting.html#reports';
