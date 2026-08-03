@@ -183,7 +183,7 @@ try {
     $where .= " AND bug_severity IN ($severities)";
   }
 
-    my $sql = <<"EOF";
+  my $sql = <<"EOF";
       SELECT bug_id, bug_severity, @{[$dbh->sql_date_to_epoch('bugs.creation_ts')]} AS ts
           FROM bugs
          WHERE $where

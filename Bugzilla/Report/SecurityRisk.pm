@@ -290,9 +290,9 @@ sub _build_events {
             bug_when,
             field.name AS field_name,
       }
-  . $dbh->sql_string_concat('removed') . qq{ AS removed,
+    . $dbh->sql_string_concat('removed') . qq{ AS removed,
       }
-  . $dbh->sql_string_concat('added') . qq{ AS added
+    . $dbh->sql_string_concat('added') . qq{ AS added
         FROM
             bugs_activity
             JOIN fielddefs AS field ON fieldid = field.id
