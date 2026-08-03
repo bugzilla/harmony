@@ -1,11 +1,10 @@
-ARG SIZE="slim"
+ARG BASE_IMAGE="bugzilla-perl-slim"
 ARG BASE_TAG="20260801.1"
-FROM bugzilla/bugzilla-perl-${SIZE}:${BASE_TAG} AS builder
+FROM bugzilla/${BASE_IMAGE}:${BASE_TAG} AS builder
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \
  && apt-get install -y \
-    libmariadb-dev \
     apt-file \
     build-essential \
     cmake \
@@ -28,7 +27,7 @@ COPY extensions/ /app/extensions/
 RUN cpanm --notest --quiet App::cpm Module::CPANfile Carton::Snapshot
 
 RUN perl Makefile.PL
-RUN make cpanfile GEN_CPANFILE_ARGS="-D mariadb"
+RUN make cpanfile GEN_CPANFILE_ARGS="-A -U mysql -U mariadb -U pg -U oracle"
 
 RUN carton install
 
@@ -40,7 +39,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
     | xargs -IFILE apt-file search -l FILE \
     | sort -u > PACKAGES
 
-FROM bugzilla/bugzilla-perl-${SIZE}:${BASE_TAG}
+FROM bugzilla/${BASE_IMAGE}:${BASE_TAG}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -53,7 +52,6 @@ RUN apt-get update \
 
 RUN apt-get update \
     && apt-get install -y \
-       mariadb-client \
        $(cat /app/PACKAGES) \
     && rm -rf /var/cache/apt/* /var/lib/apt/lists/*
 
