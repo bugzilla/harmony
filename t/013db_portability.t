@@ -34,27 +34,27 @@ push @files, grep { !$seen_file{$_}++ } @script_files;
 
 my @rules = (
   {
-    token => qr/\bUNIX_TIMESTAMP\s*\(/,
+    token => qr/\bUNIX_TIMESTAMP\s*\(/i,
     helper => 'sql_date_to_epoch',
     message => 'use $dbh->sql_date_to_epoch(...) instead of UNIX_TIMESTAMP()',
   },
   {
-    token => qr/\bDATE_FORMAT\s*\(/,
+    token => qr/\bDATE_FORMAT\s*\(/i,
     helper => 'sql_date_format',
     message => 'use $dbh->sql_date_format(...) instead of DATE_FORMAT()',
   },
   {
-    token => qr/\bCONCAT\s*\(/,
+    token => qr/\bCONCAT\s*\(/i,
     helper => 'sql_string_concat',
     message => 'use $dbh->sql_string_concat(...) instead of CONCAT()',
   },
   {
-    token => qr/\b(?:POSITION|INSTR|LOCATE)\s*\(/,
+    token => qr/\b(?:POSITION|INSTR|LOCATE)\s*\(/i,
     helper => 'sql_position/sql_iposition',
     message => 'use $dbh->sql_position(...) or $dbh->sql_iposition(...) instead',
   },
   {
-    token => qr/\bGROUP_CONCAT\s*\(/,
+    token => qr/\bGROUP_CONCAT\s*\(/i,
     helper => 'sql_group_concat',
     message => 'use $dbh->sql_group_concat(...) instead of GROUP_CONCAT()',
   },
