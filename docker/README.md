@@ -63,6 +63,14 @@ Currently, the entry point takes a single command argument. This can be
     This should never be set in production. It allows auth delegation
     and oauth over http.
 
+  - BZ\_ALLOW\_UNSAFE\_UTF8\_CONVERSION
+    Controls whether checksetup may proceed with the database UTF-8
+    conversion in non-interactive mode. Default: 0.
+
+    Set this to 1 only when you explicitly approve the conversion and
+    have a database backup. For example:
+    `BZ_ALLOW_UNSAFE_UTF8_CONVERSION=1 docker compose up`
+
   - BMO\_urlbase  
     The public URL for this instance. Note that if this begins with
     <https://> and BMO\_inbound\_proxies is set to '\*' Bugzilla will
