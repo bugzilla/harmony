@@ -54,6 +54,8 @@
           <li>
             [% IF    field == 'login_name' %]
               The login is now [% otheruser.login FILTER html %].
+            [% ELSIF field == 'email' %]
+              The email address is now [% otheruser.email FILTER html %].
             [% ELSIF field == 'realname' %]
               The real name has been updated.
             [% ELSIF field == 'nickname' %]
