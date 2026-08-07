@@ -111,7 +111,7 @@ sub issue_new_user_account_token {
         'SELECT COUNT(*)
            FROM tokens
           WHERE tokentype = ?
-                AND ' . $dbh->sql_regexp('eventdata', $dbh->quote($regexp)) . '
+		AND ' . $dbh->sql_regexp('eventdata', $dbh->quote($regexp), 1) . '
                 AND issuedate > '
                     . $dbh->sql_date_math('NOW()', '-', ACCOUNT_CHANGE_INTERVAL, 'MINUTE'),
         undef, 'account');
