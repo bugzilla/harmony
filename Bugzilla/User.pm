@@ -453,16 +453,23 @@ sub _generate_nickname {
 
 sub set_email {
   my ($self, $email) = @_;
-  # Create a user email account
-  my $email_data = {
+
+  my $current = Bugzilla::User::Email->get_primary_email_of_user($self->id);
+  return if defined $current && lc($current) eq lc($email);
+
+  if (defined $current) {
+    my $user_email = Bugzilla::User::Email->new({name => $current});
+    $user_email->set_email($email);
+    $user_email->update();
+    return $user_email;
+  }
+
+  return Bugzilla::User::Email->create({
     user_id          => $self->id,
     email            => $email,
-    is_primary_email => 1
-  };
-
-  my $user_email = Bugzilla::User::Email->create($email_data);
+    is_primary_email => 1,
+  });
 }
-
 
 sub set_name {
   my ($self, $name) = @_;
