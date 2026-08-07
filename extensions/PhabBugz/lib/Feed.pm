@@ -7,7 +7,7 @@
 
 package Bugzilla::Extension::PhabBugz::Feed;
 
-use 5.10.1;
+use 5.14.0;
 
 use IO::Async::Timer::Periodic;
 use IO::Async::Loop;
@@ -354,7 +354,7 @@ sub group_query {
 sub process_revision_change {
   state $check = compile($Invocant, Revision, LinkedPhabUser, Str);
   my ($self, $revision, $changer, $story_text) = $check->(@_);
-  my $is_new = $story_text =~ /\s+created\s+D\d+/;
+  my $is_new = $story_text =~ /\s+created\s+D\d+/a;
 
   # NO BUG ID
   if (!$revision->bug_id) {

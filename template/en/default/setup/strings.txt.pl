@@ -9,6 +9,9 @@
 # installation code to display strings before Template-Toolkit can safely
 # be loaded.
 #
+# This file is loaded inside a Safe compartment, so keep it as plain package
+# data: do not add strict/warnings pragmas or lexical %strings declarations.
+#
 # Each string supports a very simple substitution system, where you can
 # have variables named like ##this## and they'll be replaced by the string
 # variable with that name.
@@ -53,6 +56,13 @@ EOT
   continue_without_answers => <<'END',
 Re-run checksetup.pl in interactive mode (without an 'answers' file)
 to continue.
+
+To continue non-interactively, set ALLOW_UNSAFE_UTF8_CONVERSION to 1
+in your answers file.
+END
+  continuing_with_unsafe_utf8_conversion => <<'END',
+WARNING: ALLOW_UNSAFE_UTF8_CONVERSION is enabled. Continuing the UTF-8
+         conversion without an interactive confirmation prompt.
 END
   cpanfile_created   => "##file## created",
   cpan_bugzilla_home => "WARNING: Using the Bugzilla directory as the CPAN home.",

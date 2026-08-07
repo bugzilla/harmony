@@ -7,7 +7,7 @@
 
 package Bugzilla::Config::Common;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -310,7 +310,7 @@ sub check_maxattachmentsize {
 sub check_notification {
   my $option = shift;
   my @current_version
-    = (BUGZILLA_VERSION =~ m/^(\d+)\.(\d+)(?:(rc|\.)(\d+))?\+?$/);
+    = (BUGZILLA_VERSION =~ m/^(\d+)\.(\d+)(?:(rc|\.)(\d+))?\+?$/a);
   if ($current_version[1] % 2 && $option eq 'stable_branch_release') {
     return
         "You are currently running a development snapshot, and so your "

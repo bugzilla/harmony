@@ -7,7 +7,7 @@
 
 package Bugzilla::User;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -607,7 +607,7 @@ sub _set_groups_to_object {
     # Go through the array, and turn items into group objects
     my @groups = ();
     foreach my $value (@{$changes->{$key}}) {
-      my $type = $value =~ /^\d+$/ ? 'id' : 'name';
+      my $type  = $value =~ /^\d+$/a ? 'id' : 'name';
       my $group = Bugzilla::Group->new({$type => $value});
 
       if (!$group || !$user->can_bless($group->id)) {
@@ -2159,7 +2159,7 @@ sub match_field {
         # The field is a requestee field; in order for its name
         # to show up correctly on the confirmation page, we need
         # to find out the name of its flag type.
-        if ($field_name =~ /^requestee(_type)?-(\d+)$/) {
+        if ($field_name =~ /^requestee(_type)?-(\d+)$/a) {
           my $flag_type;
           if ($1) {
             require Bugzilla::FlagType;

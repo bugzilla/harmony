@@ -22,7 +22,7 @@
 #                 Bradley Baetz <bbaetz@student.usyd.edu.au>
 #                 Frédéric Buclin <LpSolit@gmail.com>
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 use lib qw(. lib local/lib/perl5);

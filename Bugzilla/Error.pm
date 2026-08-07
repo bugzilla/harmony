@@ -7,7 +7,7 @@
 
 package Bugzilla::Error;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -217,7 +217,7 @@ sub ThrowTemplateError {
   $vars->{'template_error_msg'} = $template_err;
   $vars->{'error'}              = "template_error";
 
-  $vars->{'template_error_msg'} =~ s/ at \S+ line \d+\.\s*$//;
+  $vars->{'template_error_msg'} =~ s/ at \S+ line (?a:\d+)\.\s*$//;
 
   my $template = Bugzilla->template;
 

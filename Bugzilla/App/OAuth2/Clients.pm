@@ -6,7 +6,7 @@
 # defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::App::OAuth2::Clients;
-use 5.10.1;
+use 5.14.0;
 use Mojo::Base 'Mojolicious::Controller';
 
 use List::Util qw(any first);

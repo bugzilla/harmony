@@ -11,7 +11,7 @@ package Bugzilla::Install::Util;
 # module may require *only* Bugzilla::Constants and built-in
 # Perl modules.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -361,11 +361,11 @@ sub vers_cmp {
   my ($a, $b) = @_;
 
   # Remove leading zeroes - Bug 344661
-  $a =~ s/^0*(\d.+)/$1/;
-  $b =~ s/^0*(\d.+)/$1/;
+  $a =~ s/^0*(\d.+)/$1/a;
+  $b =~ s/^0*(\d.+)/$1/a;
 
-  my @A = ($a =~ /([-.]|\d+|[^-.\d]+)/g);
-  my @B = ($b =~ /([-.]|\d+|[^-.\d]+)/g);
+  my @A = ($a =~ /([-.]|\d+|[^-.\d]+)/ag);
+  my @B = ($b =~ /([-.]|\d+|[^-.\d]+)/ag);
 
   my ($A, $B);
   while (@A and @B) {
@@ -389,7 +389,7 @@ sub vers_cmp {
     elsif ($B eq '.') {
       return 1;
     }
-    elsif ($A =~ /^\d+$/ and $B =~ /^\d+$/) {
+    elsif ($A =~ /^\d+$/a and $B =~ /^\d+$/a) {
       if ($A =~ /^0/ || $B =~ /^0/) {
         return $A cmp $B if $A cmp $B;
       }
@@ -449,7 +449,7 @@ sub _sort_accept_language {
   my @qlanguages;
   my @languages;
   foreach (split /,/, $accept_language) {
-    if (m/([A-Za-z\-]+)(?:;q=(\d(?:\.\d+)))?/) {
+    if (m/([A-Za-z\-]+)(?:;q=(\d(?:\.\d+)))?/a) {
       my $lang   = $1;
       my $qvalue = $2;
       $qvalue = 1 if not defined $qvalue;

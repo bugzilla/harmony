@@ -34,7 +34,7 @@ $sel->click_ok("link=Master");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Change Group: Master");
 my $group_url = $sel->get_location();
-$group_url =~ /group=(\d+)$/;
+$group_url =~ /group=(\d+)$/a;
 my $master_gid = $1;
 
 go_to_admin($sel);

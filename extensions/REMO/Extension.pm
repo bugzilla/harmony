@@ -22,7 +22,7 @@
 
 package Bugzilla::Extension::REMO;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -283,7 +283,7 @@ sub post_bug_after_creation {
       my @columns_raw
         = sort { $CSV_COLUMNS{$a}{pos} <=> $CSV_COLUMNS{$b}{pos} } keys %CSV_COLUMNS;
       my @data = map { _expand_value($CSV_COLUMNS{$_}{value}) } @columns_raw;
-      my @columns = map { s/^(Item|Email) \d+$/$1/g; $_ } @columns_raw;
+      my @columns = map { s/^(Item|Email) \d+$/$1/ag; $_ } @columns_raw;
       my $csv = _csv_encode(\@columns, \@data);
 
       push @attachments,

@@ -7,7 +7,7 @@
 
 package Bugzilla::WebService::Bug;
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -341,7 +341,7 @@ sub comments {
 
     # Cache permissions for bugs. This highly reduces the number of calls to the DB.
     # visible_bugs() is only able to handle bug IDs, so we have to skip aliases.
-    my @int = grep { $_ =~ /^\d+$/ } @$bug_ids;
+    my @int = grep { $_ =~ /^\d+$/a } @$bug_ids;
     $user->visible_bugs(\@int);
   }
 
@@ -460,7 +460,7 @@ sub get {
 
   # Cache permissions for bugs. This highly reduces the number of calls to the DB.
   # visible_bugs() is only able to handle bug IDs, so we have to skip aliases.
-  my @int = grep { $_ =~ /^\d+$/ } @$ids;
+  my @int = grep { $_ =~ /^\d+$/a } @$ids;
   Bugzilla->user->visible_bugs(\@int);
 
   foreach my $bug_id (@$ids) {
@@ -514,7 +514,7 @@ sub history {
 
     # Cache permissions for bugs. This highly reduces the number of calls to the DB.
     # visible_bugs() is only able to handle bug IDs, so we have to skip aliases.
-    my @int = grep { $_ =~ /^\d+$/ } @$ids;
+    my @int = grep { $_ =~ /^\d+$/a } @$ids;
     $user->visible_bugs(\@int);
   }
 
@@ -607,7 +607,7 @@ sub search {
   my %options = (fields => ['bug_id']);
 
   # Find the highest custom field id
-  my @field_ids     = grep(/^f(\d+)$/, keys %$match_params);
+  my @field_ids     = grep(/^f(\d+)$/a, keys %$match_params);
   my $last_field_id = @field_ids ? max @field_ids + 1 : 1;
 
   # Do special search types for certain fields.

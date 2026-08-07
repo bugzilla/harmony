@@ -10,7 +10,7 @@ package Bugzilla::Install::DB;
 # NOTE: This package may "use" any modules that it likes,
 # localconfig is available, and params are up to date.
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -484,7 +484,12 @@ sub update_table_definitions {
   $dbh->bz_drop_column('groups',   'last_changed');
 
   # 2019-01-31 dylan@hardison.net - Bug TODO
-  _update_flagtypes_id();
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'flaginclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flagexclusions', column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flags',          column => 'type_id', definition => {TYPE => 'INT3', NOTNULL => 1}, only_if_type => 'INT2'},
+    {table => 'flagtypes',      column => 'id',      definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}}
+  ]);
 
   $dbh->bz_alter_column('keyworddefs', 'id',
     {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
@@ -808,13 +813,23 @@ sub update_table_definitions {
   $dbh->bz_add_column('profiles', 'bounce_count', {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 0});
 
   # Bug 1588221 - dkl@mozilla.com
-  $dbh->bz_alter_column('bugs_activity', 'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('attachments', 'attach_id',
-    {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('attach_data', 'id',
-    {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1});
-  $dbh->bz_alter_column('flags',            'attach_id', {TYPE => 'INT5'});
-  $dbh->bz_alter_column('user_request_log', 'attach_id', {TYPE => 'INT5', NOTNULL => 0});
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'bugs_activity',    column => 'attach_id', definition => {TYPE => 'INT5'}},
+    {table => 'attachments',      column => 'attach_id', definition => {TYPE => 'BIGSERIAL', NOTNULL => 1, PRIMARYKEY => 1}},
+    {table => 'attach_data',      column => 'id',        definition => {TYPE => 'INT5', NOTNULL => 1, PRIMARYKEY => 1}},
+    {table => 'flags',            column => 'attach_id', definition => {TYPE => 'INT5'}},
+    {table => 'user_request_log', column => 'attach_id', definition => {TYPE => 'INT5', NOTNULL => 0}},
+  ]);
+
+  # Bug 903895 - sgreen@redhat.com
+  $dbh->bz_fk_safe_alter_columns([
+    {table => 'flaginclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'flagexclusions', column => 'component_id', definition => {TYPE => 'INT3'}},
+    {table => 'bugs',           column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'component_cc',    column => 'component_id', definition => {TYPE => 'INT3', NOTNULL => 1}},
+    {table => 'components',      column => 'id',           definition => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1}},
+  ]);
+
   _populate_attachment_storage_class();
 
   # Bug 1963773 - topunixguy@gmail.com
@@ -906,30 +921,6 @@ sub _update_product_name_definition {
   }
 }
 
-sub _update_flagtypes_id {
-  my $dbh   = Bugzilla->dbh;
-  my @fixes = (
-    {table => 'flaginclusions', column => 'type_id'},
-    {table => 'flagexclusions', column => 'type_id'},
-    {table => 'flags',          column => 'type_id'},
-  );
-  my $flagtypes_def = $dbh->bz_column_info('flagtypes', 'id');
-  foreach my $fix (@fixes) {
-    my $def = $dbh->bz_column_info($fix->{table}, $fix->{column});
-    if ($def->{TYPE} eq 'INT2') {
-      warn "Dropping foreign keys on $fix->{table}\n";
-      $dbh->bz_drop_related_fks($fix->{table}, $fix->{column});
-      $def->{TYPE} = 'INT3';
-      $dbh->bz_alter_column($fix->{table}, $fix->{column}, $def);
-    }
-  }
-
-  if ($flagtypes_def->{TYPE} ne 'MEDIUMSERIAL') {
-    $flagtypes_def->{TYPE} = 'MEDIUMSERIAL';
-    $dbh->bz_alter_column('flagtypes', 'id', $flagtypes_def);
-  }
-}
-
 # A helper for the function below.
 sub _write_one_longdesc {
   my ($id, $who, $when, $buffer) = (@_);
@@ -980,7 +971,7 @@ sub _populate_longdescs {
       my $buffer = "";
       foreach my $line (split(/\n/, $desc)) {
         $line =~ s/\s+$//g;    # Trim trailing whitespace.
-        if ($line =~ /^------- Additional Comments From ([^\s]+)\s+(\d.+\d)\s+-------$/)
+        if ($line =~ /^------- Additional Comments From ([^\s]+)\s+((?a:\d.+\d))\s+-------$/)
         {
           my $name = $1;
           my $date = str2time($2);
@@ -1233,7 +1224,7 @@ sub _populate_milestones_table {
 
       # check if the value already exists
       my $sortkey = substr($value, 1);
-      if ($sortkey !~ /^\d+$/) {
+      if ($sortkey !~ /^\d+$/a) {
         $sortkey = 0;
       }
       else {
@@ -1334,7 +1325,7 @@ sub _populate_duplicates_table {
 
     foreach $key (keys(%dupes)) {
       $dupes{$key}
-        =~ /^.*\*\*\* This bug has been marked as a duplicate of (\d+) \*\*\*$/ms;
+        =~ /^.*\*\*\* This bug has been marked as a duplicate of (\d+) \*\*\*$/ams;
       $dupes{$key} = $1;
       $dbh->do("INSERT INTO duplicates VALUES(?, ?)", undef, $dupes{$key}, $key);
 
@@ -1611,6 +1602,9 @@ sub _use_ids_for_products_and_components {
 
     print "Updating the database to use component IDs.\n";
 
+    # NOTE: These columns are now MEDIUMSERIAL/INT3 in the current schema, but
+    # historically were originally created as SMALLSERIAL/INT2. The upgrade steps
+    # are done in order; they will be converted to the correct current type later.
     $dbh->bz_add_column("components", "id",
       {TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1});
     $dbh->bz_add_column("bugs", "component_id", {TYPE => 'INT2', NOTNULL => 1}, 0);
@@ -2387,7 +2381,7 @@ sub _copy_old_charts_into_database {
 
       my @lines = <$in>;
       while (my $line = shift @lines) {
-        if ($line =~ /^(\d+\|.*)/) {
+        if ($line =~ /^(\d+\|.*)/a) {
           my @numbers = split(/\||\r/, $1);
 
           # Only take the first line for each date; it was possible to
@@ -3674,7 +3668,7 @@ sub _fix_illegal_flag_modification_dates {
 
   # If no rows are affected, $dbh->do returns 0E0 instead of 0.
   print "$rows flags had an illegal modification date. Fixed!\n"
-    if ($rows =~ /^\d+$/);
+    if ($rows =~ /^\d+$/a);
 }
 
 sub _add_visibility_value_to_value_tables {
@@ -3773,7 +3767,7 @@ sub _set_attachment_comment_type {
   foreach my $id (@comment_ids) {
     $count++;
     my $text = $comments{$id};
-    next if $text !~ /^\Q$string\E(\d+)/;
+    next if $text !~ /^\Q$string\E(\d+)/a;
     my $attachment_id = $1;
     my @lines = split("\n", $text);
     if ($type == CMT_ATTACHMENT_CREATED) {

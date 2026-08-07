@@ -9,7 +9,7 @@
 
 use strict;
 use warnings;
-use 5.10.1;
+use 5.14.0;
 
 use lib qw(. lib local/lib/perl5);
 
@@ -160,7 +160,7 @@ if ($csv_file) {
   my $bug_ids = {defect => [], enhancement => []};
 
   while (my $line = <$fh>) {
-    if ($line =~ /^(\d+),(\w)/) {
+    if ($line =~ /^(\d+),(\w)/a) {
       push(@{$bug_ids->{$2 eq 'e' ? 'enhancement' : 'defect'}}, $1);
     }
   }
