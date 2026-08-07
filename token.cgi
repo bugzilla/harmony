@@ -399,9 +399,14 @@ sub request_create_account {
   my $token = shift;
 
   Bugzilla->user->check_account_creation_enabled;
-  my (undef, $date, $login_name) = Bugzilla::Token::GetTokenData($token);
+  my (undef, $date, $eventdata) = Bugzilla::Token::GetTokenData($token);
+
+  # Be careful! Some logins may contain ":" in them.
+  my ($email, $login) = split(':', $eventdata, 2);
+
   $vars->{'token'}         = $token;
-  $vars->{'email'}         = $login_name . Bugzilla->params->{'emailsuffix'};
+  $vars->{'email'}         = $email;
+  $vars->{'login'}         = $login;
   $vars->{'expiration_ts'} = ctime(str2time($date) + MAX_TOKEN_AGE * 86400);
 
   print $cgi->header();
@@ -425,7 +430,12 @@ sub confirm_create_account {
 
   # Be careful! Some logins may contain ":" in them.
   my ($email, $login) = split(':', $data, 2);
-  $login = $cgi->param('login') if login_to_id($login);
+
+  # The login may have been claimed between token issue and confirmation.
+  if (login_to_id($login)) {
+    Bugzilla::Token::Cancel($token, 'account_exists');
+    ThrowUserError('account_exists', {login => $login});
+  }
 
   my $otheruser = Bugzilla::User->create({
     login_name    => $login,
@@ -455,10 +465,13 @@ sub confirm_create_account {
 sub cancel_create_account {
   my $token = shift;
 
-  my (undef, undef, $login_name) = Bugzilla::Token::GetTokenData($token);
+  my (undef, undef, $eventdata) = Bugzilla::Token::GetTokenData($token);
+
+  # Be careful! Some logins may contain ":" in them.
+  my ($email, $login) = split(':', $eventdata, 2);
 
   $vars->{'message'} = 'account_creation_canceled';
-  $vars->{'account'} = $login_name;
+  $vars->{'account'} = $login;
   Bugzilla::Token::Cancel($token, $vars->{'message'});
 
   print $cgi->header();
