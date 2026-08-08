@@ -401,7 +401,7 @@ WriteMakefile(
 
 sub MY::postamble {
   return <<"MAKE";
-GEN_CPANFILE_ARGS = -D better_xff -D mariadb -D jsonrpc -D xmlrpc -D documentation -D pg
+GEN_CPANFILE_ARGS = -D better_xff -D sqlite -D jsonrpc -D xmlrpc -D documentation
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
 

@@ -183,8 +183,9 @@ try {
     $where .= " AND bug_severity IN ($severities)";
   }
 
+  my $ts_sql = $dbh->sql_date_format('bugs.creation_ts', '%s');
   my $sql = <<"EOF";
-        SELECT bug_id, bug_severity, UNIX_TIMESTAMP(bugs.creation_ts) AS ts
+        SELECT bug_id, bug_severity, $ts_sql AS ts
           FROM bugs
          WHERE $where
                AND COALESCE(resolution, '') = ''

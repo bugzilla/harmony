@@ -357,8 +357,9 @@ sub _add_duplicates_to_stream {
   my $dbh = Bugzilla->dbh;
 
   my $sth = $dbh->prepare("
-        SELECT longdescs.who,
-               UNIX_TIMESTAMP(bug_when), " . $dbh->sql_date_format('bug_when') . ",
+        SELECT longdescs.who, " 
+               . $dbh->sql_date_format('bug_when', '%s') . ", "
+               . $dbh->sql_date_format('bug_when') . ",
                type,
                extra_data
           FROM longdescs

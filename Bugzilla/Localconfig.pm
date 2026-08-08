@@ -26,7 +26,7 @@ has 'basepath' => (is => 'lazy');
 # Use the site's URL as the default Canonical URL
 sub _build_canonical_urlbase {
   my ($self) = @_;
-  $self->urlbase;
+  $self->urlbase // '';
 }
 
 sub _build_basepath {
