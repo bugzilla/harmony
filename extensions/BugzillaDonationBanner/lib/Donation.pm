@@ -33,6 +33,7 @@ sub today {
 }
 
 sub get_banner {
+  my ($ignore_preference) = @_;
   my $user = Bugzilla->user;
   return undef if !$user->id;
 
@@ -60,7 +61,7 @@ sub get_banner {
     $show = $reminder_date le today();
   }
 
-  return undef if !$show;
+  return undef if !$show && !$ignore_preference;
 
   my @messages = BANNER_MESSAGES;
   my $data = {
