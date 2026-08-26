@@ -61,12 +61,6 @@
       saveable    => "1"
     },
     {
-      name        => "donate",
-      label       => "Donate to Bugzilla",
-      link        => "userprefs.cgi?tab=donate",
-      saveable    => "1"
-    },
-    {
       name        => "email",
       label       => "Email Preferences",
       link        => "userprefs.cgi?tab=email",
@@ -104,13 +98,6 @@
       saveable    => "0"
     },
   ];
-  IF Param('donation_banner_visibility') == 'disabled';
-    visible_tabs = [];
-    FOREACH tab IN tabs;
-      visible_tabs.push(tab) IF tab.name != 'donate';
-    END;
-    tabs = visible_tabs;
-  END;
   Hook.process('tabs');
 
   FOREACH tab IN tabs;

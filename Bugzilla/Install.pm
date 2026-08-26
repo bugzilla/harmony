@@ -58,24 +58,6 @@ sub SETTINGS {
       category => 'Searching'
     },
 
-    # 2026-07-01 bugzilla@mozilla.org -- Bug 1983391
-    {
-      name     => 'donate_banner_pref',
-      options  => ['next_upgrade', 'specific_date', 'never'],
-      default  => 'next_upgrade',
-      category => 'Bugzilla.org',
-    },
-    {
-      name     => 'donate_banner_last_version',
-      default  => '0.0',
-      category => 'Bugzilla.org',
-    },
-    {
-      name     => 'donate_banner_reminder_date',
-      default  => '1970-01-01',
-      category => 'Bugzilla.org',
-    },
-
     # 2005-03-10 travis@sedsystems.ca -- Bug 199048
     {
       name => 'comment_sort_order',
