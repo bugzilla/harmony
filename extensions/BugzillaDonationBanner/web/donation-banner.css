@@ -70,7 +70,7 @@
 
 @media screen and (prefers-color-scheme: dark) {
   .donation_banner { border-color: rgb(var(--accent-color-lightgreen-1)); background: rgba(var(--accent-color-lightgreen-1), 0.12); }
-  .donation_banner_image { border-color: rgba(var(--accent-color-lightgreen-1), 0.55); background: rgba(var(--accent-color-lightgreen-1), 0.12); }
+  .donation_banner_image { border-color: rgba(var(--accent-color-lightgreen-1), 0.55); background: rgba(var(--accent-color-lightgreen-1), 0.7); }
   .donation_banner_cta { border-color: rgb(var(--accent-color-lightgreen-1)); background: rgb(var(--accent-color-lightgreen-1)); }
   .donation_banner_cta:hover { background: rgba(var(--accent-color-lightgreen-1), 0.85); }
   .donation_banner_form_subtle { opacity: 1; }
