@@ -3070,13 +3070,7 @@ sub _rederive_regex_groups {
 
   $sth->execute(GRANT_REGEXP);
   while (my ($uid, $login, $gid, $rexp, $present) = $sth->fetchrow_array()) {
-    my $matches = eval { $login =~ m/$rexp/i ? 1 : 0 };
-    if ($@) {
-      print "Skipping invalid group regexp for group $gid: $rexp\n";
-      next;
-    }
-
-    if ($matches) {
+    if ($login =~ m/$rexp/i) {
       $sth_add->execute($uid, $gid) unless $present;
     }
     else {
