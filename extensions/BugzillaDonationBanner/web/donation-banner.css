@@ -42,6 +42,9 @@
   text-decoration: none; font-weight: bold; font-size: 1rem;
 }
 .donation_banner_cta:hover { background: rgba(var(--accent-color-green-1), 0.9); text-decoration: none; }
+.donation_banner_dismissal { margin-top: 0.75rem; }
+.donation_banner_dismissal summary { cursor: pointer; color: var(--secondary-label-color); }
+.donation_banner_dismissal[open] summary { margin-bottom: 0.5rem; }
 .donation_banner_form { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
 .donation_banner_label { font-weight: bold; }
 .donation_banner_select { min-width: 240px; }
