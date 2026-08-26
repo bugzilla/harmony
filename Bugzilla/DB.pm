@@ -411,7 +411,7 @@ EOT
 
 # List of abstract methods we are checking the derived class implements
 our @_abstract_methods = qw(new sql_regexp sql_not_regexp sql_limit sql_to_days
-  sql_date_format sql_date_math bz_explain
+  sql_date_format sql_date_math sql_date_to_epoch bz_explain
   sql_group_concat);
 
 # This overridden import method will check implementation of inherited classes
@@ -2189,6 +2189,31 @@ C<string> the units the interval is in (e.g. 'MINUTE')
 =item B<Returns>
 
 Formatted SQL for adding or subtracting a date and some amount of time (scalar)
+
+=back
+
+=item C<sql_date_to_epoch>
+
+=over
+
+=item B<Description>
+
+Outputs SQL syntax for converting a date/time expression to Unix epoch
+seconds.
+
+Abstract method, should be overridden by database specific code.
+
+=item B<Params>
+
+=over
+
+=item C<$date> - date or name of date type column (scalar)
+
+=back
+
+=item B<Returns>
+
+Formatted SQL for Unix epoch seconds (scalar)
 
 =back
 
