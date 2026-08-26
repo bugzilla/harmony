@@ -34,6 +34,10 @@
               </span>
               <button type="submit" class="donation_banner_submit">Save</button>
             </form>
+            <p class="donation_banner_preferences_note">
+              You can change this choice later from your
+              <a href="[% basepath FILTER none %]userprefs.cgi?tab=donate">Donate to Bugzilla preferences</a>.
+            </p>
           </details>
         [% END %]
         [% IF donation.visibility_note %]

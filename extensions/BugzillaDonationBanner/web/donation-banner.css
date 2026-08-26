@@ -60,6 +60,7 @@
 .donation_banner_form_subtle .donation_banner_label { font-weight: normal; color: var(--secondary-label-color); }
 .donation_banner_form_subtle .donation_banner_select { min-width: 230px; padding: 0.25rem 0.4rem; font-size: 0.9rem; }
 .donation_banner_form_subtle .donation_banner_submit { padding: 0.25rem 0.65rem; font-size: 0.88rem; }
+.donation_banner_preferences_note { margin: 0.5rem 0 0; font-size: 0.7rem; color: var(--secondary-label-color); }
 
 @media (max-width: 720px) {
   .donation_banner_layout { align-items: flex-start; }
