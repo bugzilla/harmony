@@ -247,7 +247,7 @@ sub _activity_by_status {
            AND fieldid = ?
      GROUP BY added
      UNION ALL
-    SELECT CONCAT('RESOLVED/', added) AS status, COUNT(*) AS count
+    SELECT @{[$dbh->sql_string_concat($dbh->quote('RESOLVED/'), 'added')]} AS status, COUNT(*) AS count
       FROM bugs_activity
      WHERE who = ?
            AND fieldid = ?

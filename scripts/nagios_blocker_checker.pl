@@ -184,7 +184,7 @@ try {
   }
 
   my $sql = <<"EOF";
-        SELECT bug_id, bug_severity, UNIX_TIMESTAMP(bugs.creation_ts) AS ts
+      SELECT bug_id, bug_severity, @{[$dbh->sql_date_to_epoch('bugs.creation_ts')]} AS ts
           FROM bugs
          WHERE $where
                AND COALESCE(resolution, '') = ''
