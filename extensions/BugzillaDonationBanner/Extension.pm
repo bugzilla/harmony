@@ -108,6 +108,8 @@ sub user_preferences {
   }
 
   $vars->{settings} = $user->settings(1);
+  $vars->{donation}
+    = Bugzilla::Extension::BugzillaDonationBanner::Donation::get_banner(1);
   $vars->{donate_pref} = $user->setting('donate_banner_pref');
   $vars->{today}
     = Bugzilla::Extension::BugzillaDonationBanner::Donation::today();

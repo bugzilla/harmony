@@ -18,6 +18,11 @@
   font-weight: normal;
 }
 
+.donation_banner_preferences {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .donation_banner {
   border-color: rgba(var(--accent-color-green-1), 0.75);
   color: var(--primary-text-color);
