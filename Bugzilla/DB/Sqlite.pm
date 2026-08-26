@@ -235,6 +235,12 @@ sub sql_date_math {
   return "DATETIME($date, '$operator' || $interval || ' $units')";
 }
 
+sub sql_date_to_epoch {
+  my ($self, $date) = @_;
+
+  return "CAST(STRFTIME('%s', $date) AS INTEGER)";
+}
+
 ###############
 # bz_ methods #
 ###############
