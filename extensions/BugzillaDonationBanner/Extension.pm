@@ -52,7 +52,7 @@ sub install_filesystem {
 
   $files->{"$extension_dir/bin/donate.cgi"}
     = {perms => Bugzilla::Install::Filesystem::WS_EXECUTE};
-  $files->{"$extension_dir/web/buggie_watering.png"}
+  $files->{"$extension_dir/web/buggie_watering.svg"}
     = {perms => Bugzilla::Install::Filesystem::WS_SERVE};
   $files->{"$extension_dir/web/donation-banner.css"}
     = {perms => Bugzilla::Install::Filesystem::WS_SERVE};
