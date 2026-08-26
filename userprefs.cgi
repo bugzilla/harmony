@@ -29,14 +29,6 @@ use DateTime;
 
 use constant SESSION_MAX => 20;
 
-# Donation banner settings are managed from the dedicated "Donate" tab (and the
-# home page banner), not the generic Settings tab. Two of them hold internal
-# state (last shown version, reminder date) with no legal_values, so they would
-# otherwise render as empty dropdowns and be reset to their defaults whenever the
-# Settings tab is saved.
-use constant DONATION_SETTINGS =>
-  qw(donate_banner_pref donate_banner_last_version donate_banner_reminder_date);
-
 local our $template = Bugzilla->template;
 local our $vars     = {};
 
@@ -255,45 +247,6 @@ sub DoSettings {
   $vars->{settings}             = \%settings;
   $vars->{has_settings_enabled} = $has_settings_enabled;
   $vars->{dont_show_button}     = !$has_settings_enabled;
-}
-
-sub DoDonate {
-  my $user = Bugzilla->user;
-
-  $vars->{settings} = $user->settings;
-
-  # Default the reminder date picker to today rather than the stored epoch
-  # sentinel, since a reminder is always meant to be a future date.
-  $vars->{today} = DateTime->now(time_zone => Bugzilla->local_timezone)->ymd;
-}
-
-sub SaveDonate {
-  my $cgi      = Bugzilla->cgi;
-  my $user     = Bugzilla->user;
-  my $settings = $user->settings;
-
-  my $pref = $cgi->param('donate_banner_pref') || 'next_upgrade';
-  my $date = $cgi->param('donate_banner_reminder_date') || '';
-
-  if ($pref eq 'specific_date') {
-    validate_date($date)
-      || ThrowUserError('illegal_date', {date => $date, format => 'YYYY-MM-DD'});
-    $settings->{'donate_banner_reminder_date'}->set($date);
-  }
-  elsif ($pref ne 'next_upgrade' && $pref ne 'never') {
-    ThrowUserError('invalid_parameter',
-      {name => 'donate_banner_pref', err => "must be one of 'next_upgrade', 'specific_date', or 'never'"});
-  }
-
-  $settings->{'donate_banner_pref'}->set($pref);
-
-  # Stamp the current version so that the "next upgrade" reminder is dismissed
-  # until Bugzilla is actually upgraded, matching the home page banner. Without
-  # this, get_banner() still sees last_version != current and keeps showing.
-  $settings->{'donate_banner_last_version'}->set(BUGZILLA_VERSION);
-
-  clear_settings_cache($user->id);
-  $vars->{settings} = $user->settings(1);
 }
 
 sub SaveSettings {
@@ -1091,11 +1044,6 @@ SWITCH: for ($current_tab_name) {
     MfaSettings()  if $mfa_token;
     SaveSettings() if $save_changes;
     DoSettings();
-    last SWITCH;
-  };
-  /^donate$/ && do {
-    SaveDonate() if $save_changes;
-    DoDonate();
     last SWITCH;
   };
   /^email$/ && do {

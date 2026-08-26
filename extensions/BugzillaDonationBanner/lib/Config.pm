@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::Config::Donation;
+package Bugzilla::Extension::BugzillaDonationBanner::Config;
 
 use 5.14.0;
 use strict;
@@ -26,11 +26,3 @@ use constant get_param_list => (
 );
 
 1;
-
-__END__
-
-=head1 NAME
-
-Bugzilla::Config::Donation - Donation banner settings
-
-=cut
