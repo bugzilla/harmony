@@ -203,6 +203,12 @@ sub sql_date_math {
   return "$date $operator $time_sql";
 }
 
+sub sql_date_to_epoch {
+  my ($self, $date) = @_;
+
+  return "TRUNC(($date - DATE '1970-01-01') * 86400)";
+}
+
 sub sql_position {
   my ($self, $fragment, $text) = @_;
   return "INSTR($text, $fragment)";

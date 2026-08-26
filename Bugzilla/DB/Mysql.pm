@@ -229,6 +229,12 @@ sub sql_date_math {
   return "$date $operator INTERVAL $interval $units";
 }
 
+sub sql_date_to_epoch {
+  my ($self, $date) = @_;
+
+  return "UNIX_TIMESTAMP($date)";
+}
+
 sub sql_iposition {
   my ($self, $fragment, $text) = @_;
   return "INSTR($text, $fragment)";
