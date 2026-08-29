@@ -29,11 +29,7 @@ foreach my $dir (File::Spec->path()) {
   last if $node;
 }
 
-if (!$node) {
-  plan tests => 1;
-  fail('Node.js is required to test js/productform.js');
-  exit;
-}
+plan skip_all => 'Node.js is required to test js/productform.js' if !$node;
 
 my $script = <<'JS';
 var fs = require('fs');
