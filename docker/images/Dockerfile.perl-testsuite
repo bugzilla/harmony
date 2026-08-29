@@ -19,6 +19,7 @@ RUN apt-get update && apt-get -y dist-upgrade && \
     cpanminus \
     mariadb-client \
     netcat-traditional \
+    nodejs \
     build-essential \
     libapache2-mod-perl2 \
     libapache2-mod-perl2-dev \
