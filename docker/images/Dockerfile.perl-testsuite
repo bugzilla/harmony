@@ -10,6 +10,8 @@
 ARG BZDB=""
 FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
 
+ENV BZ_REQUIRE_NODE=1
+
 WORKDIR /app
 
 # Install system dependencies

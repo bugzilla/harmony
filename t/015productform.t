@@ -19,7 +19,7 @@ use Test::More;
 
 my $node;
 foreach my $dir (File::Spec->path()) {
-  foreach my $name (qw(node node.exe)) {
+  foreach my $name (qw(node nodejs node.exe)) {
     my $path = File::Spec->catfile($dir, $name);
     if (-x $path && !-d $path) {
       $node = $path;
@@ -27,6 +27,12 @@ foreach my $dir (File::Spec->path()) {
     }
   }
   last if $node;
+}
+
+if (!$node && $ENV{BZ_REQUIRE_NODE}) {
+  plan tests => 1;
+  fail('Node.js is required to test js/productform.js');
+  exit;
 }
 
 plan skip_all => 'Node.js is required to test js/productform.js' if !$node;
