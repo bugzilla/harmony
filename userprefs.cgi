@@ -127,19 +127,14 @@ sub SaveAccount {
         && $new_login_name
         && $user->login ne $new_login_name)
   {
- 
-        if ($new_login_name =~ /@/)
-        {
-            ThrowUserError("login_at_sign_disallowed");
-        }
-
+        # The "@" restriction is enforced by the login_name validator.
         if (Bugzilla::Token::HasEmailChangeToken($user->id)) {
             ThrowUserError("login_change_during_email_change");
         }
- 
+
         $user->set_login($new_login_name);
   }
- 
+
   if ( $user->authorizer->can_change_email
     && Bugzilla->params->{"allowemailchange"}
     && $new_email)

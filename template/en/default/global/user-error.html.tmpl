@@ -569,6 +569,11 @@
       that email address.
     [% END %]
 
+  [% ELSIF error == "email_matches_login" %]
+    [% title = "Email Address In Use" %]
+    The email address [% email FILTER html %] is already in use as the
+    login name of another account.
+
   [% ELSIF error == "email_no_text_plain" %]
     Your message did not contain any text.[% terms.Bugzilla %] does not
     accept HTML-only email, or HTML email with attachments.
@@ -1256,7 +1261,8 @@
 
   [% ELSIF error == "login_at_sign_disallowed" %]
     [% title = "Illegal Character in Login" %]
-    New login names may not contain the "@" sign
+    Login names may not contain the "@" sign. Please choose a login name
+    that is not an email address.
  
   [% ELSIF error == "login_change_during_email_change" %]
     [% title = "Login Change Not Permitted" %]

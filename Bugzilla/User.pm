@@ -347,6 +347,12 @@ sub check_login_name_for_creation {
 
   # Check the name if it's a new user, or if we're changing the name.
   if (!ref($invocant) || $invocant->login ne $name) {
+
+    # Login names may not look like email addresses. Logins created before
+    # this restriction are grandfathered in, since this block is only
+    # reached when a login is being created or changed.
+    $name !~ /@/ || ThrowUserError('login_at_sign_disallowed', {login => $name});
+
     is_available_username($name)
       || ThrowUserError('account_exists', {login => $name});
   }

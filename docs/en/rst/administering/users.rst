@@ -55,9 +55,13 @@ Once you have found your user, you can change the following
 fields:
 
 - *Login Name*:
-  This is the user's login name, which we encourage to be different 
-  from the user's email address and real name.   
-  
+  This is the user's login name, which we encourage to be different
+  from the user's email address and real name. Login names may not
+  contain whitespace or the "@" character, so a login name cannot be
+  an email address. Accounts created before this restriction keep
+  their existing login names, but any change to a login name must
+  satisfy the current rules.
+
 - *Email Address*:
   This is the user's full email address. Unless you turn off the 
   :param:`allowemailchange` parameter, users can change their

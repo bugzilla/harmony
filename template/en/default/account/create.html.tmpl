@@ -48,20 +48,27 @@
 [% END %]
 
 <form id="account_creation_form" action="createaccount.cgi" method="post" class="table_layout">
-    <div>
-      <label for="login">Login</label>
-      <div class="flex">
-        <input size="35" id="login" name="login" autofocus required>
-        <span class="bz_info">
-          (no whitespaces and no @ character, unless it matches your email address)
-        </span>
-      </div>
+  <div>
+    <label for="login">Login</label>
+    <div class="flex">
+      <input size="35" id="login" name="login"
+             pattern="[^\s@]+"
+             title="No whitespace and no @ character"
+             autofocus required>
+      <span class="bz_info">
+        (no whitespace and no @ character)
+      </span>
     </div>
+  </div>
 
   <div>
     <label for="email">Email Address</label>
-    <input size="35" id="email" name="email" type="email" autofocus required>
+    <div class="flex">
+      <input size="35" id="email" name="email" type="email" required>
+    </div>
   </div>
+
+
 
   <div>
     <label>&nbsp;</label>

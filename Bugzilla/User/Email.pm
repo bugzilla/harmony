@@ -136,14 +136,24 @@ sub _check_user_id {
 
 sub check_email_for_creation {
   my ($invocant, $email) = @_;
-  
+
   validate_email_syntax($email)
     || ThrowUserError('illegal_email_address', {addr => $email});
-  
+
   if ($invocant->get_user_by_email($email)) {
-    ThrowUserError("email_exists", {'email' => $email});
+    ThrowUserError('email_exists', {'email' => $email});
   }
- 
+
+  # Logins created before "@" was disallowed may look like email addresses.
+  # A new address must not collide with one of those grandfathered logins,
+  # or the two would resolve to different accounts at login time.
+  my $dbh = Bugzilla->dbh;
+  my ($login_id) = $dbh->selectrow_array(
+    'SELECT userid FROM profiles WHERE ' . $dbh->sql_istrcmp('login_name', '?'),
+    undef, $email);
+
+  ThrowUserError('email_matches_login', {email => $email}) if $login_id;
+
   return $email;
 }
 
@@ -159,7 +169,6 @@ sub _check_display_order {
         return 0; 
   }
 }
-
 
 1;
 
