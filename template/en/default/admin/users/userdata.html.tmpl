@@ -38,6 +38,22 @@
     [% END %]
   </td>
 </tr>
+<tr>
+<th> <label for="email"> Email address: </label> </th>
+<td>
+    [% IF editusers %]
+      <input size="64" maxlength="255" name="email"
+             id="email" value="[% otheruser.email FILTER html %]">
+      [% IF editform %]
+        [% IF !otheruser.in_group('bz_sudo_protect') %]
+          <br>
+        [% END %]
+      [% END %]
+    [% ELSE %]
+      [% otheruser.email FILTER html %]
+    [% END %]
+</td>
+</tr>
 [% IF default_authorizer.extern_id_used %]
   <tr>
     <th><label for="extern_id">External Login ID:</label></th>
@@ -140,7 +156,7 @@
   <tr>
     <th><label for="mfa">Two-factor Auth:</label></th>
     <td>
-      [% IF user.in_group('bz_can_disable_mfa') %]
+      [% IF otheruser.in_group('bz_can_disable_mfa') %]
         [% IF otheruser.mfa %]
           <select name="mfa" value="mfa">
             <option value="">Disable</option>

@@ -36,9 +36,11 @@ if (defined($login)) {
   # the create account form.
   my $token = $cgi->param('token');
   check_hash_token($token, ['create_account']);
-
-  $user->check_and_send_account_creation_confirmation($login);
+  
+  my $email = $cgi->param('email');
+  $user->check_and_send_account_creation_confirmation($login, $email);
   $vars->{'login'} = $login;
+  $vars->{'email'} = $email;
 
   $template->process("account/created.html.tmpl", $vars)
     || ThrowTemplateError($template->error());

@@ -15,11 +15,12 @@
 
 [%# INTERFACE:
   # token: string. The token to be used in the user account creation.
+  # login: login name of the user account.
   # email: email address of the user account.
   # expiration_ts: expiration date of the token.
   #%]
 
-[% title = BLOCK %]Create a new user account for '[% email FILTER html %]'[% END %]
+[% title = BLOCK %]Create a new user account for '[% login FILTER html %]'[% END %]
 [% PROCESS "global/header.html.tmpl"
    title = title
    style_urls      = ['skins/standard/admin.css']
@@ -41,6 +42,10 @@
   <div class="flex">
     <div class="flex-left">
       <table>
+        <tr>
+          <th align="right">Login:</th>
+          <td>[% login FILTER html %]</td>
+        </tr>
         <tr>
           <th align="right">Email Address:</th>
           <td>[% email FILTER html %]</td>

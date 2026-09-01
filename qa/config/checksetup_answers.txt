@@ -1,3 +1,4 @@
+$answer{'ADMIN_LOGIN_NAME'} = 'admin_mozilla_bugs';
 $answer{'ADMIN_EMAIL'} = 'admin@mozilla.bugs';
 $answer{'ADMIN_OK'} = 'Y';
 $answer{'ADMIN_PASSWORD'} = 'password';

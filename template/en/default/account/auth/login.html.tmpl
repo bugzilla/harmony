@@ -38,18 +38,22 @@
 [% USE Bugzilla %]
 
 <p>
-  I need an email address and password to continue.
+  I need an email/login and password to continue.
 </p>
 
 <div id="login" class="login-form">
   <form name="login" action="[% basepath FILTER html %][% target FILTER uri FILTER html %]" method="POST"
         [%- IF Bugzilla.cgi.param("data") %] enctype="multipart/form-data"[% END %]>
     <div class="field-login">
-      <label for="Bugzilla_login">Email Address:</label>
-      <input id="Bugzilla_login" name="Bugzilla_login"
-             [%- ' type="email"' UNLESS Param('emailsuffix') %]
-             required>
-      [% Param('emailsuffix') FILTER html %]
+      <label for="Bugzilla_login">Email or login:</label>
+      <input id="Bugzilla_login" 
+        name="Bugzilla_login"
+        placeholder="Email or login"
+        aria-label="Email or login"
+        type="text"
+        required
+        pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$|^[^\s@]+$"
+       >
     </div>
 
     <div class="field-password">

@@ -53,11 +53,13 @@
            class="bz_login"
            name="Bugzilla_login"
            title="Login"
-           placeholder="Email"
-           aria-label="Email"
-           type="email"
+           placeholder="Email or login"
+           aria-label="Email or login"
+           type="text"
            required
+           pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$|^[^\s@]+$"
     >
+
     <input class="bz_password"
            id="Bugzilla_password[% qs_suffix FILTER html %]"
            name="Bugzilla_password"
