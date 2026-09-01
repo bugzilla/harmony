@@ -10,6 +10,8 @@
 ARG BZDB=""
 FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
 
+ENV BZ_REQUIRE_NODE=1
+
 WORKDIR /app
 
 # Install system dependencies
@@ -19,6 +21,7 @@ RUN apt-get update && apt-get -y dist-upgrade && \
     cpanminus \
     mariadb-client \
     netcat-traditional \
+    nodejs \
     build-essential \
     libapache2-mod-perl2 \
     libapache2-mod-perl2-dev \
