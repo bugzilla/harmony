@@ -240,6 +240,26 @@ sub github_secret {
 sub assert_password_is_secure {
   my ($class, $password1) = @_;
 
+  my $reason;
+
+  if (length($password1) < USER_PASSWORD_MIN_LENGTH) {
+    $reason = 'too short';
+  }
+  elsif (Bugzilla->params->{password_complexity} eq 'bmo') {
+    my $features = 0;
+    $features++ if $password1 =~ /[a-z]/;
+    $features++ if $password1 =~ /[A-Z]/;
+    $features++ if $password1 =~ /[0-9]/;
+    $features++ if $password1 =~ /[^A-Za-z0-9]/;
+    $features++ if length($password1) > 12;
+    $reason = 'not complex enough' if $features < 3;
+  }
+
+  # Allow an extension to apply a stricter policy.
+  Bugzilla::Hook::process('password_check',
+    {password => $password1, reason => \$reason});
+
+  ThrowUserError('password_insecure', {reason => $reason}) if $reason;
 }
 
 sub assert_passwords_match {
