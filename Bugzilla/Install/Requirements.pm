@@ -98,13 +98,20 @@ use constant FEATURE_FILES => (
   inbound_email => ['email_in.pl'],
   jobqueue      => [
     'Bugzilla/Job/*',      'Bugzilla/JobQueue.pm',
-    'Bugzilla/JobQueue/*', 'jobqueue.pl'
+    'Bugzilla/JobQueue/*', 'jobqueue.pl',
+    'jobqueue-worker.pl'
   ],
-  patch_viewer => ['Bugzilla/Attachment/PatchReader.pm'],
-  updates      => ['Bugzilla/Update.pm'],
-  mfa          => ['Bugzilla/MFA/*.pm'],
-  memcached    => ['Bugzilla/Memcache.pm'],
-  s3 => ['Bugzilla/S3.pm', 'Bugzilla/S3/Bucket.pm', 'Bugzilla/Attachment/S3.pm']
+  patch_viewer  => ['Bugzilla/Attachment/PatchReader.pm'],
+  updates       => ['Bugzilla/Update.pm'],
+  mfa           => ['Bugzilla/MFA/*.pm'],
+  memcached     => ['Bugzilla/Memcache.pm'],
+  oauth2_server => ['Bugzilla/App/Plugin/OAuth2.pm'],
+  alien_cmark   => ['Bugzilla/Markdown/GFM.pm', 'Bugzilla/Markdown/GFM/*.pm'],
+  chart_clicker => ['Bugzilla/Report/SecurityRisk.pm'],
+  s3            => [
+    'Bugzilla/S3.pm',                 'Bugzilla/S3/Bucket.pm',
+    'Bugzilla/Attachment/S3.pm',      'Bugzilla/Attachment/Storage/S3.pm'
+  ]
 );
 
 sub check_all_cpan_features {

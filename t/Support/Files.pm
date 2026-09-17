@@ -19,6 +19,9 @@ our @additional_files = ();
 use constant IGNORE => qw(
   Bugzilla/DuoAPI.pm
   Bugzilla/DuoWeb.pm
+  Bugzilla/Test/MockDB.pm
+  Bugzilla/Test/MockParams.pm
+  Bugzilla/Report/Ping/Simple.pm
 );
 
 our @files = glob('*');
@@ -32,6 +35,10 @@ our @extensions = grep { $_ ne 'extensions/create.pl' && !-e "$_/disabled" }
 foreach my $extension (@extensions) {
   find(
     sub {
+      # Skip files under a disabled sub-directory (e.g. Connector.disabled/),
+      # which are not stand-alone modules or scripts and cannot be compiled
+      # on their own.
+      return if $File::Find::name =~ m{\.disabled(?:/|$)};
       return if $File::Find::name =~ m{^extensions/.+/template/};
       push(@files, $File::Find::name) if $_ =~ /\.pm$|\.pl$/;
     },
@@ -40,14 +47,6 @@ foreach my $extension (@extensions) {
 }
 
 our @test_files = glob('t/*.t xt/*/*.t');
-
-foreach my $extension (@extensions) {
-
-  # Skip disabled extensions
-  next if -e "$extension/disabled";
-
-  find(sub { push(@files, $File::Find::name) if $_ =~ /\.pm$/; }, $extension);
-}
 
 sub isTestingFile {
   my ($file) = @_;
