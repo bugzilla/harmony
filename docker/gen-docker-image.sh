@@ -29,8 +29,51 @@ FILES=()
 for f in docker/images/Dockerfile.b*; do
     [[ "$f" != *.bak ]] && FILES+=("${f#docker/images/Dockerfile.}")
 done
+
+TAG_FILE="docker/base-image-tags.env"
+
+MENU_IMAGES=()
+for image in "${FILES[@]}"; do
+    MENU_IMAGES+=("$image")
+    if [[ "$image" == bugzilla-perl-slim-* ]]; then
+        MENU_IMAGES+=("${image/bugzilla-perl-slim-/bugzilla-perl-full-}")
+    fi
+done
+
+write_base_tags_file() {
+    cat > "$TAG_FILE" <<EOF
+BUGZILLA_PERL_SLIM_TAG=${BUGZILLA_PERL_SLIM_TAG}
+BUGZILLA_PERL_FULL_TAG=${BUGZILLA_PERL_FULL_TAG}
+EOF
+}
+
+resolve_base_tag() {
+    local base_image="$1"
+
+    if [ -n "${BUILT_IMAGES[$base_image]}" ]; then
+        echo "${BUILT_IMAGES[$base_image]}"
+        return 0
+    fi
+
+    if [[ "$base_image" == "bugzilla-perl-slim" ]]; then
+        echo "$BUGZILLA_PERL_SLIM_TAG"
+    elif [[ "$base_image" == "bugzilla-perl-full" ]]; then
+        echo "$BUGZILLA_PERL_FULL_TAG"
+    else
+        echo ""
+    fi
+}
+
+if [ -f "$TAG_FILE" ]; then
+    # shellcheck disable=SC1090
+    source "$TAG_FILE"
+fi
+
+BUGZILLA_PERL_SLIM_TAG="${BUGZILLA_PERL_SLIM_TAG:-}"
+BUGZILLA_PERL_FULL_TAG="${BUGZILLA_PERL_FULL_TAG:-}"
+
 PS3="Choose an image to build or CTRL-C to abort: "
-select IMAGE in "All images" "${FILES[@]}"; do
+select IMAGE in "All images" "${MENU_IMAGES[@]}"; do
     CACHE=""
     if [ "$1" == "--no-cache" ]; then
         CACHE="--no-cache"
@@ -43,7 +86,29 @@ select IMAGE in "All images" "${FILES[@]}"; do
 
     # Determine which images to build
     if [ "$IMAGE" == "All images" ]; then
-        IMAGES_TO_BUILD=("${FILES[@]}")
+        IMAGES_TO_BUILD=()
+
+        if [[ " ${FILES[*]} " == *" bugzilla-perl-slim "* ]]; then
+            IMAGES_TO_BUILD+=("bugzilla-perl-slim")
+        fi
+        if [[ " ${FILES[*]} " == *" bugzilla-perl-full "* ]]; then
+            IMAGES_TO_BUILD+=("bugzilla-perl-full")
+        fi
+
+        for image in "${FILES[@]}"; do
+            case "$image" in
+                bugzilla-perl-slim|bugzilla-perl-full)
+                    continue
+                    ;;
+                bugzilla-perl-slim-*)
+                    IMAGES_TO_BUILD+=("$image")
+                    IMAGES_TO_BUILD+=("${image/bugzilla-perl-slim-/bugzilla-perl-full-}")
+                    ;;
+                *)
+                    IMAGES_TO_BUILD+=("$image")
+                    ;;
+            esac
+        done
     else
         IMAGES_TO_BUILD=("$IMAGE")
     fi
@@ -52,6 +117,37 @@ select IMAGE in "All images" "${FILES[@]}"; do
     declare -A BUILT_IMAGES
 
     for IMAGE in "${IMAGES_TO_BUILD[@]}"; do
+        DOCKERFILE_IMAGE="$IMAGE"
+        BUILD_ARGS=()
+        BASE_IMAGE=""
+
+        if [[ "$IMAGE" == bugzilla-perl-full-* ]]; then
+            DOCKERFILE_IMAGE="${IMAGE/bugzilla-perl-full-/bugzilla-perl-slim-}"
+            BUILD_ARGS+=(--build-arg SIZE=full)
+            BASE_IMAGE="bugzilla-perl-full"
+        elif [[ "$IMAGE" == "bugzilla-perl-full" ]]; then
+            BASE_IMAGE="bugzilla-perl-slim"
+        elif [[ "$IMAGE" == bugzilla-perl-slim-* ]]; then
+            BUILD_ARGS+=(--build-arg SIZE=slim)
+            BASE_IMAGE="bugzilla-perl-slim"
+        fi
+
+        if [ -n "$BASE_IMAGE" ]; then
+            BASE_TAG=$(resolve_base_tag "$BASE_IMAGE")
+            if [ -z "$BASE_TAG" ]; then
+                echo
+                echo_red "Could not determine a base tag for ${BASE_IMAGE}."
+                echo_red "Build ${BASE_IMAGE} first, or set tags in ${TAG_FILE}."
+                echo
+                if [ ${#IMAGES_TO_BUILD[@]} -eq 1 ]; then
+                    exit 1
+                fi
+                continue
+            fi
+            BUILD_ARGS+=(--build-arg "BASE_TAG=${BASE_TAG}")
+            echo "Using base bugzilla/${BASE_IMAGE}:${BASE_TAG} for ${IMAGE}"
+        fi
+
         # Figure out the tag name to use for the image. We'll do this by generating
         # a code based on today's date, then attempt to pull it from DockerHub. If
         # we successfully pull, then it already exists, and we bump the interation
@@ -66,35 +162,41 @@ select IMAGE in "All images" "${FILES[@]}"; do
         echo "##${LINE//?/#}##"
         echo "# ${LINE} #"
         echo "##${LINE//?/#}##"
-        if $DOCKER build $CACHE -t "bugzilla/${IMAGE}:${DATE}.${ITER}" -f "docker/images/Dockerfile.${IMAGE}" .; then
+        if $DOCKER build $CACHE "${BUILD_ARGS[@]}" -t "bugzilla/${IMAGE}:${DATE}.${ITER}" -f "docker/images/Dockerfile.${DOCKERFILE_IMAGE}" .; then
             echo
             echo_green "The build appears to have succeeded."
 
-            # Only update Dockerfiles when building the perl-slim image specifically (not variants like perl-slim-mysql)
-            if [[ "$IMAGE" == "bugzilla-perl-slim" ]]; then
+            # Only update literal pinned FROM references when building a base perl image.
+            if [[ "$IMAGE" == "bugzilla-perl-slim" || "$IMAGE" == "bugzilla-perl-full" ]]; then
                 echo "Updating FROM lines in Dockerfiles to use bugzilla/${IMAGE}:${DATE}.${ITER}..."
                 echo
 
-                # Update all Dockerfiles that reference this image
-                for dockerfile in Dockerfile docker/images/Dockerfile.*; do
-                    # Skip backups and temp files
-                    case "$dockerfile" in
-                        *.bak|*.tmp) continue ;;
-                    esac
-                    if [ -f "$dockerfile" ]; then
-                        # Check for both direct references and BZDB variable references
-                        if grep -q "FROM bugzilla/${IMAGE}:" "$dockerfile" || grep -q "FROM bugzilla/${IMAGE}\${BZDB}:" "$dockerfile"; then
-                            # Create a backup
-                            cp "$dockerfile" "${dockerfile}.bak"
-                            echo "  Created backup: ${dockerfile}.bak"
-                            # Update the FROM line - handle both direct and BZDB variable patterns
-                            sed -i.tmp "s|FROM bugzilla/${IMAGE}:[^ ]*|FROM bugzilla/${IMAGE}:${DATE}.${ITER}|g" "$dockerfile"
-                            sed -i.tmp "s|FROM bugzilla/${IMAGE}\${BZDB}:[^ ]*|FROM bugzilla/${IMAGE}\${BZDB}:${DATE}.${ITER}|g" "$dockerfile"
-                            rm -f "${dockerfile}.tmp"
-                            echo "  Updated: $dockerfile"
-                        fi
+                for dockerfile in Dockerfile docker/images/Dockerfile.perl-testsuite; do
+                    if [ ! -f "$dockerfile" ]; then
+                        continue
+                    fi
+                    # Check for both direct references and BZDB variable references
+                    if grep -q "FROM bugzilla/${IMAGE}:" "$dockerfile" || grep -q "FROM bugzilla/${IMAGE}\${BZDB}:" "$dockerfile"; then
+                        # Create a backup
+                        cp "$dockerfile" "${dockerfile}.bak"
+                        echo "  Created backup: ${dockerfile}.bak"
+                        # Update the FROM line - handle both direct and BZDB variable patterns
+                        sed -i.tmp "s|FROM bugzilla/${IMAGE}:[^ ]*|FROM bugzilla/${IMAGE}:${DATE}.${ITER}|g" "$dockerfile"
+                        sed -i.tmp "s|FROM bugzilla/${IMAGE}\${BZDB}:[^ ]*|FROM bugzilla/${IMAGE}\${BZDB}:${DATE}.${ITER}|g" "$dockerfile"
+                        rm -f "${dockerfile}.tmp"
+                        echo "  Updated: $dockerfile"
                     fi
                 done
+
+                if [[ "$IMAGE" == "bugzilla-perl-slim" ]]; then
+                    BUGZILLA_PERL_SLIM_TAG="${DATE}.${ITER}"
+                    write_base_tags_file
+                    echo "  Updated: ${TAG_FILE} (BUGZILLA_PERL_SLIM_TAG=${BUGZILLA_PERL_SLIM_TAG})"
+                elif [[ "$IMAGE" == "bugzilla-perl-full" ]]; then
+                    BUGZILLA_PERL_FULL_TAG="${DATE}.${ITER}"
+                    write_base_tags_file
+                    echo "  Updated: ${TAG_FILE} (BUGZILLA_PERL_FULL_TAG=${BUGZILLA_PERL_FULL_TAG})"
+                fi
                 echo
             fi
 
