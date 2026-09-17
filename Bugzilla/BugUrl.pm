@@ -16,6 +16,7 @@ use base qw(Bugzilla::Object);
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::Constants;
+use Bugzilla::Hook;
 use Module::Runtime qw(require_module);
 
 use URI::QueryParam;
@@ -131,8 +132,12 @@ sub should_handle {
 sub class_for {
   my ($class, $value) = @_;
 
+  my @sub_classes = $class->SUB_CLASSES;
+  Bugzilla::Hook::process('bug_url_sub_classes',
+    {sub_classes => \@sub_classes});
+
   my $uri = URI->new($value);
-  foreach my $subclass ($class->SUB_CLASSES) {
+  foreach my $subclass (@sub_classes) {
     require_module($subclass);
     return wantarray ? ($subclass, $uri) : $subclass
       if $subclass->should_handle($uri);
