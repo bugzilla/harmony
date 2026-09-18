@@ -682,7 +682,7 @@ TUI_hide_default('expert_fields');
         field = bug_fields.estimated_time editable = 1
       %]
       <td>
-        <input name="estimated_time" size="6" maxlength="6" value="[% estimated_time FILTER html %]">
+        <input id="estimated_time" name="estimated_time" size="6" maxlength="6" value="[% estimated_time FILTER html %]">
       </td>
       [% INCLUDE bug/field.html.tmpl
         bug = default, field = bug_fields.deadline, value = deadline, editable = 1
