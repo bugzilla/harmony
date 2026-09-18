@@ -230,10 +230,14 @@ sub DoSettings {
   my $user = Bugzilla->user;
 
   my %settings;
+  my %skip_settings;
+  Bugzilla::Hook::process('user_preferences_settings',
+    {skip_settings => \%skip_settings});
   my $has_settings_enabled = 0;
   foreach my $name (sort keys %{$user->settings}) {
     my $setting = $user->settings->{$name};
     next if !$setting->{is_enabled};
+    next if $skip_settings{$name};
     my $category = $setting->{category};
     $settings{$category} ||= [];
     push(@{$settings{$category}}, $setting);
@@ -253,8 +257,13 @@ sub SaveSettings {
   my @setting_list = keys %$settings;
   my $mfa_event    = undef;
 
+  my %skip_settings;
+  Bugzilla::Hook::process('user_preferences_settings',
+    {skip_settings => \%skip_settings});
+
   foreach my $name (@setting_list) {
     next if !($settings->{$name}->{'is_enabled'});
+    next if $skip_settings{$name};
     my $value = $cgi->param($name);
     next unless defined $value;
     my $setting = new Bugzilla::User::Setting($name);
