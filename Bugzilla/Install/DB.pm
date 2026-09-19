@@ -832,7 +832,8 @@ sub update_table_definitions {
 
   _populate_attachment_storage_class();
 
-
+  # Bug 1963773 - topunixguy@gmail.com
+  _copy_valid_emails_to_profiles_emails(); 
   ################################################################
   # New --TABLE-- changes should go *** A B O V E *** this point #
   ################################################################
@@ -4387,6 +4388,61 @@ sub _populate_attachment_storage_class {
   }
 }
 
+sub _copy_valid_emails_to_profiles_emails {
+    my $dbh = Bugzilla->dbh;
+
+    my ($total) = $dbh->selectrow_array("SELECT COUNT(*) FROM profiles");
+    unless ($total) {
+        print "Skipping profiles_emails population: no profiles to process.\n";
+        return;
+    }
+
+    # Check if 'email' column exists in 'profiles'
+    my $has_email_column = $dbh->bz_column_info('profiles', 'email') ? 1 : 0;
+
+    # Build SELECT statement dynamically
+    my $select_sql = 'SELECT userid, login_name';
+    $select_sql .= ', email' if $has_email_column;
+    $select_sql .= ' FROM profiles';
+
+    my $select_sth = $dbh->prepare($select_sql);
+    my $check_sth  = $dbh->prepare('SELECT 1 FROM profiles_emails WHERE user_id = ?');
+    my $insert_sth = $dbh->prepare('
+        INSERT INTO profiles_emails (user_id, email, is_primary_email, display_order)
+        VALUES (?, ?, 1, 1)
+    ');
+
+    $select_sth->execute();
+
+    while (my $row = $select_sth->fetchrow_hashref) {
+        my $user_id = $row->{userid};
+
+        # Skip if the user already has an entry
+        $check_sth->execute($user_id);
+        next if $check_sth->fetchrow_array;
+
+        my $email = $has_email_column ? $row->{email} : undef;
+        my $login = $row->{login_name};
+
+        my $valid_email;
+        if (defined $email && $email ne '' && validate_email_syntax($email)) {
+            $valid_email = $email;
+        } elsif (defined $login && $login ne '' && validate_email_syntax($login)) {
+            $valid_email = $login;
+        }
+
+        next unless defined $valid_email;
+
+        eval {
+            $insert_sth->execute($user_id, $valid_email);
+        };
+        warn "Failed to insert email for user $user_id: $@" if $@;
+    }
+
+    $select_sth->finish;
+    $check_sth->finish;
+    $insert_sth->finish;
+}
 
 1;
 

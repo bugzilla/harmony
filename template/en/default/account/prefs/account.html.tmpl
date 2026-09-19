@@ -37,7 +37,16 @@
                  placeholder="optional, but encouraged">
         </td>
       </tr>
-
+      <tr>
+        <th align="right" width="150">Your login name:</th>
+        <td>
+        [% IF user.authorizer.can_change_login %]
+                  <input size="35" name="new_login_name" id="new_login_name" value="[% user.login FILTER html %]">
+            [% ELSE %]
+          [% user.login FILTER html %]
+        [% END %]
+        </td>
+      </tr>
       [%# BMO - moved field hook from end of file to here to group with other account fields %]
       [% Hook.process('field') %]
 
@@ -87,7 +96,7 @@
             <tr>
               <th align="right">New email address:</th>
               <td>
-                <input size="35" name="new_login_name" id="new_login_name">
+                <input size="35" name="new_email" id="new_email" value="[% user.email FILTER html %]">
                 [% INCLUDE "mfa/protected.html.tmpl" %]
               </td>
             </tr>

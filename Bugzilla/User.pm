@@ -16,12 +16,14 @@ use Bugzilla::Util;
 use Bugzilla::Constants;
 use Bugzilla::Search::Recent;
 use Bugzilla::User::Setting;
+use Bugzilla::User::Email;
 use Bugzilla::Product;
 use Bugzilla::Classification;
 use Bugzilla::Field;
 use Bugzilla::Group;
 use Bugzilla::Hook;
 use Bugzilla::BugUserLastVisit;
+
 
 use DateTime::TimeZone;
 use List::Util qw(max);
@@ -153,6 +155,15 @@ sub new {
     if (defined $param->{extern_id}) {
       $param = {condition => 'extern_id = ?', values => [$param->{extern_id}]};
       $_[0] = $param;
+    }
+    elsif (exists $param->{name}) {
+      my $email = $param->{name};
+      
+      my $user_id = Bugzilla::User::Email->get_user_by_email($email);
+      if ($user_id) {
+        $param->{id} = $user_id;
+        delete $param->{name};
+      }
     }
   }
 
@@ -326,17 +337,29 @@ sub check_login_name_for_creation {
   my ($invocant, $name) = @_;
   $name = trim($name);
   $name || ThrowUserError('user_login_required');
-  validate_email_syntax($name)
-    || ThrowUserError('illegal_email_address', {addr => $name});
+
+  # No whitespace
+  $name !~ /\s/ || ThrowUserError('login_illegal_character');
+
+  # We set the max length to 127 to ensure logins aren't truncated when
+  # inserted into the tokens.eventdata field.
+  length($name) <= 127 or ThrowUserError('login_too_long');
 
   # Check the name if it's a new user, or if we're changing the name.
   if (!ref($invocant) || $invocant->login ne $name) {
+
+    # Login names may not look like email addresses. Logins created before
+    # this restriction are grandfathered in, since this block is only
+    # reached when a login is being created or changed.
+    $name !~ /@/ || ThrowUserError('login_at_sign_disallowed', {login => $name});
+
     is_available_username($name)
-      || ThrowUserError('account_exists', {email => $name});
+      || ThrowUserError('account_exists', {login => $name});
   }
 
   return $name;
 }
+
 
 sub _check_password {
   my ($self, $pass) = @_;
@@ -432,6 +455,26 @@ sub _generate_nickname {
     $nick = "";
   }
   return $nick;
+}
+
+sub set_email {
+  my ($self, $email) = @_;
+
+  my $current = Bugzilla::User::Email->get_primary_email_of_user($self->id);
+  return if defined $current && lc($current) eq lc($email);
+
+  if (defined $current) {
+    my $user_email = Bugzilla::User::Email->new({name => $current});
+    $user_email->set_email($email);
+    $user_email->update();
+    return $user_email;
+  }
+
+  return Bugzilla::User::Email->create({
+    user_id          => $self->id,
+    email            => $email,
+    is_primary_email => 1,
+  });
 }
 
 sub set_name {
@@ -612,7 +655,7 @@ sub update_last_seen_date {
 sub name           { $_[0]->{realname}; }
 sub login          { $_[0]->{login_name}; }
 sub extern_id      { $_[0]->{extern_id}; }
-sub email          { $_[0]->login . Bugzilla->params->{'emailsuffix'}; }
+sub email          { Bugzilla::User::Email->get_primary_email_of_user($_[0]->{userid}) || $_[0]->login;}
 sub disabledtext   { $_[0]->{'disabledtext'}; }
 sub is_enabled     { $_[0]->{'is_enabled'} ? 1 : 0; }
 sub showmybugslink { $_[0]->{showmybugslink}; }
@@ -2580,7 +2623,10 @@ sub create {
   $dbh->bz_start_transaction();
   $params->{nickname}
     = _generate_nickname($params->{realname}, $params->{login_name}, 0);
+  my $email = exists $params->{email} ? delete $params->{email} : $params->{login_name};
   my $user = $class->SUPER::create($params);
+
+  $user->set_email($email);
 
   # Turn on all email for the new user
   require Bugzilla::BugMail;
@@ -2769,21 +2815,22 @@ sub check_account_creation_enabled {
 }
 
 sub check_and_send_account_creation_confirmation {
-  my ($self, $login) = @_;
+  my ($self, $login, $email) = @_;
 
   $login = $self->check_login_name_for_creation($login);
+  $email = Bugzilla::User::Email->check_email_for_creation($email);
   my $creation_regexp = Bugzilla->params->{'createemailregexp'};
 
-  if ($login !~ /$creation_regexp/i) {
+  if ($email !~ /$creation_regexp/i) {
     ThrowUserError('account_creation_restricted');
   }
 
   # BMO - add a hook to allow extra validation prior to account creation.
-  Bugzilla::Hook::process("user_verify_login", {login => $login});
+  Bugzilla::Hook::process("user_verify_login", {login => $login, email => $email});
 
   # Create and send a token for this new account.
   require Bugzilla::Token;
-  Bugzilla::Token::issue_new_user_account_token($login);
+  Bugzilla::Token::issue_new_user_account_token($login, $email);
 }
 
 # This is used in a few performance-critical areas where we don't want to
