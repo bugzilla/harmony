@@ -55,15 +55,15 @@ as above.
 
 .. _oracle_webserver:
 
-Configure the Web Server
-========================
+Configure the Environment
+=========================
 
-If you use Apache, append these lines to :file:`httpd.conf`
-to set ORACLE_HOME and LD_LIBRARY_PATH. For instance:
+Set ORACLE_HOME and LD_LIBRARY_PATH in the environment of the Bugzilla web
+app before starting it. For instance:
 
-.. code-block:: apache
+.. code-block:: console
 
-    SetEnv ORACLE_HOME /u01/app/oracle/product/10.2.0/
-    SetEnv LD_LIBRARY_PATH /u01/app/oracle/product/10.2.0/lib/
+    export ORACLE_HOME=/u01/app/oracle/product/10.2.0/
+    export LD_LIBRARY_PATH=/u01/app/oracle/product/10.2.0/lib/
 
-When this is done, restart your web server.
+Then restart the Bugzilla web app.

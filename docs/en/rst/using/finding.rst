@@ -43,8 +43,7 @@ Advanced Search
 ===============
 
 The Advanced Search page is used to produce a list of all bugs fitting
-exact criteria. You can play with it on `Mozilla’s Bugzilla (BMO) test server
-<https://bugzilla-dev.allizom.org/query.cgi?format=advanced>`_.
+exact criteria.
 
 Advanced Search has controls for selecting different possible
 values for all of the fields in a bug, as described above. For some
@@ -205,7 +204,7 @@ This restriction is mostly used for security-related bugs, or internal tickets.
 
 In order to search for bugs restricted to a group, you must be a member of the group. 
 
-Visit `the Permissions page <https://bugzilla.mozilla.org/userprefs.cgi?tab=permissions>`_ 
+Visit the :guilabel:`Permissions` tab in :guilabel:`Preferences` 
 to find the groups you belong to, then search using the clause
 
     Group   is equal to "%group.groupname%"

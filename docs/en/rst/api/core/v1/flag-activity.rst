@@ -82,13 +82,13 @@ For example, to get the first 100 flag-activity entries that occurred on or afte
        "id": 1449303,
        "requestee": {
          "id": 123,
-         "name": "user@mozilla.com",
+         "name": "user@example.com",
          "nick": "user",
          "real_name": "J. Random User"
        },
        "setter": {
          "id": 123,
-         "name": "user@mozilla.com",
+         "name": "user@example.com",
          "nick": "user",
          "real_name": "J. Random User"
        },

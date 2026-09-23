@@ -11,8 +11,8 @@ Parameter             Example(s)                                        Notes
 Name                  Bugzilla-Stage                                    Memorable name for the connection
 Client ID             aaaaaaaaaaaaaaaaaaaa                              Ask your Bugzilla admin to create one for you.
 Client Secret         aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          Same as above.
-Authorization URL     https://bugzilla.allizom.org/oauth/authorize      Note the HTTP client must use the correct HOST header.
-Token URL             https://bugzilla.allizom.org/oauth/access_token   (none)
+Authorization URL     https://bugzilla.example.org/oauth/authorize      Note the HTTP client must use the correct HOST header.
+Token URL             https://bugzilla.example.org/oauth/access_token   (none)
 Scope                 user:read                                         As of this writing, this is the only scope available.
 Fetch User Profile    (see below)                                       (none)
 ====================  ===============================================   ======================================================
@@ -20,7 +20,7 @@ Fetch User Profile    (see below)                                       (none)
 .. code-block:: js
 
   function (access_token, ctx, callback) {
-    request.get('https://bugzilla.allizom.org/api/user/profile', {
+    request.get('https://bugzilla.example.org/api/user/profile', {
       'headers': {
         'Authorization': 'Bearer ' + access_token,
         'User-Agent': 'Auth0'

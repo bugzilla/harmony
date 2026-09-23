@@ -4,11 +4,9 @@ Skins
 =====
 
 Bugzilla supports skins - ways of changing the look of the UI without altering
-its underlying structure. It ships with two - "Classic" and "Dusk". You can
+its underlying structure. It ships with only the default skin; additional skins go in :file:`skins/contrib`. You can
 find some more listed
-`on the wiki <https://wiki.mozilla.org/Bugzilla:Addons#Skins>`_, and there
-are a couple more which are part of
-`bugzilla.mozilla.org <http://git.mozilla.org/?p=webtools/bmo/bugzilla.git>`_.
+`on the wiki <https://wiki.mozilla.org/Bugzilla:Addons#Skins>`_.
 However, in each
 case you may need to check that the skin supports the version of Bugzilla
 you have.

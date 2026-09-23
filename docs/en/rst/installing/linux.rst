@@ -47,8 +47,8 @@ in the `installation instructions <https://docs.fedoraproject.org/en-US/epel/>`_
 
 Run the following to install the base Bugzilla dependencies:
 
-:command:`dnf install git httpd httpd-devel mariadb-devel gcc
-mariadb-server mod_perl mod_perl-devel 'perl(autodie)' 'perl(CGI)'
+:command:`dnf install git httpd mariadb-devel gcc
+mariadb-server 'perl(autodie)' 'perl(CGI)'
 'perl(Date::Format)' 'perl(DateTime)' 'perl(DateTime::TimeZone)'
 'perl(DBI)' 'perl(DBD::mysql)' 'perl(DBIx::Connector)' 'perl(Digest::SHA)'
 'perl(Email::MIME)' 'perl(Email::Sender)' 'perl(fields)' 'perl(JSON::XS)'
@@ -65,7 +65,7 @@ On Fedora, all the optional dependencies are available:
 'perl(File::Which)' 'perl(GD)' 'perl(GD::Graph)' 'perl(GD::Text)'
 'perl(HTML::FormatText::WithLinks)' 'perl(HTML::Parser)'
 'perl(HTML::Scrubber)' 'perl(IO::Scalar)' 'perl(JSON::RPC)'
-'perl(LWP::UserAgent)' 'perl(MIME::Parser)' 'perl(mod_perl2)'
+'perl(LWP::UserAgent)' 'perl(MIME::Parser)'
 'perl(Net::LDAP)' 'perl(Net::SMTP::SSL)' 'perl(PatchReader)'
 'perl(SOAP::Lite)' 'perl(Template::Plugin::GD::Image)'
 'perl(Test::Taint)' 'perl(TheSchwartz)' 'perl(XMLRPC::Lite)'
@@ -81,7 +81,7 @@ repositories, so use the following instead:
 'perl(File::Which)' 'perl(GD)' 'perl(GD::Graph)' 'perl(GD::Text)'
 'perl(HTML::Parser)' 'perl(HTML::Scrubber)' 'perl(IO::Scalar)'
 'perl(JSON::RPC)' 'perl(LWP::UserAgent)' 'perl(MIME::Parser)'
-'perl(mod_perl2)' 'perl(Net::LDAP)' 'perl(Net::SMTP::SSL)'
+'perl(Net::LDAP)' 'perl(Net::SMTP::SSL)'
 'perl(SOAP::Lite)' 'perl(Test::Taint)' 'perl(XMLRPC::Lite)'
 'perl(XML::Twig)'`
 
@@ -111,8 +111,8 @@ the appropriate packages for that (in the command above, the packages required
 for MariaDB are ``libdbd-mysql-perl``, ``libmariadb-dev-compat`` and ``mariadb-server``).
 
 You can install optional packages with:
-:command:`apt install graphviz libapache2-mod-perl2
-libapache2-mod-perl2-dev libauthen-radius-perl libauthen-sasl-perl
+:command:`apt install graphviz
+libauthen-radius-perl libauthen-sasl-perl
 libcache-memcached-perl libchart-perl libdaemon-generic-perl
 libemail-reply-perl libencode-detect-perl libencode-perl
 libfile-copy-recursive-perl libfile-mimeinfo-perl libfile-which-perl

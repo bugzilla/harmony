@@ -16,7 +16,7 @@ Platform, and Operating System you were using at the time of the failure go a
 long way toward ensuring accurate, responsible fixes for the bug that bit you.
 
 .. note:: If you want to file a test bug to see how Bugzilla works, you can do
-   so on `Mozilla’s Bugzilla (BMO) test server <https://bugzilla-dev.allizom.org/>`_.
+   so on a :ref:`local copy <docker>`.
    Please don’t do it on any production Bugzilla installation.
 
 The procedure for filing a bug is as follows:

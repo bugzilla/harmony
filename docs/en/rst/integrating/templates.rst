@@ -231,11 +231,10 @@ customizing for your installation.
     such as drop-down lists or textboxes, to the bug entry page
     and have their values appear formatted in the initial comment.
 
-    An example of this is the `guided bug submission form
-    <https://bugzilla-dev.allizom.org/enter_bug.cgi?product=Firefox&format=guided>`_.
+    An example of this is the guided bug submission form.
     The code for this comes with the Bugzilla distribution as an example for
     you to copy. It can be found in the files
-    :file:`create-guided.html.tmpl` and :file:`comment-guided.html.tmpl`.
+    :file:`create-guided.html.tmpl` and :file:`comment-guided.txt.tmpl`.
 
     A hidden field that indicates the format should be added inside
     the form in order to make the template functional. Its value should
