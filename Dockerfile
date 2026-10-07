@@ -1,5 +1,5 @@
 ARG BZDB="-mysql"
-FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
+FROM bugzilla/bugzilla-perl-slim${BZDB}:20260801.1
 
 ENV DEBIAN_FRONTEND=noninteractive
 

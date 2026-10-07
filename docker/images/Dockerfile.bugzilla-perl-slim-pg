@@ -1,4 +1,6 @@
-FROM bugzilla/bugzilla-perl-slim:20250925.1 AS builder
+ARG SIZE="slim"
+ARG BASE_TAG="20260801.1"
+FROM bugzilla/bugzilla-perl-${SIZE}:${BASE_TAG} AS builder
 
 # reinstall the build prereqs on the temporary image
 RUN apt-get update \
@@ -49,7 +51,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
 
 # now we start over with a new image so the final image doesn't contain
 # developer tools
-FROM bugzilla/bugzilla-perl-slim:20250925.1
+FROM bugzilla/bugzilla-perl-${SIZE}:${BASE_TAG}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
