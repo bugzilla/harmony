@@ -16,15 +16,17 @@ use Bugzilla::Constants;
 use Bugzilla::Error;
 use Bugzilla::Logging;
 use Bugzilla::Util qw(datetime_from);
+use Bugzilla::WebService::Util qw(filter_wants);
 use Try::Tiny;
 
 use DateTime;
 
 # Basic info that is needed before logins
-use constant LOGIN_EXEMPT => {timezone => 1, version => 1,};
+use constant LOGIN_EXEMPT => {parameters => 1, timezone => 1, version => 1,};
 
 use constant READ_ONLY => qw(
   extensions
+  parameters
   timezone
   time
   version
@@ -33,10 +35,61 @@ use constant READ_ONLY => qw(
 
 use constant PUBLIC_METHODS => qw(
   extensions
+  parameters
   time
   timezone
   version
   jobqueue_status
+);
+
+# Logged-out users do not need to know more than that.
+use constant PARAMETERS_LOGGED_OUT => qw(
+  maintainer
+  requirelogin
+);
+
+# These parameters are guessable from the web UI when the user
+# is logged in. So it's safe to access them.
+use constant PARAMETERS_LOGGED_IN => qw(
+  allowemailchange
+  attachment_base
+  commentonchange_resolution
+  commentonduplicate
+  default_bug_type
+  defaultopsys
+  defaultplatform
+  defaultpriority
+  defaultseverity
+  duplicate_or_move_bug_status
+  emailregexpdesc
+  emailsuffix
+  letsubmitterchoosemilestone
+  letsubmitterchoosepriority
+  mailfrom
+  maintainer
+  maxattachmentsize
+  musthavemilestoneonaccept
+  noresolveonopenblockers
+  password_complexity
+  rememberlogin
+  require_bug_type
+  requirelogin
+  search_allow_no_criteria
+  urlbase
+  use_regression_fields
+  use_see_also
+  useclassification
+  usemenuforusers
+  useqacontact
+  usestatuswhiteboard
+  usetargetmilestone
+);
+
+# In Harmony these moved from data/params to localconfig. Serve them
+# from there so API clients keep receiving them.
+use constant PARAMETERS_FROM_LOCALCONFIG => qw(
+  attachment_base
+  urlbase
 );
 
 sub version {
@@ -119,6 +172,30 @@ sub jobqueue_status {
   return $status;
 }
 
+sub parameters {
+  my ($self, $args) = @_;
+  my $user        = Bugzilla->login(LOGIN_OPTIONAL);
+  my $params      = Bugzilla->params;
+  my $localconfig = Bugzilla->localconfig;
+  $args ||= {};
+
+  my %from_localconfig = map { $_ => 1 } PARAMETERS_FROM_LOCALCONFIG;
+
+  my @params_list
+    = $user->in_group('tweakparams') ? (keys(%$params), PARAMETERS_FROM_LOCALCONFIG)
+    : $user->id                      ? PARAMETERS_LOGGED_IN
+    :                                  PARAMETERS_LOGGED_OUT;
+
+  my %parameters;
+  foreach my $param (@params_list) {
+    next unless filter_wants($args, $param);
+    my $value
+      = $from_localconfig{$param} ? $localconfig->$param : $params->{$param};
+    $parameters{$param} = $self->type('string', $value);
+  }
+
+  return {parameters => \%parameters};
+}
 1;
 
 __END__
@@ -344,6 +421,72 @@ were in the UTC timezone, instead of returning information in the server's
 local timezone.
 
 =item REST API call added in Bugzilla B<5.0>.
+
+=back
+
+=back
+
+=head2 parameters
+
+B<UNSTABLE>
+
+=over
+
+=item B<Description>
+
+Returns parameter values currently used in this Bugzilla.
+
+=item B<REST>
+
+GET /parameters
+
+The returned data format is the same as below.
+
+=item B<Params> (none)
+
+=item B<Returns>
+
+A hash with a single item C<parameters> which contains a hash with
+the name of the parameters as keys and their value as values. All
+values are returned as strings.
+The list of parameters returned by this method depends on the user
+credentials:
+
+A logged-out user can only access the C<maintainer> and C<requirelogin>
+parameters.
+
+A logged-in user can access the following parameters (listed
+alphabetically): C<allowemailchange>, C<attachment_base>,
+C<commentonchange_resolution>, C<commentonduplicate>, C<default_bug_type>,
+C<defaultopsys>, C<defaultplatform>, C<defaultpriority>, C<defaultseverity>,
+C<duplicate_or_move_bug_status>, C<emailregexpdesc>, C<emailsuffix>,
+C<letsubmitterchoosemilestone>, C<letsubmitterchoosepriority>, C<mailfrom>,
+C<maintainer>, C<maxattachmentsize>, C<musthavemilestoneonaccept>,
+C<noresolveonopenblockers>, C<password_complexity>, C<rememberlogin>,
+C<require_bug_type>, C<requirelogin>, C<search_allow_no_criteria>,
+C<urlbase>, C<use_regression_fields>, C<use_see_also>, C<useclassification>,
+C<usemenuforusers>, C<useqacontact>, C<usestatuswhiteboard>,
+C<usetargetmilestone>.
+
+A user in the tweakparams group can access all existing parameters.
+New parameters can appear or obsolete parameters can disappear depending
+on the version of Bugzilla and on extensions being installed.
+The list of parameters returned by this method is not stable and will
+never be stable.
+
+C<urlbase> and C<attachment_base> are read from F<localconfig> rather
+than from the parameters file.
+
+=item B<History>
+
+=over
+
+=item Added in Bugzilla B<4.4>.
+
+=item REST API call added in Bugzilla B<5.0>.
+
+=item Restored in Bugzilla B<6.0>, with C<urlbase> and C<attachment_base>
+served from F<localconfig>.
 
 =back
 
