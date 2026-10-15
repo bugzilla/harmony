@@ -172,7 +172,7 @@ sub cmd_load_test_data {
   run(
     'perl',        'scripts/generate_bmo_data.pl',
     '--param',     'use_mailer_queue=0'
-  );
+  ) unless -f q(/app/extensions/BMO/disabled);
 
   if ($ENV{BZ_QA_CONFIG}) {
     chdir '/app/qa/config';

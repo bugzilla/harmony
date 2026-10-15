@@ -332,8 +332,15 @@ sub new_product {
     }
   }
 
-  my $default_group_name = $product->default_security_group;
-  if (my $default_group
+  my $default_group_name
+    = $product->can('default_security_group')
+    ? $product->default_security_group
+    : undef;
+  if (!defined $default_group_name) {
+
+    # no per-product default security group without the BMO extension
+  }
+  elsif (my $default_group
     = first_value { $_->{group}->name eq $default_group_name } @groups)
   {
 # because we always allow the default product group to be selected, it's never invalid

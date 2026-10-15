@@ -75,17 +75,20 @@ Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
 # BMO uses P1-P5 which is different from upstream
 my $field = Bugzilla::Field->new({name => 'priority'});
 foreach my $value (qw(Highest High Normal Low Lowest)) {
+  next if Bugzilla::Field::Choice->type($field)->new({name => $value});
   Bugzilla::Field::Choice->type($field)->create({value => $value, sortkey => 0});
 }
 
 # Add missing platforms
 $field = Bugzilla::Field->new({name => 'rep_platform'});
 foreach my $value (qw(PC)) {
+  next if Bugzilla::Field::Choice->type($field)->new({name => $value});
   Bugzilla::Field::Choice->type($field)->create({value => $value, sortkey => 0});
 }
 
 my %set_params = (
   usebugaliases              => 1,
+  useclassification          => 1,
   useqacontact               => 1,
   mail_delivery_method       => 'Test',
   maxattachmentsize          => 256,
@@ -520,14 +523,10 @@ foreach my $product (@products) {
         = Bugzilla::Classification->new({name => $product->{classification}})->id;
     }
     $dbh->do(
-      'INSERT INTO products (name, description, classification_id, default_platform_id, default_op_sys_id)
-                  VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO products (name, description, classification_id)
+                  VALUES (?, ?, ?)',
       undef,
-      (
-        $product->{product_name}, $product->{description},
-        $class_id,                $new_product->{default_platform_id},
-        $new_product->{default_op_sys_id}
-      )
+      ($product->{product_name}, $product->{description}, $class_id)
     );
 
     $new_product = new Bugzilla::Product({name => $product->{product_name}});
@@ -629,7 +628,7 @@ $dbh->do('INSERT INTO group_group_map VALUES (?, ?, 0)',
 my $default_security_group
   = Bugzilla::Group->new({name => 'core-security-release'});
 $default_security_group ||= Bugzilla::Group->new({name => 'Master'});
-if ($default_security_group) {
+if ($default_security_group && $dbh->bz_column_info('products', 'security_group_id')) {
   $dbh->do(
     'UPDATE products SET security_group_id = ? WHERE security_group_id IS NULL',
     undef, $default_security_group->id);
