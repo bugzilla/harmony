@@ -755,7 +755,7 @@ sub _get_create_trigger_ddl {
 ############################################################################
 
 package Bugzilla::DB::Oracle::st;
-use base qw(DBI::st);
+use parent -norequire, qw(DBI::st);
 
 sub fetchrow_arrayref {
   my $self = shift;
