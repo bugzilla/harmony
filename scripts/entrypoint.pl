@@ -188,6 +188,10 @@ sub cmd_push_data {
 
 sub cmd_test_sanity {
   my @tests = @_;
+
+  # Skip tests of extensions that are disabled
+  @tests = grep { not (m#^(?:\./)?extensions/([^/]+)/# and -e "/app/extensions/$1/disabled") } @tests;
+
   run('prove', '-I/app', '-I/app/local/lib/perl5', '-qf', @tests);
 }
 
