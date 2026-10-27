@@ -16,7 +16,10 @@ use strict;
 use warnings;
 use lib qw(lib ../../lib ../../local/lib/perl5);
 
-use Test::More "no_plan";
+use Test::More;
+plan -e '../../extensions/BMO/disabled'
+  ? (skip_all => 'BMO extension is disabled')
+  : 'no_plan';
 
 use QA::Util;
 

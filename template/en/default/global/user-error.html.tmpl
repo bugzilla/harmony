@@ -1704,6 +1704,10 @@
     for [% terms.bug %] [%+ bug_id FILTER html %]
     has a circular dependency on [% terms.bug %] [%+ dep_id FILTER html %].
 
+  [% ELSIF error == "report_invalid_date" %]
+    [% title = "Invalid Date" %]
+    The date '[% date FILTER html %]' is invalid.
+
   [% ELSIF error == "request_queue_group_invalid" %]
     The group field <em>[% group FILTER html %]</em> is invalid.
 

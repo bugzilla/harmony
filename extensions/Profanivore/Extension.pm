@@ -29,6 +29,7 @@ use base qw(Bugzilla::Extension);
 
 use Email::MIME::ContentType qw(parse_content_type);
 use Regexp::Common 'RE_ALL';
+use HTML::Tree;
 
 use Bugzilla::Util qw(is_7bit_clean);
 
