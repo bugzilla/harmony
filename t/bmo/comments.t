@@ -11,6 +11,11 @@ use warnings;
 use lib qw(. lib local/lib/perl5);
 use Test::More;
 
+BEGIN {
+  plan skip_all => 'BMO extension is disabled'
+    if -e 'extensions/BMO/disabled';
+}
+
 use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Bug;
