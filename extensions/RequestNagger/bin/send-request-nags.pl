@@ -141,7 +141,7 @@ sub send_nags {
 
     my @command = ($0, $filename);
     push @command, '-d' if $DO_NOT_NAG;
-    system(@command);
+    system($command[0], @command[1 .. $#command]);
     unlink($filename);
   }
 }
