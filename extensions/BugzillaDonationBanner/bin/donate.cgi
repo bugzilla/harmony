@@ -14,8 +14,8 @@ use Bugzilla::Extension::BugzillaDonationBanner::Donation;
 
 my $cgi = Bugzilla->cgi;
 if ($cgi->request_method ne 'POST') {
-  ThrowCodeError('illegal_request_method',
-    {method => $cgi->request_method, accepted => ['POST']});
+  print $cgi->header(-status => '405 Method Not Allowed', -allow => 'POST');
+  exit;
 }
 
 Bugzilla->login(LOGIN_REQUIRED) unless Bugzilla->user->id;
