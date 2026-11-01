@@ -16,6 +16,15 @@ use File::Find;
 
 our @additional_files = ();
 
+# Files that cannot be compiled stand-alone by t/001compile.t. Keep this list
+# short and say why each entry is here.
+#
+#   DuoAPI.pm, DuoWeb.pm   - vendored third-party code
+#   Test/MockDB.pm,        - test helpers that set up and connect to a
+#   Test/MockParams.pm       database as soon as they are loaded
+#   Report/Ping/Simple.pm  - BROKEN: imports `joi` from JSON::Validator, which
+#                            newer releases no longer provide, so it does not
+#                            compile. Remove this entry once that is fixed.
 use constant IGNORE => qw(
   Bugzilla/DuoAPI.pm
   Bugzilla/DuoWeb.pm
