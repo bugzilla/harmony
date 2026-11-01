@@ -29,6 +29,7 @@ services:
       - BMO_ses_password=password123456789!
       - BMO_urlbase=http://127.0.0.1:8000/
       - BUGZILLA_ALLOW_INSECURE_HTTP=1
+      - BZ_ALLOW_UNSAFE_UTF8_CONVERSION=${BZ_ALLOW_UNSAFE_UTF8_CONVERSION:-0}
       - BZ_ANSWERS_FILE=/app/conf/checksetup_answers.txt
       - HTTP_BACKEND=morbo
       - LOCALCONFIG_ENV=1

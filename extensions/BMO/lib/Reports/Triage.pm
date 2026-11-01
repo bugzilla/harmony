@@ -314,7 +314,9 @@ sub owners {
                            LEFT JOIN attachments AS attachments_1 ON bugs_1.bug_id = attachments_1.bug_id
                            LEFT JOIN flags AS flags_1 ON bugs_1.bug_id = flags_1.bug_id AND (flags_1.attach_id = attachments_1.attach_id OR flags_1.attach_id IS NULL)
                            LEFT JOIN flagtypes AS flagtypes_1 ON flags_1.type_id = flagtypes_1.id
-                    WHERE  bugs_1.bug_id = bugs.bug_id AND CONCAT(flagtypes_1.name, flags_1.status) = 'needinfo?')))
+                        WHERE  bugs_1.bug_id = bugs.bug_id AND "
+                . $dbh->sql_string_concat('flagtypes_1.name', 'flags_1.status')
+                . " = 'needinfo?')))
                 AND bugs.component_id = ?
        GROUP BY bugs.bug_type");
 

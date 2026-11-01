@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,6 +10,8 @@
 ARG BZDB=""
 FROM bugzilla/bugzilla-perl-slim${BZDB}:20250925.1
 
+ENV BZ_REQUIRE_NODE=1
+
 WORKDIR /app
 
 # Install system dependencies
@@ -17,6 +21,7 @@ RUN apt-get update && apt-get -y dist-upgrade && \
     cpanminus \
     mariadb-client \
     netcat-traditional \
+    nodejs \
     build-essential \
     libapache2-mod-perl2 \
     libapache2-mod-perl2-dev \
@@ -30,7 +35,7 @@ RUN apt-get update && apt-get -y dist-upgrade && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy just enough to get the list of dependencies
-COPY Bugzilla.pm Makefile.PL gen-cpanfile.pl /app/
+COPY --parents Bugzilla.pm Makefile.PL gen-cpanfile.pl extensions/*/Config.pm extensions/*/disabled /app/
 
 # Run Makefile.PL and install dependencies
 RUN perl Makefile.PL && \
