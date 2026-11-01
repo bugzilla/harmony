@@ -323,9 +323,9 @@ else {
 
   # BMO - use per-product default hw/os
   $default{'rep_platform'}
-    = formvalue('rep_platform', $product->default_platform // detect_platform());
+    = formvalue('rep_platform', ($product->can('default_platform') ? $product->default_platform : undef) // detect_platform());
   $default{'op_sys'}
-    = formvalue('op_sys', $product->default_op_sys // detect_op_sys());
+    = formvalue('op_sys', ($product->can('default_op_sys') ? $product->default_op_sys : undef) // detect_op_sys());
   $vars->{'rep_platform'} = detect_platform();
   $vars->{'rep_op_sys'}   = detect_op_sys();
 

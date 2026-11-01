@@ -23,9 +23,11 @@ set_parameters($sel, {"Group Security" => {"makeproductgroups-on" => undef}});
 add_product($sel);
 $sel->type_ok("product",     "ready_to_die");
 $sel->type_ok("description", "will die");
-$sel->select_ok("security_group_id",   "label=core-security");
-$sel->select_ok("default_op_sys_id",   "label=Unspecified");
-$sel->select_ok("default_platform_id", "label=Unspecified");
+if ($sel->is_element_present("security_group_id")) {
+  $sel->select_ok("security_group_id",   "label=core-security");
+  $sel->select_ok("default_op_sys_id",   "label=Unspecified");
+  $sel->select_ok("default_platform_id", "label=Unspecified");
+}
 $sel->click_ok('//input[@value="Add"]');
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Product Created");
@@ -84,9 +86,11 @@ $sel->is_text_present_ok("Access to bugs in the ready_to_die product");
 add_product($sel);
 $sel->type_ok("product",     "ready_to_die");
 $sel->type_ok("description", "will die");
-$sel->select_ok("security_group_id",   "label=core-security");
-$sel->select_ok("default_op_sys_id",   "label=Unspecified");
-$sel->select_ok("default_platform_id", "label=Unspecified");
+if ($sel->is_element_present("security_group_id")) {
+  $sel->select_ok("security_group_id",   "label=core-security");
+  $sel->select_ok("default_op_sys_id",   "label=Unspecified");
+  $sel->select_ok("default_platform_id", "label=Unspecified");
+}
 $sel->click_ok('//input[@value="Add"]');
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Product Created");
@@ -174,9 +178,11 @@ set_parameters($sel, {"Group Security" => {"makeproductgroups-off" => undef}});
 add_product($sel);
 $sel->type_ok("product",     "ready_to_die");
 $sel->type_ok("description", "will die");
-$sel->select_ok("security_group_id",   "label=core-security");
-$sel->select_ok("default_op_sys_id",   "label=Unspecified");
-$sel->select_ok("default_platform_id", "label=Unspecified");
+if ($sel->is_element_present("security_group_id")) {
+  $sel->select_ok("security_group_id",   "label=core-security");
+  $sel->select_ok("default_op_sys_id",   "label=Unspecified");
+  $sel->select_ok("default_platform_id", "label=Unspecified");
+}
 $sel->click_ok('//input[@value="Add"]');
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Product Created");

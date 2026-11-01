@@ -755,7 +755,9 @@ sub create {
     unless defined $params->{priority};
 
   # BMO - per-product hw/os defaults
-  if (!defined $params->{rep_platform} || !defined $params->{op_sys}) {
+  if (Bugzilla::Product->can('default_platform')
+    && (!defined $params->{rep_platform} || !defined $params->{op_sys}))
+  {
     if (my $product
       = Bugzilla::Product->new({name => $params->{product}, cache => 1}))
     {
@@ -2015,7 +2017,8 @@ sub _check_groups {
       my $group = Bugzilla::Group->check_no_disclose({%args, name => $name});
 
       # BMO : allow bugs to be always placed into some groups
-      if ( !$product->group_always_settable($group)
+      if ( !($product->can('group_always_settable')
+          && $product->group_always_settable($group))
         && !$product->group_is_settable($group))
       {
         ThrowUserError('group_restriction_not_allowed', {%args, name => $name});
@@ -3292,7 +3295,8 @@ sub add_group {
   # BMO : allow bugs to be always placed into some groups by the bug's
   # reporter, or by users with editbugs
   my $user = Bugzilla->user;
-  if (!$self->product_obj->group_always_settable($group)
+  if (!($self->product_obj->can('group_always_settable')
+      && $self->product_obj->group_always_settable($group))
     || ($self->{reporter_id} != $user->id && !$user->in_group('editbugs')))
   {
     # Make sure that bugs in this product can actually be restricted

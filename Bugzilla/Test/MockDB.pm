@@ -216,16 +216,16 @@ sub import {
           $class_id
             = Bugzilla::Classification->new({name => $product->{classification}})->id;
         }
-        $dbh->do(
-          'INSERT INTO products (name, description, classification_id,
-                                        default_op_sys_id, default_platform_id)
-                  VALUES (?, ?, ?, ?, ?)',
-          undef,
-          (
-            $product->{product_name}, $product->{description}, $class_id,
-            $default_op_sys_id,       $default_platform_id
-          )
-        );
+        my @cols = qw(name description classification_id);
+        my @vals
+          = ($product->{product_name}, $product->{description}, $class_id);
+        if ($dbh->bz_column_info('products', 'default_op_sys_id')) {
+          push @cols, qw(default_op_sys_id default_platform_id);
+          push @vals, $default_op_sys_id, $default_platform_id;
+        }
+        $dbh->do('INSERT INTO products (' . join(', ', @cols)
+            . ') VALUES (' . join(', ', ('?') x @cols) . ')',
+          undef, @vals);
 
         $new_product = new Bugzilla::Product({name => $product->{product_name}});
 
