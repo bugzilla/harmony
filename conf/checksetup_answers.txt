@@ -4,6 +4,8 @@ $answer{'ADMIN_PASSWORD'}       = 'password01!';
 $answer{'passwdqc_min'}         = '8, 8, 8, 8, 8';
 $answer{'ADMIN_REALNAME'}       = 'Vagrant User';
 $answer{'NO_PAUSE'}             = 1;
+$answer{'ALLOW_UNSAFE_UTF8_CONVERSION'}
+	= $ENV{'BZ_ALLOW_UNSAFE_UTF8_CONVERSION'} ? 1 : 0;
 $answer{'size_limit'}           = 750000;
 $answer{'bugzilla_version'}     = '1';
 $answer{'create_htaccess'}      = '1';

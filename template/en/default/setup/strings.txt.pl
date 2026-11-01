@@ -56,6 +56,13 @@ EOT
   continue_without_answers => <<'END',
 Re-run checksetup.pl in interactive mode (without an 'answers' file)
 to continue.
+
+To continue non-interactively, set ALLOW_UNSAFE_UTF8_CONVERSION to 1
+in your answers file.
+END
+  continuing_with_unsafe_utf8_conversion => <<'END',
+WARNING: ALLOW_UNSAFE_UTF8_CONVERSION is enabled. Continuing the UTF-8
+         conversion without an interactive confirmation prompt.
 END
   cpanfile_created   => "##file## created",
   cpan_bugzilla_home => "WARNING: Using the Bugzilla directory as the CPAN home.",

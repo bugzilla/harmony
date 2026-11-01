@@ -207,7 +207,7 @@ sub _build_like_order {
   my @terms;
   foreach my $word (split(/[\s,]+/, $query)) {
     push @terms,
-      "CONCAT(products.name, components.name) LIKE "
+      $dbh->sql_string_concat('products.name', 'components.name') . " LIKE "
       . $dbh->quote('%' . $word . '%')
       if $word ne '';
   }

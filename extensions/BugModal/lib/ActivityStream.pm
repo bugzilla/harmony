@@ -358,7 +358,8 @@ sub _add_duplicates_to_stream {
 
   my $sth = $dbh->prepare("
         SELECT longdescs.who,
-               UNIX_TIMESTAMP(bug_when), " . $dbh->sql_date_format('bug_when') . ",
+               " . $dbh->sql_date_to_epoch('bug_when') . ",
+               " . $dbh->sql_date_format('bug_when') . ",
                type,
                extra_data
           FROM longdescs

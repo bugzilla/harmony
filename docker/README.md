@@ -63,6 +63,14 @@ Currently, the entry point takes a single command argument. This can be
     This should never be set in production. It allows auth delegation
     and oauth over http.
 
+  - BZ\_ALLOW\_UNSAFE\_UTF8\_CONVERSION
+    Controls whether checksetup may proceed with the database UTF-8
+    conversion in non-interactive mode. Default: 0.
+
+    Set this to 1 only when you explicitly approve the conversion and
+    have a database backup. For example:
+    `BZ_ALLOW_UNSAFE_UTF8_CONVERSION=1 docker compose up`
+
   - BMO\_urlbase  
     The public URL for this instance. Note that if this begins with
     <https://> and BMO\_inbound\_proxies is set to '\*' Bugzilla will
@@ -217,6 +225,64 @@ Logging configuration also controls which errors are sent to Sentry.
 This container expects /app/data to be a persistent, shared, writable
 directory owned by uid 10001. This must be a shared (NFS/EFS/etc) volume
 between all nodes.
+
+## Running the Test Suites
+
+The `docker/run-tests-in-docker.sh` script builds a test image and runs a
+suite inside it. It takes a suite name as its first argument, or prompts
+with a menu if run with no arguments.
+
+| Option | Suite | What it runs |
+| --- | --- | --- |
+| sanity | `test_sanity` | Static and style checks under `t/` |
+| mysql | `test_bmo` | Perl suite (`t/bmo/*.t`) against MySQL. Default. |
+| pg | `test_bmo` | Perl suite against PostgreSQL |
+| sqlite | `test_bmo` | Perl suite against SQLite |
+| mariadb | `test_bmo` | Perl suite against MariaDB |
+| selenium | `test_selenium` | Browser suite (`qa/t/test_*.t`) |
+| webservices | `test_webservices` | API suite (`qa/t/{webservice,rest}_*.t`) |
+| release | `test_bmo` | Release checks |
+
+Example:
+
+``` bash
+bash docker/run-tests-in-docker.sh selenium
+```
+
+### Selenium and webservice suites
+
+Both suites are driven by `scripts/entrypoint.pl`, which loads test data,
+starts httpd inside the container, and then runs `prove` against
+`/app/qa/t`. They use the MySQL compose stack
+(`docker-compose.test-mysql.yml`), which adds a
+`selenium/standalone-firefox:3.141.59` service with a 512m `shm_size`.
+The browser is reached over `TWD_HOST`, `TWD_PORT` and `TWD_BROWSER`,
+with QA configuration read from `.github/selenium_test.conf`.
+
+These suites are intentionally not part of the GitHub Actions workflow.
+The full browser run takes roughly 30 minutes, which is too slow for a
+merge gate, so it stays available through the container only.
+
+`test_selenium` and `test_webservices` take no file arguments, so they
+always run their full glob. A single file can be run with `prove`
+directly, but the QA tests require the httpd and the loaded test data
+that these commands set up, so a bare single-file run will fail unless
+that environment is already in place.
+
+### Known failures
+
+  - `qa/t/test_create_user_accounts.t` exercises the account creation
+    flow that is being reworked to separate login names from email
+    addresses. Failures there are expected until that work lands.
+
+  - `qa/t/test_edit_products_properties.t` has been seen to fail one
+    assertion intermittently while the product change it checks is
+    recorded correctly in the audit log. Re-run before investigating.
+
+
+
+
+
 
 ## Administrative Tasks
 
