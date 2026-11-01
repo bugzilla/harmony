@@ -93,19 +93,8 @@ Install all missing modules locally like this:
 Web Server
 ==========
 
-Any web server that is capable of running CGI scripts can be made to work.
-We have specific configuration instructions for the following:
-
-* :ref:`apache`
-
-You'll need to create a symbolic link so the webserver can see Bugzilla:
-
-:command:`cd /Library/WebServer/Documents`
-
-:command:`sudo ln -s $HOME/bugzilla bugzilla`
-
-In :guilabel:`System Preferences` --> :guilabel:`Sharing`, enable the
-:guilabel:`Web Sharing` checkbox to start Apache. 
+Bugzilla runs as its own web app. For production use, put a web server in
+front of it as a reverse proxy; see :ref:`web_server`.
 
 .. _macosx-config-database:
 
