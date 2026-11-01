@@ -17,6 +17,7 @@ use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::User;
+use Bugzilla::User::Email;
 use Bugzilla::Bug;
 use Bugzilla::BugMail;
 use Bugzilla::Flag;
@@ -77,14 +78,28 @@ elsif ($action eq 'list') {
   my $matchstr      = trim($cgi->param('matchstr'));
   my $matchtype     = $cgi->param('matchtype');
   my $grouprestrict = $cgi->param('grouprestrict') || '0';
-  my $query
-    = 'SELECT DISTINCT userid, login_name, realname, is_enabled, '
-    . $dbh->sql_date_format('last_seen_date', '%Y-%m-%d')
-    . ' AS last_seen_date '
-    . 'FROM profiles';
+
   my @bindValues;
   my $nextCondition;
   my $visibleGroups;
+
+  my $select_fields = 'profiles.userid, profiles.login_name, profiles.realname, profiles.is_enabled, '
+                  . $dbh->sql_date_format('profiles.last_seen_date', '%Y-%m-%d') . ' AS last_seen_date';
+
+  # Add email as a column from profiles_emails table
+  $select_fields .= ', profiles_emails.email AS email';
+
+  my $query = 'SELECT DISTINCT ' . $select_fields . ' FROM profiles';
+  
+  # Join the two tables by userid
+  $query .= ' LEFT JOIN profiles_emails ON profiles.userid = profiles_emails.user_id'
+         . ' AND profiles_emails.is_primary_email = 1';
+
+  my $expr;
+  if ($matchvalue eq 'email') {
+    $expr = 'profiles_emails.email';
+    $nextCondition = 'WHERE';
+  }
 
   # If a group ID is given, make sure it is a valid one.
   my $group;
@@ -128,20 +143,21 @@ elsif ($action eq 'list') {
     # Handle selection by login name, real name, or userid.
     if (defined($matchtype)) {
       $query .= " $nextCondition ";
-      my $expr = "";
-      if ($matchvalue eq 'userid') {
-        if ($matchstr) {
-          my $stored_matchstr = $matchstr;
-          detaint_natural($matchstr)
-            || ThrowUserError('illegal_user_id', {userid => $stored_matchstr});
+      if (!$expr) {
+        if ($matchvalue eq 'userid') {
+          if ($matchstr) {
+            my $stored_matchstr = $matchstr;
+            detaint_natural($matchstr)
+              || ThrowUserError('illegal_user_id', {userid => $stored_matchstr});
+          }
+          $expr = "profiles.userid";
+        } 
+        elsif ($matchvalue eq 'realname') {
+          $expr = "profiles.realname";
         }
-        $expr = "profiles.userid";
-      }
-      elsif ($matchvalue eq 'realname') {
-        $expr = "profiles.realname";
-      }
-      else {
-        $expr = "profiles.login_name";
+        else {
+          $expr = "profiles.login_name";
+        }
       }
 
       if ($matchtype =~ /^(regexp|notregexp|exact)$/) {
@@ -176,9 +192,9 @@ elsif ($action eq 'list') {
     }
     $query .= ' ORDER BY profiles.login_name';
 
+
     $vars->{'users'}
       = $dbh->selectall_arrayref($query, {'Slice' => {}}, @bindValues);
-
   }
 
   if ($matchtype && $matchtype eq 'exact' && scalar(@{$vars->{'users'}}) == 1) {
@@ -219,6 +235,7 @@ elsif ($action eq 'new') {
 
   my $new_user = Bugzilla::User->create({
     login_name    => scalar $cgi->param('login'),
+    email         => scalar $cgi->param('email'),
     cryptpassword => $password,
     realname      => scalar $cgi->param('name'),
     disabledtext  => scalar $cgi->param('disabledtext'),
@@ -289,6 +306,31 @@ elsif ($action eq 'update') {
   }
 
   $changes = $otherUser->update();
+
+  # Bug 1963773 - persist the primary email address in profiles_emails.
+  if ($editusers) {
+    my $new_email = trim($cgi->param('email') || '');
+    my $old_email = Bugzilla::User::Email->get_primary_email_of_user($otherUserID);
+
+    if ($new_email && (!defined $old_email || lc($old_email) ne lc($new_email))) {
+      Bugzilla::User::Email->check_email_for_creation($new_email);
+
+      if (defined $old_email) {
+        my $email_obj = Bugzilla::User::Email->new({name => $old_email});
+        $email_obj->set_email($new_email);
+        $email_obj->update();
+      }
+      else {
+        Bugzilla::User::Email->create({
+          user_id          => $otherUserID,
+          email            => $new_email,
+          is_primary_email => 1,
+        });
+      }
+
+      $changes->{email} = [$old_email, $new_email];
+    }
+  }
 
   # Update group settings.
   my $sth_add_mapping = $dbh->prepare(

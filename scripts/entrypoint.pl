@@ -123,14 +123,14 @@ sub cmd_dev_httpd {
     run(
       'perl', 'scripts/generate_bmo_data.pl',
       '--param' => 'use_mailer_queue=0',
-      'admin@bmo.test'
+      'admin_bmo_test'
     );
   }
 
   require Bugzilla;
   my $answers = Bugzilla->installation_answers($ENV{BZ_ANSWERS_FILE});
   my $BZ_URLBASE = $::ENV{'BMO_urlbase'};
-  my $LOGIN_USER = "Admin user: $answers->{'ADMIN_EMAIL'}";
+  my $LOGIN_USER = "Admin user: $answers->{'ADMIN_LOGIN_NAME'}";
   my $LOGIN_PASS = "Admin password: $answers->{'ADMIN_PASSWORD'}";
   print <<EOF;
 #########################################

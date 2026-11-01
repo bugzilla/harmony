@@ -26,9 +26,11 @@ use Bugzilla::Error;
 use Bugzilla::Group;
 use Bugzilla::Product;
 use Bugzilla::User;
+use Bugzilla::User::Email;
 use Bugzilla::User::Setting;
 use Bugzilla::Util qw(get_text);
 use Bugzilla::Version;
+
 
 use constant STATUS_WORKFLOW => (
   [undef,         'UNCONFIRMED'],
@@ -420,22 +422,34 @@ sub create_admin {
   return if $admin_count;
 
   my %answer    = %{Bugzilla->installation_answers};
-  my $login     = $answer{'ADMIN_EMAIL'};
+  my $login     = $answer{'ADMIN_LOGIN_NAME'};
+  my $email     = $answer{'ADMIN_EMAIL'};
   my $password  = $answer{'ADMIN_PASSWORD'};
   my $full_name = $answer{'ADMIN_REALNAME'};
 
-  if (!$login || !$password || !$full_name) {
+  if (!$login || !$email  || !$password || !$full_name) {
     print "\n" . get_text('install_admin_setup') . "\n\n";
   }
 
   while (!$login) {
-    print get_text('install_admin_get_email') . ' ';
+    print get_text('install_admin_get_login_name') . ' ';
     $login = <STDIN>;
     chomp $login;
     eval { Bugzilla::User->check_login_name_for_creation($login); };
     if ($@) {
       print $@ . "\n";
       undef $login;
+    }
+  }
+
+  while (!$email) {
+    print get_text('install_admin_get_email') . ' ';
+    $email = <STDIN>;
+    chomp $email;
+    eval { Bugzilla::User::Email->check_email_for_creation($email); };
+    if ($@) {
+      print $@ . "\n";
+      undef $email;
     }
   }
 
@@ -451,8 +465,9 @@ sub create_admin {
 
   my $admin
     = Bugzilla::User->create({
-    login_name => $login, realname => $full_name, cryptpassword => $password
+    login_name => $login, email => $email, realname => $full_name, cryptpassword => $password
     });
+
   make_admin($admin);
 }
 
