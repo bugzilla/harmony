@@ -280,6 +280,7 @@ sub _build_initial_bugs {
 
 sub _build_events {
   my ($self) = @_;
+  my $dbh = Bugzilla->dbh;
   return [] if !(@{$self->initial_bug_ids});
   my $bug_ids    = join ', ', @{$self->initial_bug_ids};
   my $start_date = $self->start_date->strftime('%Y-%m-%d %H:%M:%S');
@@ -288,8 +289,10 @@ sub _build_events {
             bug_id,
             bug_when,
             field.name AS field_name,
-            CONCAT(removed) AS removed,
-            CONCAT(added) AS added
+      }
+    . $dbh->sql_string_concat('removed') . qq{ AS removed,
+      }
+    . $dbh->sql_string_concat('added') . qq{ AS added
         FROM
             bugs_activity
             JOIN fielddefs AS field ON fieldid = field.id
@@ -299,9 +302,9 @@ sub _build_events {
             AND field.name IN ('keywords' , 'bug_status')
             AND bug_when >= '$start_date'
         GROUP BY bug_id , bug_when , field.name
-    };
+  };
   # Don't use selectall_hashref as it only gets the latest event each bug.
-  my $result = Bugzilla->dbh->selectall_arrayref($query);
+  my $result = $dbh->selectall_arrayref($query);
   my $type   = ArrayRef [Tuple [Int, Str, Str, Str, Str]];
   $type->assert_valid($result);
 

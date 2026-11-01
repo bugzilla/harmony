@@ -182,7 +182,9 @@ sub report {
                    'longdesc' AS name,
                    longdescs.bug_id,
                    NULL AS attach_id,
-                   DATE_FORMAT(longdescs.bug_when, '%Y-%m-%d %H:%i:%s') AS ts,
+                   "
+      . $dbh->sql_date_format('longdescs.bug_when', '%Y-%m-%d %H:%i:%s')
+      . " AS ts,
                    '' AS removed,
                    '' AS added,
                    profiles.login_name,

@@ -20,14 +20,16 @@ DEFAULT_TEST_ARGS=(-q -f t/bmo/*.t)
 SUITE_ARGS=()
 if [ "$#" -eq 0 ]; then
     echo "Available test options:"
-    echo "  1) sanity   - Run sanity tests"
-    echo "  2) mysql    - Run BMO tests with MySQL (default)"
-    echo "  3) pg       - Run BMO tests with PostgreSQL"
-    echo "  4) sqlite   - Run BMO tests with SQLite"
-    echo "  5) mariadb  - Run BMO tests with MariaDB"
-    echo "  6) release  - Run release tests"
+    echo "  1) sanity       - Run sanity tests"
+    echo "  2) mysql        - Run BMO tests with MySQL (default)"
+    echo "  3) pg           - Run BMO tests with PostgreSQL"
+    echo "  4) sqlite       - Run BMO tests with SQLite"
+    echo "  5) mariadb      - Run BMO tests with MariaDB"
+    echo "  6) release      - Run release tests"
+    echo "  7) selenium     - Run Selenium tests (qa/t/test_*.t)"
+    echo "  8) webservices  - Run webservice/REST tests (qa/t/{webservice,rest}_*.t)"
     echo
-    read -rp "Select a test option (1-6, default is mysql): " choice
+    read -rp "Select a test option (1-8, default is mysql): " choice
     case "$choice" in
         1) set -- "sanity" ;;
         2|"") set -- "mysql" ;;
@@ -35,6 +37,8 @@ if [ "$#" -eq 0 ]; then
         4) set -- "sqlite" ;;
         5) set -- "mariadb" ;;
         6) set -- "release" ;;
+        7) set -- "selenium" ;;
+        8) set -- "webservices" ;;
         *) echo "Invalid choice. Using default (mysql)"; set -- "mysql" ;;
     esac
 fi
@@ -53,6 +57,14 @@ elif [ "$SUITE" == "sqlite" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-sqlite.yml
 elif [ "$SUITE" == "mariadb" ]; then
     DOCKER_COMPOSE_FILE=docker-compose.test-mariadb.yml
+elif [ "$SUITE" == "selenium" ]; then
+    DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
+    TEST_NAME="test_selenium"
+    DEFAULT_TEST_ARGS=()
+elif [ "$SUITE" == "webservices" ]; then
+    DOCKER_COMPOSE_FILE=docker-compose.test-mysql.yml
+    TEST_NAME="test_webservices"
+    DEFAULT_TEST_ARGS=()
 elif [ "$SUITE" == "release" ]; then
     DOCKER_FILE=docker/images/Dockerfile.perl-testsuite
     if $DOCKER build -t bugzilla-release-test -f "$DOCKER_FILE" .; then
@@ -63,7 +75,7 @@ elif [ "$SUITE" == "release" ]; then
     exit $?
 else
     echo "Unknown test suite: $SUITE"
-    echo "Usage: $0 [sanity|mysql|pg|sqlite|mariadb|release] [suite args...]"
+    echo "Usage: $0 [sanity|mysql|pg|sqlite|mariadb|selenium|webservices|release] [suite args...]"
     exit 1
 fi
 

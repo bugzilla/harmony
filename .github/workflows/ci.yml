@@ -90,8 +90,10 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
       - name: Build Docker image
-        run: docker build -t bugzilla-release-test -f docker/images/Dockerfile.perl-testsuite .
+        run: docker buildx build --load -t bugzilla-release-test -f docker/images/Dockerfile.perl-testsuite .
       - name: Run tests
         run: docker run --rm bugzilla-release-test
 
