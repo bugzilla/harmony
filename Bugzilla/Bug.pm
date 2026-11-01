@@ -1108,8 +1108,9 @@ sub update {
     # we only audit when bugs protected with a secure-mail enabled group
     # are made public
     if (
-      !scalar @{$self->groups_in} && any { $old_groups{$_}->secure_mail }
-      @$removed_gr
+      !scalar @{$self->groups_in}
+      && Bugzilla->has_extension('SecureMail')
+      && any { $old_groups{$_}->secure_mail } @$removed_gr
       )
     {
       Bugzilla->audit(sprintf(
