@@ -366,6 +366,7 @@
         <li>A ticket on hellosplat.com.</li>
         <li>A revision, support ticket, or task in Phabricator.</li>
         <li>A Mozilla Sentry issue.</li>
+        [% Hook.process('bug_url_invalid_tracker') %]
       </ul>
     [% ELSIF reason == 'id' %]
       There is no valid [% terms.bug %] id in that URL.
