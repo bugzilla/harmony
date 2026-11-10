@@ -54,6 +54,8 @@
           <li>
             [% IF    field == 'login_name' %]
               The login is now [% otheruser.login FILTER html %].
+            [% ELSIF field == 'email' %]
+              The email address is now [% otheruser.email FILTER html %].
             [% ELSIF field == 'realname' %]
               The real name has been updated.
             [% ELSIF field == 'nickname' %]
@@ -554,6 +556,10 @@
     [%+ field_descs.${field.name} FILTER html %] value
     created: [% value FILTER html %]
 
+  [% ELSIF message_tag == "email_changed" %]
+    [% title = "Email Changed" %]
+    Your email address has been updated.
+
   [% ELSIF message_tag == "milestone_created" %]
     [% title = "Milestone Created" %]
     The milestone <em>[% milestone.name FILTER html %]</em> has been created.
@@ -683,6 +689,9 @@
   [% ELSIF message_tag == "flag_type_deactivated" %]
     [% title = BLOCK %]Flag Type '[% flag_type.name FILTER html %]' Deactivated[% END %]
     The flag type <em>[% flag_type.name FILTER html %]</em> has been deactivated.
+
+  [% ELSIF message_tag == "install_admin_get_login_name" %]
+    Enter the login name of the administrator:
 
   [% ELSIF message_tag == "install_admin_get_email" %]
     Enter the e-mail address of the administrator:

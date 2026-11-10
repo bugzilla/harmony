@@ -1016,6 +1016,24 @@ use constant ABSTRACT_SCHEMA => {
     ],
   },
 
+  profiles_emails => {
+    FIELDS => [
+      id            => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
+      user_id       => {
+        TYPE             => 'INT3',
+        NOTNULL          => 1,
+        REFERENCES       => {TABLE => 'profiles', COLUMN => 'userid', DELETE => 'CASCADE'}
+      },
+      email            => {TYPE => 'varchar(255)', NOTNULL => 1},
+      is_primary_email => {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'},
+      display_order    => {TYPE => 'INT1', NOTNULL => 1, DEFAULT => 1},
+    ],
+    INDEXES => [
+      profiles_emails_userid_idx => ['user_id'],
+      profiles_emails_email_idx  => {FIELDS => ['email'], TYPE => 'UNIQUE'},
+    ],
+  },
+
   profile_mfa => {
     FIELDS => [
       id      => {TYPE => 'INTSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
