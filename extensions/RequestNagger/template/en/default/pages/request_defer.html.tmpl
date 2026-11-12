@@ -58,8 +58,8 @@
         <div class="flag-attach-actions">
           <a href="[% basepath FILTER none %]attachment.cgi?id=[% flag.attachment.id FILTER none ~%]
                    &amp;action=diff">Diff</a> |
-          <a href="[% basepath FILTER none %]review?bug=[% flag.bug.id FILTER none ~%]
-                   &amp;attachment=[% flag.attachment.id FILTER none %]">Review</a>
+          <a href="[% basepath FILTER none %]attachment.cgi?id=[% flag.attachment.id FILTER none ~%]
+                   &amp;action=edit">Details</a>
         </div>
       [% END %]
     </div>
