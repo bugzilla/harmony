@@ -16,4 +16,5 @@ User Guide
    tips
    preferences
    extensions
+   browser-support
 
