@@ -31,7 +31,7 @@ Overdue requests requiring action from you:
   [% END %]
   [%+ urlbase %]show_bug.cgi?id=[% request.bug.id +%]
   [% IF request.attachment && request.attachment.ispatch %]
-  Review: [% urlbase %]review?bug=[% request.bug.id %]&attachment=[% request.attachment.id %]
+  Details: [% urlbase %]attachment.cgi?id=[% request.attachment.id %]&action=edit
   [% END %]
   [% IF report == "requestee" %]
   Defer: [% urlbase %]request_defer?flag=[% request.flag.id %]
