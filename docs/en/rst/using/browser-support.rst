@@ -3,7 +3,9 @@
 Supported Browsers
 ##################
 
-Bugzilla is developed and tested against current desktop web browsers.
+Bugzilla is tested with Firefox. Other current desktop browsers are expected
+to work, and a problem in one of them is treated as a bug, but they are not
+part of the automated tests.
 
 Full support
 ============

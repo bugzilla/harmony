@@ -8,7 +8,6 @@ User Guide
    :maxdepth: 2
 
    creating-an-account
-   browser-support
    filing
    understanding
    editing
@@ -17,4 +16,5 @@ User Guide
    tips
    preferences
    extensions
+   browser-support
 
