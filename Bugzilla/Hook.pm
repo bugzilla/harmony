@@ -1415,6 +1415,28 @@ your template.
 
 =back
 
+=head2 password_check
+
+Allows an extension to apply a stricter password policy than the built-in
+check. This is only called when the core check has accepted the password,
+so an extension can add a rejection but can never clear one made by the
+core check.
+
+Params:
+
+=over
+
+=item C<password>
+
+The plain-text password being validated.
+
+=item C<reason>
+
+A reference to an undefined scalar. Set it to a short reason string to
+reject the password. Leaving it undefined accepts the password.
+
+=back
+
 =head2 path_info_whitelist
 
 By default, Bugzilla removes the Path-Info information from URLs before
