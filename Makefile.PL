@@ -376,6 +376,9 @@ my %test_requires = (
 
 WriteMakefile(
   NAME               => 'Bugzilla',
+  # Harmony installs Perl deps in local/, not lib/. Files with :: in
+  # their names under lib/ break the generated Makefile.
+  PMLIBDIRS          => ['Bugzilla'],
   AUTHOR             => q{Bugzilla Developers <developers@bugzilla.org>},
   VERSION_FROM       => 'Bugzilla.pm',
   ABSTRACT           => 'Bugzilla Bug Tracking System',
