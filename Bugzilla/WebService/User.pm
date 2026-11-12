@@ -513,7 +513,7 @@ sub _user_from_phab_token {
   # `user.whoami` endpoint.
 
   # only if PhabBugz is configure and X-PHABRICATOR-TOKEN is provided
-  (my $phab_url = Bugzilla->params->{phabricator_base_uri}) =~ s{/$}{};
+  (my $phab_url = Bugzilla->params->{phabricator_base_uri} // '') =~ s{/$}{};
   my $phab_token = Bugzilla->input_params->{Phabricator_token};
   return undef unless $phab_url && $phab_token;
 

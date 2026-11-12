@@ -48,7 +48,8 @@
 </div>
 
 <div class="groups edit-show" style="display:none">
-  [% UNLESS bug.in_group(bug.product_obj.default_security_group_obj)
+  [% UNLESS !bug.product_obj.default_security_group
+     || bug.in_group(bug.product_obj.default_security_group_obj)
      || user.in_group(bug.product_obj.default_security_group)
      || (user.id != bug.reporter.id && !user.in_group('editbugs')) %]
     <div>

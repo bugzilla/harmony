@@ -172,7 +172,7 @@ sub cmd_load_test_data {
   run(
     'perl',        'scripts/generate_bmo_data.pl',
     '--param',     'use_mailer_queue=0'
-  );
+  ) unless -f q(/app/extensions/BMO/disabled);
 
   if ($ENV{BZ_QA_CONFIG}) {
     chdir '/app/qa/config';
@@ -188,6 +188,10 @@ sub cmd_push_data {
 
 sub cmd_test_sanity {
   my @tests = @_;
+
+  # Skip tests of extensions that are disabled
+  @tests = grep { not (m#^(?:\./)?extensions/([^/]+)/# and -e "/app/extensions/$1/disabled") } @tests;
+
   run('prove', '-I/app', '-I/app/local/lib/perl5', '-qf', @tests);
 }
 

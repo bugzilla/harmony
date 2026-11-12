@@ -68,9 +68,11 @@ if ($config->{test_extensions}) {
   $sel->type_ok("votestoconfirm", "10");
 }
 $sel->type_ok("version", "0.1a");
-$sel->select_ok("security_group_id",   "label=core-security");
-$sel->select_ok("default_op_sys_id",   "label=Unspecified");
-$sel->select_ok("default_platform_id", "label=Unspecified");
+if ($sel->is_element_present("security_group_id")) {
+  $sel->select_ok("security_group_id",   "label=core-security");
+  $sel->select_ok("default_op_sys_id",   "label=Unspecified");
+  $sel->select_ok("default_platform_id", "label=Unspecified");
+}
 $sel->click_ok('//input[@type="submit" and @value="Add"]');
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $text = trim($sel->get_text("message"));
