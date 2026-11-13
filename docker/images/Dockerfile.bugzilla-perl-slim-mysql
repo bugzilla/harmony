@@ -1,4 +1,6 @@
-FROM bugzilla/bugzilla-perl-slim:20250925.1 AS builder
+ARG SIZE="slim"
+ARG BASE_TAG="20260801.1"
+FROM bugzilla/bugzilla-perl-${SIZE}:${BASE_TAG} AS builder
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \
@@ -48,7 +50,7 @@ RUN find local -name '*.so' -exec ldd {} \; \
     | xargs -IFILE apt-file search -l FILE \
     | sort -u > PACKAGES
 
-FROM bugzilla/bugzilla-perl-slim:20250925.1
+FROM bugzilla/bugzilla-perl-${SIZE}:${BASE_TAG}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
