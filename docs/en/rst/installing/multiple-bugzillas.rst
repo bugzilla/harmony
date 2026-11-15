@@ -26,14 +26,17 @@ reference to a new database, and re-run :command:`checksetup.pl`
 to populate it. That's all.
 
 Each instance runs as its own Bugzilla web app process. Start it with
-``PROJECT`` set and on its own port:
+``PROJECT`` set, listening on its own port on the loopback interface only:
 
 .. code-block:: console
 
-    PROJECT=foo PORT=3002 MOJO_REVERSE_PROXY=1 ./bugzilla.pl daemon
+    PROJECT=foo MOJO_LISTEN=http://127.0.0.1:3002 MOJO_REVERSE_PROXY=1 ./bugzilla.pl daemon
 
-Then configure your web server to proxy the instance's hostname to that
-port, as described in :ref:`web_server`.
+With ``MOJO_REVERSE_PROXY=1`` the app trusts forwarding headers sent by
+whatever connects to it, so the backend port must not be reachable
+from other hosts. Then configure your web server to proxy the
+instance's hostname to ``http://127.0.0.1:3002``, as described in
+:ref:`web_server`.
 
 Don't forget to also export this variable before accessing Bugzilla
 by other means, such as repeating tasks like those above.
