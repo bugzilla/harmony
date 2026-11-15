@@ -119,8 +119,6 @@ installed:
 * HTML-FormatText-WithLinks
 * TheSchwartz
 * Daemon-Generic
-* mod_perl
-* Apache-SizeLimit
 * File-MimeInfo
 * IO-stringy
 * Cache-Memcached
@@ -141,11 +139,8 @@ below.
 Web Server
 ==========
 
-Any web server that is capable of running CGI scripts can be made to work.
-We have specific instructions for the following:
-
-* :ref:`apache-windows`
-* :ref:`iis`
+Bugzilla runs as its own web app. For production use, put a web server in
+front of it as a reverse proxy; see :ref:`web_server`.
 
 .. windows-config-database:
 
@@ -167,17 +162,5 @@ setup. Configure your server according to the instructions below:
 .. |testservercommand| replace:: :command:`testserver.pl http://<your-bugzilla-server>/`
 
 .. include:: installing-end.inc.rst
-
-If you don't see the main Bugzilla page, but instead see "It works!!!",
-then somehow your Apache has not picked up your modifications to
-:file:`httpd.conf`. If you are on Windows 7 or later, this could be due to a
-new feature called "VirtualStore". `This blog post
-<http://blog.netscraps.com/bugs/apache-httpd-conf-changes-ignored-in-windows-7.html>`_
-may help to solve the problem.
-
-If you get an "Internal Error..." message, it could be that
-``ScriptInterpreterSource Registry-Strict`` is not set in your
-:ref:`Apache configuration <apache-windows>`. Check again if it is set
-properly.
 
 Next, do the :ref:`essential-post-install-config`.

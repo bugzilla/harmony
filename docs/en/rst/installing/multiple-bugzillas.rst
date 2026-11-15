@@ -25,17 +25,18 @@ result in a file called :file:`localconfig.foo` instead of
 reference to a new database, and re-run :command:`checksetup.pl`
 to populate it. That's all.
 
-Now you have to configure the web server to pass this environment
-variable when accessed via an alternate URL, such as virtual host for
-instance. The following is an example of how you could do it in Apache,
-other Webservers may differ.
+Each instance runs as its own Bugzilla web app process. Start it with
+``PROJECT`` set, listening on its own port on the loopback interface only:
 
-.. code-block:: apache
+.. code-block:: console
 
-    <VirtualHost 12.34.56.78:80>
-        ServerName bugzilla.example.com
-        SetEnv PROJECT foo
-    </VirtualHost>
+    PROJECT=foo MOJO_LISTEN=http://127.0.0.1:3002 MOJO_REVERSE_PROXY=1 ./bugzilla.pl daemon
+
+With ``MOJO_REVERSE_PROXY=1`` the app trusts forwarding headers sent by
+whatever connects to it, so the backend port must not be reachable
+from other hosts. Then configure your web server to proxy the
+instance's hostname to ``http://127.0.0.1:3002``, as described in
+:ref:`web_server`.
 
 Don't forget to also export this variable before accessing Bugzilla
 by other means, such as repeating tasks like those above.

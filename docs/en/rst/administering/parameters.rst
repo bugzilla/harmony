@@ -683,9 +683,7 @@ usemenuforusers
 
 ajax_user_autocompletion
     If this option is set, typing characters in a certain user fields
-    will display a list of matches that can be selected from. It is
-    recommended to only turn this on if you are using mod_perl;
-    otherwise, the response will be irritatingly slow.
+    will display a list of matches that can be selected from.
 
 maxusermatches
     Provide no more than this many matches when a user is searched for.

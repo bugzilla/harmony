@@ -240,8 +240,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'BMO.tex', u'BMO Documentation',
-   u'The BMO Team', 'manual'),
+  ('index', 'Bugzilla.tex', u'Bugzilla Documentation',
+   u'The Bugzilla Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
