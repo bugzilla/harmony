@@ -38,8 +38,10 @@ Then reload Nginx with ``sudo systemctl reload nginx``.
 
 If Nginx terminates TLS, serve Bugzilla from a ``443`` server block and
 redirect plain HTTP to it. The ``X-Forwarded-Proto $scheme`` header above
-already tells Bugzilla to generate ``https`` URLs. Tools such as Certbot can
-generate this configuration and the certificates for you.
+already tells Bugzilla that the request arrived over HTTPS. Most links in
+Bugzilla's pages and email come from ``$urlbase``, not from this header; see
+:ref:`reverse_proxy_settings`. Tools such as Certbot can generate this
+configuration and the certificates for you.
 
 .. code-block:: nginx
 
@@ -74,7 +76,16 @@ generate this configuration and the certificates for you.
     value of the :param:`maxattachmentsize` parameter.
 
 .. note::
-    Bugzilla listens on port 3001 by default. Set the ``PORT`` environment
-    variable to change it, and update ``proxy_pass`` to match. Start the
-    web app using ``MOJO_REVERSE_PROXY=1 ./bugzilla.pl daemon`` when
-    running behind Nginx, so it trusts the forwarded headers.
+    Start the Bugzilla web app so that it listens on the loopback
+    interface only and trusts the forwarded headers from Nginx:
+
+    .. code-block:: console
+
+        MOJO_LISTEN=http://127.0.0.1:3001 MOJO_REVERSE_PROXY=1 ./bugzilla.pl daemon
+
+    Bugzilla listens on all interfaces by default, and so does setting
+    ``PORT``. With ``MOJO_REVERSE_PROXY=1`` the app trusts forwarding
+    headers sent by whatever connects to it, so the backend port must not
+    be reachable from other hosts. To use another port, change it in
+    ``MOJO_LISTEN`` and in the ``proxy_pass`` lines. Also set ``$urlbase``
+    and ``$inbound_proxies`` as described in :ref:`reverse_proxy_settings`.
