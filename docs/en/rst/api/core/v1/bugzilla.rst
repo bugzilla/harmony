@@ -261,6 +261,7 @@ A logged-in user can access the following parameters (listed alphabetically):
 * usetargetmilestone
 
 A user in the tweakparams group can access all existing parameters.
+Parameters that hold credentials are always returned masked as ``********``.
 New parameters can appear or obsolete parameters can disappear depending
 on the version of Bugzilla and on extensions being installed.
 The list of parameters returned by this method is not stable and will

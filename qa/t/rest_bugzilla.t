@@ -14,7 +14,7 @@ use strict;
 use warnings;
 use lib qw(lib ../../lib ../../local/lib/perl5);
 
-use Test::More tests => 8;
+use Test::More tests => 9;
 use QA::REST;
 
 my $rest   = get_rest_client();
@@ -45,3 +45,9 @@ my $jobqueue_errors
   = $rest->call('jobqueue_status', {api_key => $config->{admin_user_api_key}})
   ->{errors};
 ok(!$jobqueue_errors, "GET /rest/jobqueue_status returns zero errors");
+
+my $parameters
+  = $rest->call('parameters', {api_key => $config->{admin_user_api_key}})
+  ->{parameters};
+is($parameters->{smtp_password},
+  '********', 'GET /rest/parameters returns smtp_password masked');
