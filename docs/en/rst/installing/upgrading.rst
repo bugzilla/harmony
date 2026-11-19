@@ -13,6 +13,10 @@ the method by which you obtain the code along the way.
    from a backup. Those with critical data or large installations may wish
    to test the upgrade on a development server first, using a copy of the
    production data and configuration.
+
+.. note:: If you upgrade from Bugzilla 5.0 or 5.2, each bug keeps only its
+   first alias (in sorted order) as its alias; all of its aliases are kept,
+   unused, in the bugs_aliases table.
  
 Bugzilla uses the Git version control system to store its code. A modern
 Bugzilla installation consists of a checkout of a stable version of the code

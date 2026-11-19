@@ -284,6 +284,11 @@ sub update_table_definitions {
   $dbh->bz_add_column('attachments', 'isprivate',
     {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'});
 
+  # Bug 1534305 - 5.0/5.2 dropped bugs.alias and moved aliases to
+  # bugs_aliases. Note that before the column is re-created below.
+  my $migrate_aliases = !$dbh->bz_column_info('bugs', 'alias')
+    && $dbh->bz_table_info('bugs_aliases');
+
   $dbh->bz_add_column("bugs", "alias", {TYPE => "varchar(20)"});
   $dbh->bz_add_index('bugs', 'bugs_alias_idx',
     {TYPE => 'UNIQUE', FIELDS => [qw(alias)]});
@@ -831,6 +836,9 @@ sub update_table_definitions {
   ]);
 
   _populate_attachment_storage_class();
+
+  # 2026-11-19 Bug 1534305 - keep the first 5.0/5.2 alias in bugs.alias
+  _migrate_bugs_aliases($migrate_aliases);
 
 
   ################################################################
@@ -4385,6 +4393,31 @@ sub _populate_attachment_storage_class {
       "INSERT INTO attachment_storage_class (id, storage_class) SELECT attachments.attach_id, 'database' FROM attachments ORDER BY attachments.attach_id"
     );
   }
+}
+
+sub _migrate_bugs_aliases {
+  my ($migrate_aliases) = @_;
+  my $dbh = Bugzilla->dbh;
+
+  # Only true on the run that re-creates the bugs.alias column dropped
+  # by 5.0/5.2. bugs_aliases is never modified.
+  return unless $migrate_aliases;
+
+  my $updated = $dbh->do(
+    'UPDATE bugs SET alias = (SELECT MIN(alias) FROM bugs_aliases
+                               WHERE bugs_aliases.bug_id = bugs.bug_id)
+      WHERE alias IS NULL
+            AND EXISTS (SELECT 1 FROM bugs_aliases
+                         WHERE bugs_aliases.bug_id = bugs.bug_id)'
+  );
+  return unless $updated > 0;
+
+  my $multi = $dbh->selectrow_array(
+    'SELECT COUNT(*) FROM (SELECT bug_id FROM bugs_aliases
+                            GROUP BY bug_id HAVING COUNT(*) > 1) multi_alias'
+  );
+  print "Set the alias for $updated bugs from bugs_aliases ($multi had"
+    . " multiple aliases; all are kept in bugs_aliases).\n";
 }
 
 
