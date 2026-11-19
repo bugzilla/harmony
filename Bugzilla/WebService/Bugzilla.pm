@@ -92,6 +92,21 @@ use constant PARAMETERS_FROM_LOCALCONFIG => qw(
   urlbase
 );
 
+# These hold credentials and are always masked, whether set or not.
+use constant PARAMETERS_SECRET => qw(
+  LDAPbinddn
+  RADIUS_secret
+  aws_secret_access_key
+  bitly_token
+  duo_akey
+  duo_ikey
+  duo_skey
+  github_client_secret
+  honeypot_api_key
+  phabricator_api_key
+  smtp_password
+);
+
 sub version {
   my $self = shift;
   return {version => $self->type('string', BUGZILLA_VERSION)};
@@ -180,17 +195,20 @@ sub parameters {
   $args ||= {};
 
   my %from_localconfig = map { $_ => 1 } PARAMETERS_FROM_LOCALCONFIG;
+  my %secret           = map { $_ => 1 } PARAMETERS_SECRET;
 
   my @params_list
-    = $user->in_group('tweakparams') ? (keys(%$params), PARAMETERS_FROM_LOCALCONFIG)
-    : $user->id                      ? PARAMETERS_LOGGED_IN
-    :                                  PARAMETERS_LOGGED_OUT;
+    = $user->in_group('tweakparams')
+    ? (keys(%$params), PARAMETERS_FROM_LOCALCONFIG)
+    : $user->id ? PARAMETERS_LOGGED_IN
+    :             PARAMETERS_LOGGED_OUT;
 
   my %parameters;
   foreach my $param (@params_list) {
     next unless filter_wants($args, $param);
     my $value
       = $from_localconfig{$param} ? $localconfig->$param : $params->{$param};
+    $value = '********' if $secret{$param};
     $parameters{$param} = $self->type('string', $value);
   }
 
@@ -477,6 +495,11 @@ never be stable.
 C<urlbase> and C<attachment_base> are read from F<localconfig> rather
 than from the parameters file.
 
+Parameters that hold credentials (C<LDAPbinddn>, C<RADIUS_secret>,
+C<aws_secret_access_key>, C<bitly_token>, C<duo_akey>, C<duo_ikey>,
+C<duo_skey>, C<github_client_secret>, C<honeypot_api_key>,
+C<phabricator_api_key>, C<smtp_password>) are always returned as C<********>, whether set or not.
+
 =item B<History>
 
 =over
@@ -485,7 +508,7 @@ than from the parameters file.
 
 =item REST API call added in Bugzilla B<5.0>.
 
-=item Restored in Bugzilla B<6.0>, with C<urlbase> and C<attachment_base>
+=item Restored in Bugzilla B<5.9.1+>, with C<urlbase> and C<attachment_base>
 served from F<localconfig>.
 
 =back
