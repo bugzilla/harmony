@@ -28,6 +28,7 @@ use base qw(Exporter);
   check_user_verify_class
   check_mail_delivery_method check_notification check_utf8
   check_bug_status check_smtp_auth check_theschwartz_available
+  check_smtp_auth_method check_smtp_oauth2_token_url
   check_maxattachmentsize check_email
   check_comment_taggers_group
   get_all_group_names
@@ -331,6 +332,24 @@ sub check_smtp_auth {
     return "SMTP Authentication is not available. Run checksetup.pl for"
       . " more details";
   }
+  return "";
+}
+
+sub check_smtp_auth_method {
+  my $check = check_multi(@_);
+  return $check if $check;
+  my $method = shift;
+  if ($method eq 'oauth2' and !Bugzilla->feature('smtp_oauth2')) {
+    return "SMTP OAuth2 authentication is not available. Run checksetup.pl"
+      . " for more details";
+  }
+  return "";
+}
+
+sub check_smtp_oauth2_token_url {
+  my $url = shift;
+  return "" if $url eq '';
+  return "The token URL must start with https://" if $url !~ m{^https://\S+$};
   return "";
 }
 

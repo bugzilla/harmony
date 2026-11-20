@@ -67,7 +67,7 @@ following information about it:
 * The domain name of the server (Parameter: :param:`smtpserver`)
 * The username and password to use (Parameters: :param:`smtp_username` and 
   :param:`smtp_password`)
-* Whether the server uses SSL (Parameter: :param:`smtp_ssl`)
+* Whether the server uses SSL or STARTTLS (Parameter: :param:`smtp_ssl`)
 * The address you should be sending mail 'From' (Parameter:
   :param:`mailfrom`)
 
@@ -85,7 +85,7 @@ use. Then, set the following parameter values in the "Email" section:
 * :param:`smtpserver`: :paramval:`smtp.gmail.com:465`
 * :param:`smtp_username`: :paramval:`new_gmail_address@gmail.com`
 * :param:`smtp_password`: :paramval:`new_gmail_password`
-* :param:`smtp_ssl`: :paramval:`On`
+* :param:`smtp_ssl`: :paramval:`ssl`
 
 Run Your Own Mail Server
 ------------------------

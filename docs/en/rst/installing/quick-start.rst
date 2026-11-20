@@ -287,7 +287,7 @@ of the Parameters using the link in the left column, and set the following value
 * :param:`smtpserver`: :paramval:`smtp.hostname:465`
 * :param:`smtp_username`: :paramval:`username`
 * :param:`smtp_password`: :paramval:`password`
-* :param:`smtp_ssl`: :paramval:`On`
+* :param:`smtp_ssl`: :paramval:`ssl`
 
 Click :guilabel:`Save Changes` at the bottom of the page.
 

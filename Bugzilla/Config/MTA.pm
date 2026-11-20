@@ -67,6 +67,29 @@ sub get_param_list {
       checker => \&check_smtp_auth
     },
     {name => 'smtp_password', type => 'p', default => ''},
+    {
+      name    => 'smtp_ssl',
+      type    => 's',
+      choices => ['none', 'starttls', 'ssl'],
+      default => 'none',
+      checker => \&check_multi
+    },
+    {
+      name    => 'smtp_auth_method',
+      type    => 's',
+      choices => ['password', 'oauth2'],
+      default => 'password',
+      checker => \&check_smtp_auth_method
+    },
+    {
+      name    => 'smtp_oauth2_token_url',
+      type    => 't',
+      default => '',
+      checker => \&check_smtp_oauth2_token_url
+    },
+    {name => 'smtp_oauth2_client_id',     type => 't', default => ''},
+    {name => 'smtp_oauth2_client_secret', type => 'p', default => ''},
+    {name => 'smtp_oauth2_refresh_token', type => 'p', default => ''},
     {name => 'smtp_debug',    type => 'b', default => 0},
     {name => 'whinedays', type => 't', default => 7, checker => \&check_numeric},
     {name => 'globalwatchers', type => 't', default => '',},

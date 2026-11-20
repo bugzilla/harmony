@@ -63,10 +63,41 @@
   smtp_password => "The password to pass to the SMTP server for SMTP authentication. " _
                    "This field has no effect if the smtp_username parameter is left empty.",
 
+  smtp_ssl => "How to secure the connection to the SMTP server. " _
+              "<ul><li>'none': no encryption.</li>" _
+              "<li>'starttls': connect in plain text, then upgrade with STARTTLS " _
+              "(usually port 587).</li>" _
+              "<li>'ssl': connect over SSL/TLS from the start (usually port 465).</li></ul>",
+
+  smtp_auth_method => "How to authenticate to the SMTP server. " _
+                      "<ul><li>'password': send smtp_username and smtp_password " _
+                      "(no authentication if smtp_username is empty).</li>" _
+                      "<li>'oauth2': log in with XOAUTH2 as smtp_username, which must " _
+                      "be the mailbox address, using an access token obtained from smtp_oauth2_token_url with the " _
+                      "refresh token below. smtp_password is not used. This requires " _
+                      "the Perl modules listed by <kbd>checksetup.pl</kbd> for the " _
+                      "smtp_oauth2 feature.</li></ul>",
+
+  smtp_oauth2_token_url => "The OAuth2 token endpoint of your mail provider. " _
+                           "Must start with https://. Used only when " _
+                           "smtp_auth_method is 'oauth2'.",
+
+  smtp_oauth2_client_id => "The OAuth2 client ID registered with your mail provider. " _
+                           "Used only when smtp_auth_method is 'oauth2'.",
+
+  smtp_oauth2_client_secret => "The OAuth2 client secret registered with your mail " _
+                               "provider. Used only when smtp_auth_method is 'oauth2'.",
+
+  smtp_oauth2_refresh_token => "A long-lived OAuth2 refresh token for the smtp_username " _
+                               "account, obtained once through your provider's consent " _
+                               "flow. Used only when smtp_auth_method is 'oauth2'.",
+
   smtp_debug => "If enabled, this will print detailed information to your" _
                 " web server's error log about the communication between" _
                 " $terms.Bugzilla and your SMTP server. You can use this to" _
-                " troubleshoot email problems.",
+                " troubleshoot email problems. When smtp_auth_method is 'oauth2'," _
+                " the logged SMTP session includes the base64-encoded access" _
+                " token, so turn smtp_debug off after troubleshooting.",
 
   whinedays => "The number of days that we'll let a $terms.bug sit untouched in a CONFIRMED " _
                "state before our cronjob will whine at the owner.<br> " _
