@@ -113,6 +113,16 @@ sub update_params {
     }
   }
 
+  # smtp_ssl was a boolean in 5.x; it is now none/starttls/ssl.
+  if (exists $param->{'smtp_ssl'}) {
+    if ($param->{'smtp_ssl'} eq '1') {
+      $param->{'smtp_ssl'} = 'ssl';
+    }
+    elsif ($param->{'smtp_ssl'} eq '0' || $param->{'smtp_ssl'} eq '') {
+      $param->{'smtp_ssl'} = 'none';
+    }
+  }
+
   # Change from usebrowserinfo to defaultplatform/defaultopsys combo
   if (exists $param->{'usebrowserinfo'}) {
     if (!$param->{'usebrowserinfo'}) {

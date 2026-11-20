@@ -568,7 +568,12 @@ smtp_password
     parameter is left empty.
 
 smtp_ssl
-    Enable SSL support for connection to the SMTP server.
+    How to secure the connection to the SMTP server.
+    :paramval:`none` uses no encryption. :paramval:`starttls` connects
+    in plain text and then upgrades with STARTTLS (usually port 587).
+    :paramval:`ssl` connects over SSL/TLS from the start (usually port
+    465). On upgrade, a 5.x value of On becomes :paramval:`ssl` and Off
+    becomes :paramval:`none`.
 
 smtp_debug
     This parameter allows you to enable detailed debugging output.

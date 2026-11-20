@@ -154,16 +154,7 @@ sub MessageToMTA {
   }
 
   if ($method eq "SMTP") {
-    my ($host, $port) = split(/:/, Bugzilla->params->{'smtpserver'}, 2);
-    $transport = Email::Sender::Transport::SMTP->new({
-      host => $host,
-      defined($port) ? (port => $port) : (),
-      sasl_username => Bugzilla->params->{'smtp_username'},
-      sasl_password => Bugzilla->params->{'smtp_password'},
-      helo          => $hostname,
-      ssl           => Bugzilla->params->{'smtp_ssl'},
-      debug         => Bugzilla->params->{'smtp_debug'}
-    });
+    $transport = _smtp_transport($hostname);
   }
 
   Bugzilla::Hook::process('mailer_before_send', {email => $email});
@@ -245,6 +236,23 @@ sub MessageToMTA {
       undef, $email->header('To')
     );
   }
+}
+
+# Builds the SMTP transport from the MTA params. Does not connect.
+sub _smtp_transport {
+  my ($hostname) = @_;
+  my $params = Bugzilla->params;
+  my ($host, $port) = split(/:/, $params->{'smtpserver'}, 2);
+  my $ssl = $params->{'smtp_ssl'};
+  return Email::Sender::Transport::SMTP->new({
+    host => $host,
+    defined($port) ? (port => $port) : (),
+    sasl_username => $params->{'smtp_username'},
+    sasl_password => $params->{'smtp_password'},
+    helo          => $hostname,
+    ssl           => ($ssl eq 'none' ? 0 : $ssl),
+    debug         => $params->{'smtp_debug'}
+  });
 }
 
 # Builds header suitable for use as a threading marker in email notifications

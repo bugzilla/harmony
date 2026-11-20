@@ -67,6 +67,13 @@ sub get_param_list {
       checker => \&check_smtp_auth
     },
     {name => 'smtp_password', type => 'p', default => ''},
+    {
+      name    => 'smtp_ssl',
+      type    => 's',
+      choices => ['none', 'starttls', 'ssl'],
+      default => 'none',
+      checker => \&check_multi
+    },
     {name => 'smtp_debug',    type => 'b', default => 0},
     {name => 'whinedays', type => 't', default => 7, checker => \&check_numeric},
     {name => 'globalwatchers', type => 't', default => '',},
