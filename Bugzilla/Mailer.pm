@@ -154,7 +154,15 @@ sub MessageToMTA {
   }
 
   if ($method eq "SMTP") {
-    $transport = _smtp_transport($hostname);
+    if ((Bugzilla->params->{'smtp_auth_method'} // '') eq 'oauth2') {
+      $transport = eval { _smtp_transport($hostname) };
+      ThrowCodeError('mail_send_error',
+        {msg => $@ || 'unknown error', mail => $email})
+        if !$transport;
+    }
+    else {
+      $transport = _smtp_transport($hostname);
+    }
   }
 
   Bugzilla::Hook::process('mailer_before_send', {email => $email});
@@ -223,6 +231,7 @@ sub MessageToMTA {
     local $ENV{PATH} = SENDMAIL_PATH;
     eval { sendmail($email, {transport => $transport}) };
     if ($@) {
+      _smtp_oauth2_clear_on_failure($@) if $method eq 'SMTP';
       ThrowCodeError('mail_send_error', {msg => $@->message, mail => $email});
     }
   }
@@ -244,15 +253,117 @@ sub _smtp_transport {
   my $params = Bugzilla->params;
   my ($host, $port) = split(/:/, $params->{'smtpserver'}, 2);
   my $ssl = $params->{'smtp_ssl'};
+
+  my %auth;
+  if (($params->{'smtp_auth_method'} // '') eq 'oauth2') {
+
+    # Dies on a token error; there is no fallback to smtp_password.
+    my $token = _smtp_oauth2_token();
+    require Authen::SASL;
+
+    # The mechanism must be explicit, and sasl_username must not be passed
+    # (Email::Sender croaks if both it and sasl_authenticator are given).
+    %auth = (
+      sasl_authenticator => Authen::SASL->new(
+        mechanism => 'XOAUTH2',
+        callback  => {user => $params->{'smtp_username'}, pass => $token}
+      )
+    );
+  }
+  else {
+    %auth = (
+      sasl_username => $params->{'smtp_username'},
+      sasl_password => $params->{'smtp_password'},
+    );
+  }
+
   return Email::Sender::Transport::SMTP->new({
     host => $host,
     defined($port) ? (port => $port) : (),
-    sasl_username => $params->{'smtp_username'},
-    sasl_password => $params->{'smtp_password'},
-    helo          => $hostname,
-    ssl           => ($ssl eq 'none' ? 0 : $ssl),
-    debug         => $params->{'smtp_debug'}
+    %auth,
+    helo  => $hostname,
+    ssl   => ($ssl eq 'none' ? 0 : $ssl),
+    debug => $params->{'smtp_debug'}
   });
+}
+
+# Returns an OAuth2 access token for SMTP XOAUTH2, refreshing it from
+# smtp_oauth2_token_url when needed. The token is cached per process only.
+# Error messages must never contain the tokens, the client secret, or the
+# request body.
+sub _smtp_oauth2_token {
+  my $params = Bugzilla->params;
+  my $key    = join("\0",
+    map { $params->{$_} // '' }
+      qw(smtp_oauth2_token_url smtp_oauth2_client_id
+      smtp_oauth2_refresh_token smtp_username));
+
+  my $cache  = Bugzilla->process_cache;
+  my $cached = $cache->{smtp_oauth2};
+  if ($cached && $cached->{key} eq $key && $cached->{expires} - time() > 300) {
+    return $cached->{token};
+  }
+  delete $cache->{smtp_oauth2};
+
+  require LWP::UserAgent;
+  require JSON::MaybeXS;
+  my $ua = LWP::UserAgent->new(timeout => 30);
+  $ua->protocols_allowed(['https']);
+  if (my $proxy_url = $params->{'proxy_url'}) {
+    $ua->proxy(['http', 'https'], $proxy_url);
+  }
+  else {
+    $ua->env_proxy;
+  }
+
+  my $response = $ua->post(
+    $params->{'smtp_oauth2_token_url'},
+    {
+      grant_type    => 'refresh_token',
+      client_id     => $params->{'smtp_oauth2_client_id'},
+      client_secret => $params->{'smtp_oauth2_client_secret'},
+      refresh_token => $params->{'smtp_oauth2_refresh_token'},
+    }
+  );
+
+  my $data = eval { JSON::MaybeXS::decode_json($response->content) };
+  $data = undef if ref($data) ne 'HASH';
+
+  if (!$response->is_success) {
+
+    # Only the standard OAuth2 error code, never the response body.
+    my $code = $data ? $data->{error} : undef;
+    my $detail
+      = (defined $code && !ref $code && $code =~ /^[\w.-]{1,64}$/)
+      ? " ($code)"
+      : '';
+    die "SMTP OAuth2 token request failed: "
+      . $response->status_line
+      . "$detail\n";
+  }
+
+  my $token = $data ? $data->{access_token} : undef;
+  if (!defined $token || ref $token || $token eq '') {
+    die "SMTP OAuth2 token response has no access_token\n";
+  }
+
+  # A returned refresh_token is ignored; params are not written from here.
+  my $expires_in = $data->{expires_in};
+  if (defined $expires_in && $expires_in =~ /^\d+$/ && $expires_in > 0) {
+    $cache->{smtp_oauth2}
+      = {key => $key, token => $token, expires => time() + $expires_in};
+  }
+
+  return $token;
+}
+
+# A rejected XOAUTH2 login means the cached token is no good; drop it so
+# the next message fetches a fresh one.
+sub _smtp_oauth2_clear_on_failure {
+  my ($err) = @_;
+  return if (Bugzilla->params->{'smtp_auth_method'} // '') ne 'oauth2';
+  my $msg = ref $err ? $err->message : ($err // '');
+  delete Bugzilla->process_cache->{smtp_oauth2} if $msg =~ /^failed AUTH/;
 }
 
 # Builds header suitable for use as a threading marker in email notifications

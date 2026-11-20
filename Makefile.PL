@@ -59,7 +59,7 @@ my %requires = (
   'EV'                         => '4.0',
   'Email::Address::XS'         => '1.05',
   'Email::MIME'                => '1.904',
-  'Email::Sender'              => '2.600',
+  'Email::Sender'              => '2.601',
   'FFI::Platypus'              => 0,
   'Future'                     => '0.34',
   'HTML::Escape'               => '1.10',
@@ -304,6 +304,10 @@ my %optional_features = (
   smtp_auth => {
     description => 'SMTP Authentication',
     prereqs     => {runtime => {requires => {'Authen::SASL' => 0}}},
+  },
+  smtp_oauth2 => {
+    description => 'SMTP OAuth2 (XOAUTH2) authentication',
+    prereqs     => {runtime => {requires => {'Authen::SASL' => '2.1800'}}},
   },
   sqlite => {
     description => 'SQLite database support',

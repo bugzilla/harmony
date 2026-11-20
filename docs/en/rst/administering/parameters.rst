@@ -575,9 +575,42 @@ smtp_ssl
     465). On upgrade, a 5.x value of On becomes :paramval:`ssl` and Off
     becomes :paramval:`none`.
 
+smtp_auth_method
+    How to authenticate to the SMTP server.
+    :paramval:`password` sends :param:`smtp_username` and
+    :param:`smtp_password` (no authentication if :param:`smtp_username`
+    is empty). :paramval:`oauth2` logs in with XOAUTH2 as
+    :param:`smtp_username`, which must be the mailbox address, using
+    an access token that Bugzilla
+    obtains from :param:`smtp_oauth2_token_url` with
+    :param:`smtp_oauth2_refresh_token`; :param:`smtp_password` is not
+    used. :paramval:`oauth2` requires the Perl modules that
+    :file:`checksetup.pl` lists for the ``smtp_oauth2`` feature. See
+    :ref:`param-email-oauth2`.
+
+smtp_oauth2_token_url
+    The OAuth2 token endpoint of your mail provider. It must start with
+    ``https://``. For example, Microsoft personal accounts use
+    ``https://login.microsoftonline.com/consumers/oauth2/v2.0/token``.
+
+smtp_oauth2_client_id
+    The OAuth2 client ID registered with your mail provider.
+
+smtp_oauth2_client_secret
+    The OAuth2 client secret registered with your mail provider.
+
+smtp_oauth2_refresh_token
+    A long-lived refresh token for the :param:`smtp_username` account,
+    obtained once through your provider's consent flow. Bugzilla uses it
+    to request short-lived access tokens, which it keeps in memory (see
+    :param:`smtp_debug`).
+
 smtp_debug
     This parameter allows you to enable detailed debugging output.
     Log messages are printed the web server's error log.
+    When :param:`smtp_auth_method` is :paramval:`oauth2`, the logged
+    SMTP session includes the base64-encoded access token, so turn
+    :param:`smtp_debug` off after troubleshooting.
 
 whinedays
     Set this to the number of days you want to let bugs go
@@ -592,6 +625,40 @@ globalwatchers
     any existing bug changes, subject to the normal groupset
     permissions. It may be useful for sending notifications to a
     mailing list, for instance.
+
+.. _param-email-oauth2:
+
+Sending Mail Through Gmail With OAuth2
+--------------------------------------
+
+#. In the Google Cloud console, create a project, configure its OAuth
+   consent screen, and create an OAuth client ID. Note the client ID and
+   client secret. While the consent screen's publishing status is
+   Testing, Google issues refresh tokens that expire after 7 days.
+
+#. Sign in once as the Gmail account Bugzilla will send from, and
+   authorize the client for the scope ``https://mail.google.com/`` with
+   offline access. Exchange the authorization code at the token endpoint
+   to get a refresh token.
+
+#. Set these parameters:
+
+   * :param:`mail_delivery_method`: :paramval:`SMTP`
+   * :param:`smtpserver`: :paramval:`smtp.gmail.com:587`
+   * :param:`smtp_ssl`: :paramval:`starttls`
+   * :param:`smtp_username`: the Gmail address
+   * :param:`smtp_auth_method`: :paramval:`oauth2`
+   * :param:`smtp_oauth2_token_url`:
+     :paramval:`https://oauth2.googleapis.com/token`
+   * :param:`smtp_oauth2_client_id`, :param:`smtp_oauth2_client_secret`,
+     :param:`smtp_oauth2_refresh_token`: the values from the steps above
+
+The scope ``https://mail.google.com/`` grants full access to the
+mailbox, so keep the client secret and refresh token private.
+Bugzilla stores them in the params file. It keeps access tokens in
+memory only, but when :param:`smtp_debug` is on, the SMTP session
+written to the web server's error log includes the base64-encoded
+access token.
 
 .. _param-querydefaults:
 
